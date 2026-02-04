@@ -1,0 +1,17 @@
+{
+  "name": "@functional-examples/example-custom-extractor",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scan": "tsx scan.ts",
+    "scan:json": "tsx scan.ts --json"
+  },
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "fast-glob": "^3.3.2"
+  },
+  "devDependencies": {
+    "tsx": "catalog:"
+  }
+}

@@ -1,0 +1,4 @@
+id = "hello-toml"
+title = "Hello TOML"
+description = "An example using TOML metadata"
+author = "Example Author"

@@ -3,9 +3,8 @@
  */
 import { scanExamples, resolveConfig } from 'functional-examples';
 
-// #region scan
 async function main() {
-  // Resolve config (auto-detects installed extractors)
+  // Resolve config (auto-detects installed plugins)
   const config = await resolveConfig({});
 
   // Scan for examples
@@ -26,6 +25,5 @@ async function main() {
     }
   }
 }
-// #endregion scan
 
 main().catch(console.error);

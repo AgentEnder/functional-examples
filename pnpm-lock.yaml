@@ -99,27 +99,57 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
-  examples:
+  examples/custom-extractor:
     dependencies:
-      '@functional-examples/javascript':
-        specifier: workspace:*
-        version: link:../packages/javascript
-      '@functional-examples/yaml-manifest':
-        specifier: workspace:*
-        version: link:../packages/yaml-manifest
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
       functional-examples:
         specifier: workspace:*
-        version: link:../packages/functional-examples
+        version: link:../../packages/functional-examples
     devDependencies:
-      '@types/node':
+      tsx:
         specifier: 'catalog:'
-        version: 20.11.30
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
+        version: 4.21.0
+
+  examples/javascript-plugin:
+    dependencies:
+      '@functional-examples/javascript':
+        specifier: workspace:*
+        version: link:../../packages/javascript
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
+
+  examples/metadata-validation:
+    dependencies:
+      '@functional-examples/javascript':
+        specifier: workspace:*
+        version: link:../../packages/javascript
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
+
+  examples/mixed-plugins:
+    dependencies:
+      '@functional-examples/javascript':
+        specifier: workspace:*
+        version: link:../../packages/javascript
+      '@functional-examples/yaml-manifest':
+        specifier: workspace:*
+        version: link:../../packages/yaml-manifest
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
+
+  examples/yaml-manifest:
+    dependencies:
+      '@functional-examples/yaml-manifest':
+        specifier: workspace:*
+        version: link:../../packages/yaml-manifest
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
 
   packages/functional-examples:
     dependencies:

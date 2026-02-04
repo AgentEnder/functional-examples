@@ -1,0 +1,15 @@
+{
+  "name": "@functional-examples/example-metadata-validation",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scan": "functional-examples scan .",
+    "scan:json": "functional-examples scan . -f json",
+    "scan:yaml": "functional-examples scan . -f yaml"
+  },
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/javascript": "workspace:*"
+  }
+}

@@ -1,0 +1,9 @@
+id: basic-usage
+title: Basic Usage
+description: |
+  Demonstrates scanning for examples in a directory
+  using the functional-examples library.
+entryPoint: scan.ts
+tags:
+  - getting-started
+  - api

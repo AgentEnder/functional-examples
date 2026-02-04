@@ -1,0 +1,6 @@
+id: tutorial-hello-world
+title: Hello World Tutorial
+description: |
+  A tutorial example managed by the YAML manifest plugin.
+  This coexists with frontmatter-based examples in src/.
+entryPoint: index.ts
