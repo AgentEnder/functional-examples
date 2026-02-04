@@ -1,0 +1,34 @@
+{
+  "name": "@functional-examples/javascript",
+  "version": "0.0.1",
+  "description": "JavaScript/TypeScript plugin for functional-examples",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "functional-examples": "workspace:*"
+  },
+  "devDependencies": {
+    "functional-examples": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.0",
+    "yaml": "catalog:"
+  }
+}
