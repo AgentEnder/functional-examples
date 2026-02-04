@@ -2,8 +2,8 @@
  * Type definitions for the configuration system
  */
 
-import type { BaseMetadata, Extractor, Plugin } from '../types/index.js';
 import type { PathMapping } from '../scanner/types.js';
+import type { BaseMetadata, Extractor, Plugin } from '../types/index.js';
 
 /**
  * Reference to an extractor package (for config files)
@@ -100,13 +100,10 @@ export interface BaseConfig<TMetadata = Record<string, unknown>> {
 }
 
 /**
- * Full configuration
+ * Full configuration (alias for BaseConfig)
  */
-export interface Config<TMetadata = Record<string, unknown>>
-  extends BaseConfig<TMetadata> {
-  /** Optional metadata schema for validation (Zod schema) */
-  metadataSchema?: unknown;
-}
+export type Config<TMetadata = Record<string, unknown>> =
+  BaseConfig<TMetadata>;
 
 // Legacy exports for backward compatibility
 export type { PathMapping } from '../scanner/types.js';
