@@ -2,7 +2,7 @@
  * Type definitions for the configuration system
  */
 
-import type { BaseMetadata, Extractor } from '../types/index.js';
+import type { BaseMetadata, Extractor, Plugin } from '../types/index.js';
 import type { PathMapping } from '../scanner/types.js';
 
 /**
@@ -43,7 +43,9 @@ export type ExtractorConfigOrFunction<TMetadata = Record<string, unknown>> =
  * Base configuration without resolved extractors
  */
 export interface BaseConfig<TMetadata = Record<string, unknown>> {
-  /** Extractors to use for scanning */
+  /** Plugins to use for scanning and parsing (recommended) */
+  plugins?: Plugin<TMetadata>[];
+  /** @deprecated Use plugins instead. Extractors to use for scanning */
   extractors?: ExtractorConfigOrFunction<TMetadata>[];
   /** Scan options */
   scan?: ScanConfig;
