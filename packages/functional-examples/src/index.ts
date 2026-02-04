@@ -22,6 +22,14 @@ export type {
   FileContentsParser,
   FileParseContext,
   ParsedRegion,
+  PluginSchemas,
+  PluginValidators,
+} from './types/index.js';
+
+// Validation types
+export type {
+  ValidationResult,
+  ValidationError,
 } from './types/index.js';
 
 // Scanner
@@ -55,7 +63,7 @@ export type {
   ScanConfig,
 } from './config/types.js';
 export type { ResolvedConfig } from './config/resolver.js';
-export type { ValidationError } from './config/validator.js';
+export type { ConfigValidationError } from './config/validator.js';
 export { findConfigFile, loadConfig } from './config/loader.js';
 export { mergeConfigs } from './config/merger.js';
 export { resolveConfig } from './config/resolver.js';

@@ -4,14 +4,23 @@
 
 import { ConfigSchema } from './schema.js';
 
-export interface ValidationError {
+/**
+ * Error from config file validation (Zod-based).
+ * Extended version with location and fix suggestions.
+ */
+export interface ConfigValidationError {
   path: string;
   message: string;
   location?: string;
   fix?: string;
 }
 
-export function validateConfig(config: unknown): ValidationError[] {
+/**
+ * @deprecated Use ConfigValidationError instead
+ */
+export type ValidationError = ConfigValidationError;
+
+export function validateConfig(config: unknown): ConfigValidationError[] {
   const schema = ConfigSchema();
   const result = schema.safeParse(config);
 
@@ -20,7 +29,7 @@ export function validateConfig(config: unknown): ValidationError[] {
   }
 
   return result.error.issues.map(
-    (issue): ValidationError => ({
+    (issue): ConfigValidationError => ({
       path: issue.path.join('.'),
       message: issue.message,
       location: issue.code,
