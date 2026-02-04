@@ -15,6 +15,7 @@ import type {
 import { PluginRegistry } from '../plugins/registry.js';
 import { runParsePipeline, createInitialContext } from '../plugins/pipeline.js';
 import { validateExampleMetadata } from '../plugins/validation.js';
+import { createSchemaValidator } from '../schema/validator.js';
 import type {
   FileConflict,
   PathMapping,
@@ -60,6 +61,7 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     exclude = [],
     signal,
     processFileContents = true,
+    metadataSchema,
   } = options;
 
   // Build plugin registry
@@ -152,7 +154,7 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     }
   }
 
-  // Step 8: Run metadata validators
+  // Step 8: Run plugin metadata validators
   const metadataValidators = registry.getMetadataValidators();
   if (metadataValidators.length > 0) {
     const validationResult = validateExampleMetadata({
@@ -169,6 +171,23 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
         path: `example:${error.exampleId}`,
         message: `[${error.pluginName}] ${error.path}: ${error.message}`,
       });
+    }
+  }
+
+  // Step 9: Run config metadata schema validation (AJV)
+  if (metadataSchema) {
+    const validateSchema = createSchemaValidator(metadataSchema);
+
+    for (const example of finalExamples) {
+      const result = validateSchema(example.metadata);
+      if (!result.success) {
+        for (const error of result.errors) {
+          errors.push({
+            path: `example:${example.id}`,
+            message: `[config.metadata] ${error.path || '(root)'}: ${error.message}`,
+          });
+        }
+      }
     }
   }
 

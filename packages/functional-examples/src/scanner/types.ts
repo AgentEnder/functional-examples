@@ -8,6 +8,7 @@ import type {
   ExtractorError,
   Plugin,
 } from '../types/index.js';
+import type { JSONSchema } from '../schema/merger.js';
 
 /**
  * Path-to-extractor mapping for conflict resolution
@@ -65,6 +66,12 @@ export interface ScanOptions<TMetadata = Record<string, unknown>> {
    * @default true
    */
   processFileContents?: boolean;
+
+  /**
+   * JSON Schema to validate example metadata against.
+   * Typically comes from config.metadata.
+   */
+  metadataSchema?: JSONSchema;
 }
 
 /**

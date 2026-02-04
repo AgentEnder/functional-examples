@@ -10,3 +10,5 @@ export {
   generateMetadataTypes,
   type GenerateMetadataTypesOptions,
 } from './typegen.js';
+
+export { createSchemaValidator } from './validator.js';

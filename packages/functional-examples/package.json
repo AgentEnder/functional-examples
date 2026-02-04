@@ -33,6 +33,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "ajv": "^8.17.1",
     "cli-forge": "^1.1.0",
     "jiti": "^2.4.2",
     "minimatch": "^10.0.0",

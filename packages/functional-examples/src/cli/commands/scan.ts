@@ -2,14 +2,14 @@
  * Scan command - discover examples in a directory
  */
 
-import path from 'node:path';
-import { writeFile } from 'node:fs/promises';
 import { cli } from 'cli-forge';
-import { scanExamples } from '../../scanner/index.js';
-import { resolveConfig } from '../../config/resolver.js';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { findConfigFile, loadConfig } from '../../config/loader.js';
-import type { Example } from '../../types/index.js';
+import { resolveConfig } from '../../config/resolver.js';
+import { scanExamples } from '../../scanner/index.js';
 import type { ScanResult } from '../../scanner/types.js';
+import type { Example } from '../../types/index.js';
 
 export const scanCommand = cli('scan', {
   description: 'Scan a directory for code examples',
@@ -19,6 +19,7 @@ export const scanCommand = cli('scan', {
         type: 'string',
         description: 'Directory to scan',
         required: true,
+        default: '.',
       })
       .option('config', {
         type: 'string',
@@ -71,6 +72,7 @@ export const scanCommand = cli('scan', {
         options.include.length > 0 ? options.include : config.scan.include,
       exclude:
         options.exclude.length > 0 ? options.exclude : config.scan.exclude,
+      metadataSchema: rawConfig.metadata,
     });
 
     const output = formatOutput(result, options.format);
