@@ -28,9 +28,8 @@ describe('mergeConfigSchema', () => {
     });
 
     expect(schema.$defs).toHaveProperty('javascriptOptions');
-    expect(schema.$defs!.javascriptOptions.properties).toHaveProperty(
-      'skipFrontmatter'
-    );
+    const defs = schema.$defs ?? {};
+    expect(defs.javascriptOptions?.properties).toHaveProperty('skipFrontmatter');
   });
 
   it('should reference plugin schemas in plugins array items', () => {
@@ -42,7 +41,8 @@ describe('mergeConfigSchema', () => {
     });
 
     // The plugins array should allow items matching any registered plugin
-    const pluginsSchema = schema.properties!.plugins as { items?: { anyOf?: unknown[] } };
+    const properties = schema.properties ?? {};
+    const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
     expect(pluginsSchema.items?.anyOf).toBeDefined();
     expect(pluginsSchema.items?.anyOf).toHaveLength(2);
   });
@@ -153,7 +153,8 @@ describe('mergeMetadataSchemas', () => {
     });
 
     // Config wins - minLength should be 5, not 1
-    const idProp = result.properties!.id as { minLength?: number };
+    const properties = result.properties ?? {};
+    const idProp = properties.id as { minLength?: number };
     expect(idProp.minLength).toBe(5);
     // Plugin's non-conflicting property is still included
     expect(result.properties).toHaveProperty('title');

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { resolveConfig } from './resolver.js';
-import type { Plugin, ValidationResult } from '../types/index.js';
+import type { Plugin } from '../types/index.js';
 import type { Config } from './types.js';
 
 describe('resolveConfig', () => {

@@ -1,4 +1,3 @@
-import type { ValidationResult } from '../types/index.js';
 import type { PluginValidator } from './registry.js';
 
 /**

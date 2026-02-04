@@ -91,36 +91,38 @@ export class PluginRegistry {
    * Get all options validators from registered plugins.
    */
   getOptionsValidators(): PluginValidator<unknown>[] {
-    return this.plugins
-      .filter((p) => p.validators?.options !== undefined)
-      .map((p) => ({
-        pluginName: p.name,
-        validate: p.validators!.options!,
-      }));
+    return this.plugins.flatMap((p) => {
+      const validator = p.validators?.options;
+      if (!validator) return [];
+      return [{ pluginName: p.name, validate: validator }];
+    });
   }
 
   /**
    * Get all metadata validators from registered plugins.
    */
   getMetadataValidators(): PluginValidator[] {
-    return this.plugins
-      .filter((p) => p.validators?.metadata !== undefined)
-      .map((p) => ({
-        pluginName: p.name,
-        validate: p.validators!.metadata!,
-      }));
+    return this.plugins.flatMap((p) => {
+      const validator = p.validators?.metadata;
+      if (!validator) return [];
+      return [{ pluginName: p.name, validate: validator }];
+    });
   }
 
   /**
    * Get all schemas from registered plugins.
    */
   getSchemas(): PluginSchemaEntry[] {
-    return this.plugins
-      .filter((p) => p.schemas !== undefined)
-      .map((p) => ({
-        pluginName: p.name,
-        options: p.schemas!.options,
-        metadata: p.schemas!.metadata,
-      }));
+    return this.plugins.flatMap((p) => {
+      const schemas = p.schemas;
+      if (!schemas) return [];
+      return [
+        {
+          pluginName: p.name,
+          options: schemas.options,
+          metadata: schemas.metadata,
+        },
+      ];
+    });
   }
 }

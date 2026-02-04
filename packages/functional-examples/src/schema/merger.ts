@@ -101,10 +101,12 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
 
     try {
       const parsed = JSON.parse(optionsSchema) as JSONSchema;
-      schema.$defs![defName] = {
+      const defs = schema.$defs ?? {};
+      defs[defName] = {
         ...parsed,
         description: `Options for ${pluginName} plugin`,
       };
+      schema.$defs = defs;
 
       pluginRefs.push({
         type: 'object',
@@ -121,11 +123,13 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
 
   // Update plugins array to use anyOf if we have plugin schemas
   if (pluginRefs.length > 0) {
-    schema.properties!.plugins = {
+    const properties = schema.properties ?? {};
+    properties.plugins = {
       type: 'array',
       description: 'Plugins to use for scanning and parsing',
       items: { anyOf: pluginRefs },
     };
+    schema.properties = properties;
   }
 
   return schema;

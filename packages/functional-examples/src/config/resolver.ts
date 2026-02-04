@@ -12,7 +12,6 @@ import type {
 import type { PathMapping } from '../scanner/types.js';
 import { PluginRegistry } from '../plugins/registry.js';
 import { validatePluginOptions } from '../plugins/validation.js';
-import type { OptionsValidationError } from '../plugins/validation.js';
 
 /**
  * Error from config validation
@@ -86,7 +85,8 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
   const plugins = (config.plugins ?? []) as Plugin<TMetadata>[];
 
   for (const plugin of plugins) {
-    registry.register(plugin);
+    // Cast to base Plugin type for registry (generics are erased at runtime)
+    registry.register(plugin as Plugin);
   }
 
   // Run options validation for plugins that have validators and _options
