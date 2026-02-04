@@ -1,4 +1,26 @@
-import type { Plugin, Extractor, FileContentsParser } from '../types/index.js';
+import type {
+  Plugin,
+  Extractor,
+  FileContentsParser,
+  ValidationResult,
+} from '../types/index.js';
+
+/**
+ * Wrapper for a plugin's validator function with plugin name context.
+ */
+export interface PluginValidator<T = unknown> {
+  pluginName: string;
+  validate: (value: T) => ValidationResult;
+}
+
+/**
+ * Schema entry from a plugin with plugin name context.
+ */
+export interface PluginSchemaEntry {
+  pluginName: string;
+  options?: string;
+  metadata?: string;
+}
 
 /**
  * Registry for plugins with extension-based lookup.
@@ -63,5 +85,42 @@ export class PluginRegistry {
           p.fileContentsParser !== undefined
       )
       .map((p) => p.fileContentsParser);
+  }
+
+  /**
+   * Get all options validators from registered plugins.
+   */
+  getOptionsValidators(): PluginValidator<unknown>[] {
+    return this.plugins
+      .filter((p) => p.validators?.options !== undefined)
+      .map((p) => ({
+        pluginName: p.name,
+        validate: p.validators!.options!,
+      }));
+  }
+
+  /**
+   * Get all metadata validators from registered plugins.
+   */
+  getMetadataValidators(): PluginValidator[] {
+    return this.plugins
+      .filter((p) => p.validators?.metadata !== undefined)
+      .map((p) => ({
+        pluginName: p.name,
+        validate: p.validators!.metadata!,
+      }));
+  }
+
+  /**
+   * Get all schemas from registered plugins.
+   */
+  getSchemas(): PluginSchemaEntry[] {
+    return this.plugins
+      .filter((p) => p.schemas !== undefined)
+      .map((p) => ({
+        pluginName: p.name,
+        options: p.schemas!.options,
+        metadata: p.schemas!.metadata,
+      }));
   }
 }
