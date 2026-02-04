@@ -42,6 +42,29 @@ export type ExtractorConfigOrFunction<TMetadata = Record<string, unknown>> =
 /**
  * Base configuration without resolved extractors
  */
+/**
+ * JSON Schema object for metadata validation.
+ * Subset of JSON Schema spec used for config files.
+ */
+export interface JSONSchemaObject {
+  type?: string;
+  properties?: Record<string, JSONSchemaObject>;
+  required?: string[];
+  items?: JSONSchemaObject;
+  enum?: unknown[];
+  const?: unknown;
+  description?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Configuration for the generate command output.
+ */
+export interface GenerateConfig {
+  /** Output directory for generated files (default: .functional-examples) */
+  outputDir?: string;
+}
+
 export interface BaseConfig<TMetadata = Record<string, unknown>> {
   /** Plugins to use for scanning and parsing (recommended) */
   plugins?: Plugin<TMetadata>[];
@@ -51,6 +74,29 @@ export interface BaseConfig<TMetadata = Record<string, unknown>> {
   scan?: ScanConfig;
   /** Path mappings for conflict resolution */
   pathMappings?: PathMapping[];
+
+  /**
+   * JSON Schema defining the expected metadata structure for examples.
+   * This is the user's base metadata contract - all examples must conform to it.
+   * Overrides plugin metadata schemas on conflict.
+   *
+   * @example
+   * ```typescript
+   * metadata: {
+   *   type: 'object',
+   *   properties: {
+   *     id: { type: 'string' },
+   *     title: { type: 'string' },
+   *     category: { type: 'string', enum: ['tutorial', 'recipe', 'reference'] },
+   *   },
+   *   required: ['id', 'title', 'category'],
+   * }
+   * ```
+   */
+  metadata?: JSONSchemaObject;
+
+  /** Configuration for schema/type generation */
+  generate?: GenerateConfig;
 }
 
 /**

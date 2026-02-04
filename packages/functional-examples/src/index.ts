@@ -75,3 +75,40 @@ export {
   runParsePipeline,
   createInitialContext,
 } from './plugins/index.js';
+
+// Plugin validation
+export {
+  validatePluginOptions,
+  validateExampleMetadata,
+} from './plugins/validation.js';
+export type {
+  PluginValidator,
+  PluginSchemaEntry,
+} from './plugins/registry.js';
+export type {
+  PluginOptionsValidationContext,
+  MetadataValidationContext,
+  OptionsValidationResult,
+  MetadataValidationResult,
+  OptionsValidationError,
+  MetadataValidationError,
+} from './plugins/validation.js';
+
+// Schema utilities
+export {
+  mergeConfigSchema,
+  mergeMetadataSchemas,
+  generateMetadataTypes,
+} from './schema/index.js';
+export type {
+  JSONSchema,
+  MergeConfigSchemaOptions,
+  MergeMetadataSchemasOptions,
+  GenerateMetadataTypesOptions,
+} from './schema/index.js';
+
+// Config types for metadata schema
+export type {
+  JSONSchemaObject,
+  GenerateConfig,
+} from './config/types.js';
