@@ -8,3 +8,6 @@ export const JAVASCRIPT_EXTENSIONS = [
   '.mts',
   '.cts',
 ] as const;
+
+export { createJavaScriptParser } from './parser.js';
+export { createFrontmatterParser } from './frontmatter.js';

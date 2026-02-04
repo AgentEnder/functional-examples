@@ -1,0 +1,181 @@
+import type { FileContentsParser, FileParseContext } from 'functional-examples';
+import { parse as parseYaml } from 'yaml';
+
+/** Pattern matching line comment frontmatter start: // --- */
+const LINE_COMMENT_START = /^[ \t]*\/\/\s*---\s*$/;
+/** Pattern matching line comment frontmatter end: // --- */
+const LINE_COMMENT_END = /^[ \t]*\/\/\s*---\s*$/;
+/** Pattern matching line comment content: // <content> */
+const LINE_COMMENT_CONTENT = /^[ \t]*\/\/\s?(.*)$/;
+
+/** Pattern matching block comment frontmatter start: /* --- */
+const BLOCK_COMMENT_START = /^[ \t]*\/\*\s*---\s*$/;
+/** Pattern matching block comment frontmatter end: --- */
+const BLOCK_COMMENT_END = /^[ \t]*---\s*\*\/\s*$/;
+
+interface FrontmatterResult {
+  /** Parsed YAML metadata */
+  metadata: Record<string, unknown>;
+  /** Number of lines consumed by frontmatter (including delimiters) */
+  linesConsumed: number;
+}
+
+/**
+ * Try to extract line comment style frontmatter from the start of the file.
+ * Format:
+ * // ---
+ * // key: value
+ * // ---
+ */
+function extractLineCommentFrontmatter(
+  lines: string[]
+): FrontmatterResult | null {
+  if (lines.length < 2) return null;
+
+  // First line must be // ---
+  if (!LINE_COMMENT_START.test(lines[0])) {
+    return null;
+  }
+
+  // Find closing delimiter
+  const yamlLines: string[] = [];
+  let endIndex = -1;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check for closing delimiter
+    if (LINE_COMMENT_END.test(line)) {
+      endIndex = i;
+      break;
+    }
+
+    // Extract content from line comment
+    const match = line.match(LINE_COMMENT_CONTENT);
+    if (match) {
+      yamlLines.push(match[1]);
+    } else {
+      // Non-comment line before closing delimiter - invalid frontmatter
+      return null;
+    }
+  }
+
+  if (endIndex === -1) {
+    // No closing delimiter found
+    return null;
+  }
+
+  const yamlContent = yamlLines.join('\n');
+  const metadata = yamlContent.trim()
+    ? (parseYaml(yamlContent) as Record<string, unknown>) ?? {}
+    : {};
+
+  return {
+    metadata,
+    linesConsumed: endIndex + 1,
+  };
+}
+
+/**
+ * Try to extract block comment style frontmatter from the start of the file.
+ * Format:
+ * /* ---
+ * key: value
+ * --- *\/
+ */
+function extractBlockCommentFrontmatter(
+  lines: string[]
+): FrontmatterResult | null {
+  if (lines.length < 2) return null;
+
+  // First line must be /* ---
+  if (!BLOCK_COMMENT_START.test(lines[0])) {
+    return null;
+  }
+
+  // Find closing delimiter
+  const yamlLines: string[] = [];
+  let endIndex = -1;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check for closing delimiter
+    if (BLOCK_COMMENT_END.test(line)) {
+      endIndex = i;
+      break;
+    }
+
+    // Content lines are raw YAML (no prefix stripping needed)
+    yamlLines.push(line);
+  }
+
+  if (endIndex === -1) {
+    // No closing delimiter found
+    return null;
+  }
+
+  const yamlContent = yamlLines.join('\n');
+  const metadata = yamlContent.trim()
+    ? (parseYaml(yamlContent) as Record<string, unknown>) ?? {}
+    : {};
+
+  return {
+    metadata,
+    linesConsumed: endIndex + 1,
+  };
+}
+
+/**
+ * Create a FileContentsParser that extracts YAML frontmatter from JavaScript/TypeScript files.
+ *
+ * Supports two formats:
+ * 1. Line comment style:
+ *    // ---
+ *    // title: Example
+ *    // ---
+ *
+ * 2. Block comment wrapped style:
+ *    /* ---
+ *    title: Example
+ *    --- *\/
+ *
+ * Frontmatter must be at the very start of the file (line 1).
+ * Extracted metadata is merged into context.metadata.
+ * The frontmatter block is stripped from context.parsed.
+ */
+export function createFrontmatterParser(): FileContentsParser {
+  return {
+    name: 'javascript-frontmatter-parser',
+
+    parse(context: FileParseContext): FileParseContext {
+      const lines = context.parsed.split('\n');
+
+      // Try line comment style first, then block comment style
+      const result =
+        extractLineCommentFrontmatter(lines) ??
+        extractBlockCommentFrontmatter(lines);
+
+      if (!result) {
+        // No frontmatter found, return context unchanged
+        return context;
+      }
+
+      // Strip frontmatter lines from parsed content
+      const remainingLines = lines.slice(result.linesConsumed);
+      const parsed = remainingLines.join('\n');
+
+      // Merge extracted metadata with existing metadata
+      const metadata = {
+        ...context.metadata,
+        ...result.metadata,
+      };
+
+      return {
+        ...context,
+        parsed,
+        metadata,
+      };
+    },
+  };
+}
