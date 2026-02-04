@@ -1,229 +1,342 @@
 /**
- * Example scanner for discovering examples in a directory
+ * Core scanner that orchestrates multiple extractors
  */
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import type { Example, BaseMetadata, ScanOptions, ScanResult, ScanError } from '../types/index.js';
-import { ExtractorRegistry, createDefaultRegistry } from '../extractors/index.js';
-import type { ExtractionContext } from '../extractors/types.js';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { minimatch } from 'minimatch';
+import type {
+  Example,
+  Extractor,
+  ExtractorError,
+  ExtractorResult,
+  Plugin,
+} from '../types/index.js';
+import { PluginRegistry } from '../plugins/registry.js';
+import { runParsePipeline, createInitialContext } from '../plugins/pipeline.js';
+import type {
+  FileConflict,
+  PathMapping,
+  ScanOptions,
+  ScanResult,
+} from './types.js';
 
 /**
- * Options for ExampleScanner
- */
-export interface ExampleScannerOptions {
-  /** Custom extractor registry (uses default if not provided) */
-  extractors?: ExtractorRegistry;
-  /** File extensions to consider for single-file examples */
-  fileExtensions?: string[];
-}
-
-/**
- * Scanner for discovering code examples in a directory.
+ * Scan a directory for examples using the provided extractors.
  *
- * Supports two patterns:
- * 1. Directory-based: Folder with meta.yml
- * 2. File-based: Single file with YAML frontmatter
- */
-export class ExampleScanner {
-  private registry: ExtractorRegistry;
-  private fileExtensions: Set<string>;
-
-  constructor(options: ExampleScannerOptions = {}) {
-    this.registry = options.extractors ?? createDefaultRegistry();
-    this.fileExtensions = new Set(
-      options.fileExtensions ?? ['.ts', '.js', '.tsx', '.jsx', '.py', '.rb', '.go']
-    );
-  }
-
-  /**
-   * Scan a directory for examples
-   */
-  async scan(options: ScanOptions): Promise<ScanResult> {
-    const { directory, recursive = true, include, exclude } = options;
-    const examples: Example[] = [];
-    const errors: ScanError[] = [];
-
-    await this.scanDirectory(
-      directory,
-      directory,
-      recursive,
-      include,
-      exclude,
-      examples,
-      errors
-    );
-
-    return { examples, errors };
-  }
-
-  private async scanDirectory(
-    rootDir: string,
-    currentDir: string,
-    recursive: boolean,
-    include: string[] | undefined,
-    exclude: string[] | undefined,
-    examples: Example[],
-    errors: ScanError[]
-  ): Promise<void> {
-    let entries: Awaited<ReturnType<typeof fs.readdir>>;
-
-    try {
-      entries = await fs.readdir(currentDir, { withFileTypes: true });
-    } catch (error) {
-      errors.push({
-        path: currentDir,
-        message: `Failed to read directory: ${(error as Error).message}`,
-        cause: error instanceof Error ? error : undefined,
-      });
-      return;
-    }
-
-    const entryNames = entries.map((e) => e.name);
-
-    // Check if this directory is an example (has meta.yml)
-    if (entryNames.includes('meta.yml')) {
-      const context: ExtractionContext = {
-        path: currentDir,
-        isDirectory: true,
-        entries: entryNames,
-      };
-
-      const extractor = this.registry.findExtractor(context);
-      if (extractor) {
-        try {
-          const extracted = await extractor.extract(context);
-          examples.push({
-            metadata: extracted.metadata as BaseMetadata,
-            files: extracted.files,
-            rootPath: currentDir,
-            multiFile: true,
-          });
-        } catch (error) {
-          errors.push({
-            path: currentDir,
-            message: `Failed to extract metadata: ${(error as Error).message}`,
-            cause: error instanceof Error ? error : undefined,
-          });
-        }
-        // Don't recurse into example directories
-        return;
-      }
-    }
-
-    // Process entries
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-      const relativePath = path.relative(rootDir, fullPath);
-
-      // Check exclude patterns
-      if (exclude && this.matchesPatterns(relativePath, exclude)) {
-        continue;
-      }
-
-      // Check include patterns (if specified, only include matching)
-      if (include && !this.matchesPatterns(relativePath, include)) {
-        continue;
-      }
-
-      if (entry.isDirectory()) {
-        if (recursive) {
-          await this.scanDirectory(
-            rootDir,
-            fullPath,
-            recursive,
-            include,
-            exclude,
-            examples,
-            errors
-          );
-        }
-      } else if (entry.isFile()) {
-        // Check if it's a file we should examine
-        const ext = path.extname(entry.name);
-        if (!this.fileExtensions.has(ext)) {
-          continue;
-        }
-
-        try {
-          const content = await fs.readFile(fullPath, 'utf-8');
-          const context: ExtractionContext = {
-            path: fullPath,
-            isDirectory: false,
-            content,
-          };
-
-          const extractor = this.registry.findExtractor(context);
-          if (extractor) {
-            const extracted = await extractor.extract(context);
-            examples.push({
-              metadata: extracted.metadata as BaseMetadata,
-              files: extracted.files,
-              rootPath: path.dirname(fullPath),
-              multiFile: false,
-            });
-          }
-        } catch (error) {
-          // Only report as error if file looked like it should be an example
-          // (has frontmatter markers, etc.)
-          if (
-            error instanceof Error &&
-            !error.message.includes('does not start with frontmatter')
-          ) {
-            errors.push({
-              path: fullPath,
-              message: `Failed to process file: ${error.message}`,
-              cause: error,
-            });
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Simple glob-style pattern matching
-   */
-  private matchesPatterns(filePath: string, patterns: string[]): boolean {
-    return patterns.some((pattern) => this.matchesPattern(filePath, pattern));
-  }
-
-  private matchesPattern(filePath: string, pattern: string): boolean {
-    // Convert glob to regex (simple implementation)
-    const regexPattern = pattern
-      .replace(/\*\*/g, '<<GLOBSTAR>>')
-      .replace(/\*/g, '[^/]*')
-      .replace(/<<GLOBSTAR>>/g, '.*')
-      .replace(/\?/g, '.');
-
-    const regex = new RegExp(`^${regexPattern}$`);
-    return regex.test(filePath);
-  }
-}
-
-/**
- * Convenience function to scan a directory for examples.
- *
- * @param directory - Directory to scan
- * @param options - Additional scan options
- * @returns Scan result with examples and errors
+ * The scanner:
+ * 1. Runs all extractors in parallel against the root
+ * 2. Collects claimed files and detects conflicts
+ * 3. Resolves conflicts via path mappings (or errors if unresolved)
+ * 4. Applies include/exclude filters AFTER extraction
+ * 5. Returns unified results
  *
  * @example
  * ```typescript
- * const { examples, errors } = await scanExamples('./examples');
+ * import { scanExamples } from 'functional-examples';
+ * import { createFrontmatterExtractor } from '@functional-examples/extractor-frontmatter';
  *
- * for (const example of examples) {
- *   console.log(example.metadata.title);
+ * const result = await scanExamples({
+ *   root: './examples',
+ *   extractors: [createFrontmatterExtractor()],
+ * });
+ *
+ * for (const example of result.examples) {
+ *   console.log(example.title);
  * }
  * ```
  */
-export async function scanExamples(
-  directory: string,
-  options: Partial<ScanOptions> = {}
-): Promise<ScanResult> {
-  const scanner = new ExampleScanner();
-  return scanner.scan({
-    directory,
-    ...options,
+export async function scanExamples<TMetadata = Record<string, unknown>>(
+  options: ScanOptions<TMetadata>
+): Promise<ScanResult<TMetadata>> {
+  const startTime = Date.now();
+  const {
+    root,
+    plugins = [],
+    extractors: standaloneExtractors = [],
+    pathMappings = [],
+    include = ['**/*'],
+    exclude = [],
+    signal,
+    processFileContents = true,
+  } = options;
+
+  // Build plugin registry
+  const registry = new PluginRegistry();
+  for (const plugin of plugins as Plugin[]) {
+    registry.register(plugin);
+  }
+
+  // Collect all extractors (from plugins + standalone for backward compat)
+  const allExtractors = [
+    ...registry.getExtractors(),
+    ...standaloneExtractors,
+  ] as Extractor<TMetadata>[];
+
+  if (allExtractors.length === 0) {
+    return {
+      examples: [],
+      errors: [
+        {
+          path: root,
+          message: 'No extractors provided',
+        },
+      ],
+      conflicts: [],
+      stats: {
+        filesClaimed: 0,
+        examplesFound: 0,
+        conflictsDetected: 0,
+        conflictsResolved: 0,
+        durationMs: Date.now() - startTime,
+      },
+    };
+  }
+
+  // Step 1: Run all extractors in parallel
+  const extractorResults = await runExtractorsInParallel(allExtractors, root, {
+    include,
+    exclude,
+    signal,
+  });
+
+  // Step 2: Build file claim map (file -> [extractor names])
+  const fileClaimMap = buildFileClaimMap(extractorResults);
+
+  // Step 3: Detect and resolve conflicts
+  const { conflicts, resolvedConflicts, unresolvedConflicts } =
+    resolveConflicts(fileClaimMap, pathMappings);
+
+  // Step 4: Filter examples based on conflict resolution
+  const allExamples = extractorResults.flatMap((r) => r.examples);
+  const filteredExamples = filterExamplesByConflicts(
+    allExamples,
+    unresolvedConflicts,
+    resolvedConflicts
+  );
+
+  // Step 5: Apply include/exclude filters
+  const finalExamples = applyFilters(filteredExamples, include, exclude);
+
+  // Step 6: Collect all errors
+  const errors: ExtractorError[] = [
+    ...extractorResults.flatMap((r) => r.errors),
+    ...unresolvedConflicts.map((c) => ({
+      path: c.filePath,
+      message: `File claimed by multiple extractors: ${c.claimants.join(
+        ', '
+      )}. Add a pathMapping to resolve.`,
+    })),
+  ];
+
+  // Step 7: Process file contents through parser pipelines
+  if (processFileContents) {
+    for (const example of finalExamples) {
+      for (const file of example.files) {
+        const ext = path.extname(file.absolutePath);
+        const parsers = registry.getParsersForExtension(ext);
+
+        if (parsers.length > 0) {
+          // Load file content if not already loaded
+          if (file.raw === undefined) {
+            file.raw = await fs.readFile(file.absolutePath, 'utf-8');
+          }
+
+          const ctx = createInitialContext(file.absolutePath, file.raw);
+          const result = await runParsePipeline(ctx, parsers);
+          file.parsed = result.parsed;
+          file.hunks = result.hunks;
+        }
+      }
+    }
+  }
+
+  return {
+    examples: finalExamples,
+    errors,
+    conflicts,
+    stats: {
+      filesClaimed: fileClaimMap.size,
+      examplesFound: finalExamples.length,
+      conflictsDetected: conflicts.length,
+      conflictsResolved: resolvedConflicts.length,
+      durationMs: Date.now() - startTime,
+    },
+  };
+}
+
+/**
+ * Run all extractors in parallel
+ */
+async function runExtractorsInParallel<TMetadata>(
+  extractors: Extractor<TMetadata>[],
+  root: string,
+  options: { include?: string[]; exclude?: string[]; signal?: AbortSignal }
+): Promise<Array<ExtractorResult<TMetadata> & { extractorName: string }>> {
+  const results = await Promise.all(
+    extractors.map(async (extractor) => {
+      try {
+        const result = await extractor.extract(root, options);
+        return { ...result, extractorName: extractor.name };
+      } catch (error) {
+        // Extractor threw unexpectedly - wrap as error result
+        return {
+          examples: [] as Example<TMetadata>[],
+          errors: [
+            {
+              path: root,
+              message: `Extractor "${extractor.name}" failed: ${
+                (error as Error).message
+              }`,
+              cause: error as Error,
+            },
+          ],
+          claimedFiles: new Set<string>(),
+          extractorName: extractor.name,
+        };
+      }
+    })
+  );
+
+  return results;
+}
+
+/**
+ * Build a map of file path -> extractor names that claimed it
+ */
+function buildFileClaimMap<TMetadata>(
+  results: Array<ExtractorResult<TMetadata> & { extractorName: string }>
+): Map<string, string[]> {
+  const fileClaimMap = new Map<string, string[]>();
+
+  for (const result of results) {
+    for (const file of result.claimedFiles) {
+      const existing = fileClaimMap.get(file) ?? [];
+      existing.push(result.extractorName);
+      fileClaimMap.set(file, existing);
+    }
+  }
+
+  return fileClaimMap;
+}
+
+/**
+ * Detect conflicts and attempt resolution via path mappings
+ */
+function resolveConflicts(
+  fileClaimMap: Map<string, string[]>,
+  pathMappings: PathMapping[]
+): {
+  conflicts: FileConflict[];
+  resolvedConflicts: FileConflict[];
+  unresolvedConflicts: FileConflict[];
+} {
+  const conflicts: FileConflict[] = [];
+  const resolvedConflicts: FileConflict[] = [];
+  const unresolvedConflicts: FileConflict[] = [];
+
+  for (const [filePath, claimants] of fileClaimMap) {
+    if (claimants.length <= 1) continue;
+
+    // This is a conflict - try to resolve via path mappings
+    let resolved = false;
+
+    for (const mapping of pathMappings) {
+      if (minimatch(filePath, mapping.pattern)) {
+        if (claimants.includes(mapping.extractor)) {
+          const conflict: FileConflict = {
+            filePath,
+            claimants,
+            resolution: 'path-mapping',
+            winner: mapping.extractor,
+          };
+          conflicts.push(conflict);
+          resolvedConflicts.push(conflict);
+          resolved = true;
+          break;
+        }
+      }
+    }
+
+    if (!resolved) {
+      const conflict: FileConflict = {
+        filePath,
+        claimants,
+        resolution: 'error',
+      };
+      conflicts.push(conflict);
+      unresolvedConflicts.push(conflict);
+    }
+  }
+
+  return { conflicts, resolvedConflicts, unresolvedConflicts };
+}
+
+/**
+ * Filter examples based on conflict resolution.
+ * - Remove examples containing files from unresolved conflicts
+ * - For resolved conflicts, keep only the winning extractor's examples
+ */
+function filterExamplesByConflicts<TMetadata>(
+  examples: Example<TMetadata>[],
+  unresolvedConflicts: FileConflict[],
+  resolvedConflicts: FileConflict[]
+): Example<TMetadata>[] {
+  const unresolvedFiles = new Set(unresolvedConflicts.map((c) => c.filePath));
+
+  // Build map of file -> winning extractor for resolved conflicts
+  const winnerMap = new Map<string, string>();
+  for (const conflict of resolvedConflicts) {
+    if (conflict.winner) {
+      winnerMap.set(conflict.filePath, conflict.winner);
+    }
+  }
+
+  return examples.filter((example) => {
+    // Check if any file in this example is part of an unresolved conflict
+    const hasUnresolvedFile = example.files.some((f) =>
+      unresolvedFiles.has(f.absolutePath)
+    );
+    if (hasUnresolvedFile) {
+      return false;
+    }
+
+    // Check if any file in this example is part of a resolved conflict
+    // where this extractor is NOT the winner
+    for (const file of example.files) {
+      const winner = winnerMap.get(file.absolutePath);
+      if (winner && winner !== example.extractorName) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Apply include/exclude filters to examples based on their root path
+ */
+function applyFilters<TMetadata>(
+  examples: Example<TMetadata>[],
+  include: string[],
+  exclude: string[]
+): Example<TMetadata>[] {
+  return examples.filter((example) => {
+    // Check include patterns (at least one must match)
+    const matchesInclude =
+      include.length === 0 ||
+      include.some((pattern) => minimatch(example.rootPath, pattern));
+
+    if (!matchesInclude) {
+      return false;
+    }
+
+    // Check exclude patterns (none must match)
+    const matchesExclude = exclude.some((pattern) =>
+      minimatch(example.rootPath, pattern)
+    );
+
+    return !matchesExclude;
   });
 }
