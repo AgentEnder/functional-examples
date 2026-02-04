@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { parseRegions, extractRegion, stripRegionMarkers, listRegions } from './parser.js';
+import {
+  parseRegions,
+  extractRegion,
+  stripRegionMarkers,
+  listRegions,
+} from './parser.js';
 
 describe('parseRegions', () => {
   describe('JavaScript/TypeScript style', () => {
@@ -48,7 +53,9 @@ const c = 3;
 `;
       const regions = parseRegions(code, { extension: 'ts' });
 
-      expect(regions.outer.content).toBe('const a = 1;\nconst b = 2;\nconst c = 3;');
+      expect(regions.outer.content).toBe(
+        'const a = 1;\nconst b = 2;\nconst c = 3;'
+      );
       expect(regions.inner.content).toBe('const b = 2;');
     });
 

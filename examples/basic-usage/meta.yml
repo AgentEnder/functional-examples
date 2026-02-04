@@ -1,0 +1,6 @@
+id: basic-usage
+title: Basic Usage Example
+description: |
+  Demonstrates the core functionality of functional-examples:
+  scanning for examples and extracting code regions.
+entryPoint: scan.ts

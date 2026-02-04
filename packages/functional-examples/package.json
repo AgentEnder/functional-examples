@@ -16,6 +16,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "functional-examples": "./dist/cli/index.js"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -30,6 +33,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "cli-forge": "^1.1.0",
+    "jiti": "^2.4.2",
+    "minimatch": "^10.0.0",
     "yaml": "catalog:"
   },
   "devDependencies": {
@@ -39,7 +45,8 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "^4.0.0"
   },
   "files": [
     "dist",

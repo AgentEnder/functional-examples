@@ -1,0 +1,8 @@
+- extractors + region detection / hunks
+  - extractors should include all of:
+    - raw example content per file in their filemap
+    - parsed example content per file in their filemap, without frontmatter / region markers
+    - hunks parsed per file, based on region detection
+  - regions detected by `{comment_prefix} #region {region_name}` and `{comment_prefix} #endregion`, unless the language has a different convention
+- frontmatter extractor missing comment prefix detection by language
+- frontmatter extractor missing multi-line comment support

@@ -1,5 +1,11 @@
 /**
- * Example scanner implementation
+ * Scanner module - orchestrates extractors to discover examples
  */
 
-export { ExampleScanner, scanExamples } from './scanner.js';
+export { scanExamples } from './scanner.js';
+export type {
+  FileConflict,
+  PathMapping,
+  ScanOptions,
+  ScanResult,
+} from './types.js';

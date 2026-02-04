@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "./dist-spec"
+    "outDir": "./dist-spec",
+    "tsBuildInfoFile": "../../dist/tsc/functional-examples.spec.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
   "exclude": []

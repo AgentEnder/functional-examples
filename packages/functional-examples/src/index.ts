@@ -62,4 +62,8 @@ export { resolveConfig } from './config/resolver.js';
 export { validateConfig } from './config/validator.js';
 
 // Plugin system
-export { PluginRegistry, runParsePipeline, createInitialContext } from './plugins/index.js';
+export {
+  PluginRegistry,
+  runParsePipeline,
+  createInitialContext,
+} from './plugins/index.js';

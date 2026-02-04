@@ -27,9 +27,10 @@ function createRegionPatterns(
   }
 
   // Combine patterns
-  const startPattern = patterns.length > 0
-    ? new RegExp(patterns.join('|'))
-    : /^\s*\/\/\s*#region\s+(\S+)\s*$/;
+  const startPattern =
+    patterns.length > 0
+      ? new RegExp(patterns.join('|'))
+      : /^\s*\/\/\s*#region\s+(\S+)\s*$/;
 
   // Create end patterns similarly
   const endPatterns: string[] = [];
@@ -44,9 +45,10 @@ function createRegionPatterns(
     endPatterns.push(`^\\s*${start}\\s*#endregion\\s+(\\S+)\\s*${end}\\s*$`);
   }
 
-  const endPattern = endPatterns.length > 0
-    ? new RegExp(endPatterns.join('|'))
-    : /^\s*\/\/\s*#endregion\s+(\S+)\s*$/;
+  const endPattern =
+    endPatterns.length > 0
+      ? new RegExp(endPatterns.join('|'))
+      : /^\s*\/\/\s*#endregion\s+(\S+)\s*$/;
 
   return { start: startPattern, end: endPattern };
 }
@@ -87,7 +89,10 @@ function extractRegionId(match: RegExpMatchArray): string {
  * const setupCode = regions['setup']?.content;
  * ```
  */
-export function parseRegions(code: string, options: RegionOptions = {}): RegionMap {
+export function parseRegions(
+  code: string,
+  options: RegionOptions = {}
+): RegionMap {
   const config = getLanguageConfig(options.extension ?? 'ts');
   const { start: REGION_START, end: REGION_END } = createRegionPatterns(
     config.lineComment,
@@ -96,7 +101,8 @@ export function parseRegions(code: string, options: RegionOptions = {}): RegionM
 
   const lines = code.split('\n');
   const regions: RegionMap = {};
-  const stack: Array<{ id: string; startLine: number; startIndex: number }> = [];
+  const stack: Array<{ id: string; startLine: number; startIndex: number }> =
+    [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -119,7 +125,9 @@ export function parseRegions(code: string, options: RegionOptions = {}): RegionM
 
       if (openRegion.id !== endId) {
         throw new Error(
-          `Mismatched region: opened '${openRegion.id}' at line ${openRegion.startLine}, closed '${endId}' at line ${i + 1}`
+          `Mismatched region: opened '${openRegion.id}' at line ${
+            openRegion.startLine
+          }, closed '${endId}' at line ${i + 1}`
         );
       }
 
@@ -169,9 +177,10 @@ export function extractRegion(
 
   if (!(regionId in regions)) {
     const available = Object.keys(regions);
-    const hint = available.length > 0
-      ? ` Available regions: ${available.join(', ')}`
-      : ' No regions found in code.';
+    const hint =
+      available.length > 0
+        ? ` Available regions: ${available.join(', ')}`
+        : ' No regions found in code.';
     throw new Error(`Region '${regionId}' not found.${hint}`);
   }
 
@@ -190,7 +199,10 @@ export function extractRegion(
  * const cleanCode = stripRegionMarkers(code, { extension: 'ts' });
  * ```
  */
-export function stripRegionMarkers(code: string, options: RegionOptions = {}): string {
+export function stripRegionMarkers(
+  code: string,
+  options: RegionOptions = {}
+): string {
   const config = getLanguageConfig(options.extension ?? 'ts');
   const { start: REGION_START, end: REGION_END } = createRegionPatterns(
     config.lineComment,
@@ -217,7 +229,10 @@ export function stripRegionMarkers(code: string, options: RegionOptions = {}): s
  * // ['setup', 'main', 'cleanup']
  * ```
  */
-export function listRegions(code: string, options: RegionOptions = {}): string[] {
+export function listRegions(
+  code: string,
+  options: RegionOptions = {}
+): string[] {
   const regions = parseRegions(code, options);
   return Object.keys(regions);
 }

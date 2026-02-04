@@ -2,7 +2,12 @@
  * Configuration system for functional-examples
  */
 
-export type { Config, ExtractorConfig, ScanConfig, BaseConfig } from './types.js';
+export type {
+  Config,
+  ExtractorConfig,
+  ScanConfig,
+  BaseConfig,
+} from './types.js';
 export { loadConfig, findConfigFile } from './loader.js';
 export { validateConfig } from './validator.js';
 export type { ValidationError } from './validator.js';

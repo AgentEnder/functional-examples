@@ -1,11 +1,11 @@
 import type { Config } from 'functional-examples';
-import { createFrontmatterExtractor } from '@functional-examples/extractor-frontmatter';
-import { createYamlManifestExtractor } from '@functional-examples/yaml-manifest';
+import { createJavaScriptPlugin } from '@functional-examples/javascript';
+import { createYamlManifestPlugin } from '@functional-examples/yaml-manifest';
 
 const config: Config = {
-  extractors: [
-    createFrontmatterExtractor({ extensions: ['.ts', '.js'] }),
-    createYamlManifestExtractor(),
+  plugins: [
+    createJavaScriptPlugin(),
+    createYamlManifestPlugin(),
   ],
   scan: {
     include: ['**/*'],

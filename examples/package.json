@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "functional-examples": "workspace:*",
-    "@functional-examples/extractor-frontmatter": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
     "@functional-examples/yaml-manifest": "workspace:*",
     "fast-glob": "^3.3.2"
   },

@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://functional-examples.dev/config/schema.json",
+  "title": "Functional Examples Configuration Schema",
+  "description": "Configuration schema for functional-examples library",
+  "type": "object",
+  "definitions": {
+    "ExtractorConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name for the extractor"
+        },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Module to load (package name or local path)"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Options to pass to the extractor"
+        }
+      },
+      "required": ["name", "module"]
+    },
+    "ScanConfig": {
+      "type": "object",
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Glob patterns to include in scan"
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Glob patterns to exclude from scan"
+        },
+        "recursive": {
+          "type": "boolean",
+          "description": "Whether to scan directories recursively"
+        },
+        "fileExtensions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "File extensions to consider for examples"
+        }
+      }
+    },
+    "BaseConfig": {
+      "type": "object",
+      "properties": {
+        "extractors": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Package name or local path"
+              },
+              { "$ref": "#/definitions/ExtractorConfig" }
+            ]
+          },
+          "minItems": 1,
+          "description": "Extractors to use for metadata extraction"
+        },
+        "scan": {
+          "$ref": "#/definitions/ScanConfig",
+          "description": "Default scan options"
+        }
+      },
+      "required": ["extractors"]
+    },
+    "Config": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/definitions/BaseConfig" }],
+      "properties": {
+        "createRegistry": {
+          "type": "function",
+          "description": "Function to create custom extractor registry"
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/Config"
+}
