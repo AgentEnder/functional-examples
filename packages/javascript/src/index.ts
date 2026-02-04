@@ -11,3 +11,4 @@ export const JAVASCRIPT_EXTENSIONS = [
 
 export { createJavaScriptParser } from './parser.js';
 export { createFrontmatterParser } from './frontmatter.js';
+export { createJavaScriptExtractor } from './extractor.js';
