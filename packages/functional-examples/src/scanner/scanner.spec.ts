@@ -538,3 +538,175 @@ describe('scanExamples with plugins', () => {
     ]);
   });
 });
+
+describe('scanExamples with metadata validation', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'scan-validation-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('should run metadata validators after extraction', async () => {
+    const validateFn = vi.fn(() => ({ success: true, errors: [] }));
+
+    const plugin: Plugin = {
+      name: 'validator-plugin',
+      validators: { metadata: validateFn },
+      extractor: {
+        name: 'test',
+        async extract() {
+          return {
+            examples: [
+              {
+                id: 'test',
+                title: 'Test',
+                rootPath: tempDir,
+                files: [],
+                metadata: { custom: 'value' },
+                extractorName: 'test',
+              },
+            ],
+            errors: [],
+            claimedFiles: new Set<string>(),
+          };
+        },
+      },
+    };
+
+    await scanExamples({ root: tempDir, plugins: [plugin] });
+
+    expect(validateFn).toHaveBeenCalledWith({ custom: 'value' });
+  });
+
+  it('should collect metadata validation errors', async () => {
+    const plugin: Plugin = {
+      name: 'strict-validator',
+      validators: {
+        metadata: (m: Record<string, unknown>) =>
+          m.required
+            ? { success: true, errors: [] }
+            : {
+                success: false,
+                errors: [{ path: 'required', message: 'field is required' }],
+              },
+      },
+      extractor: {
+        name: 'test',
+        async extract() {
+          return {
+            examples: [
+              {
+                id: 'missing-required',
+                title: 'Test',
+                rootPath: tempDir,
+                files: [],
+                metadata: {},
+                extractorName: 'test',
+              },
+            ],
+            errors: [],
+            claimedFiles: new Set<string>(),
+          };
+        },
+      },
+    };
+
+    const result = await scanExamples({ root: tempDir, plugins: [plugin] });
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].path).toBe('example:missing-required');
+    expect(result.errors[0].message).toContain('required');
+    expect(result.errors[0].message).toContain('strict-validator');
+  });
+
+  it('should run multiple validators and collect all errors', async () => {
+    const plugin1: Plugin = {
+      name: 'validator-1',
+      validators: {
+        metadata: () => ({
+          success: false,
+          errors: [{ path: 'field1', message: 'error from validator 1' }],
+        }),
+      },
+    };
+
+    const plugin2: Plugin = {
+      name: 'validator-2',
+      validators: {
+        metadata: () => ({
+          success: false,
+          errors: [{ path: 'field2', message: 'error from validator 2' }],
+        }),
+      },
+      extractor: {
+        name: 'test',
+        async extract() {
+          return {
+            examples: [
+              {
+                id: 'test-example',
+                title: 'Test',
+                rootPath: tempDir,
+                files: [],
+                metadata: {},
+                extractorName: 'test',
+              },
+            ],
+            errors: [],
+            claimedFiles: new Set<string>(),
+          };
+        },
+      },
+    };
+
+    const result = await scanExamples({
+      root: tempDir,
+      plugins: [plugin1, plugin2],
+    });
+
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors[0].message).toContain('validator-1');
+    expect(result.errors[1].message).toContain('validator-2');
+  });
+
+  it('should still return examples even with validation errors', async () => {
+    const plugin: Plugin = {
+      name: 'strict-validator',
+      validators: {
+        metadata: () => ({
+          success: false,
+          errors: [{ path: 'field', message: 'always fails' }],
+        }),
+      },
+      extractor: {
+        name: 'test',
+        async extract() {
+          return {
+            examples: [
+              {
+                id: 'example-1',
+                title: 'Example 1',
+                rootPath: tempDir,
+                files: [],
+                metadata: {},
+                extractorName: 'test',
+              },
+            ],
+            errors: [],
+            claimedFiles: new Set<string>(),
+          };
+        },
+      },
+    };
+
+    const result = await scanExamples({ root: tempDir, plugins: [plugin] });
+
+    // Examples are still returned - validation errors are advisory
+    expect(result.examples).toHaveLength(1);
+    expect(result.errors).toHaveLength(1);
+  });
+});

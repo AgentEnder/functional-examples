@@ -14,6 +14,7 @@ import type {
 } from '../types/index.js';
 import { PluginRegistry } from '../plugins/registry.js';
 import { runParsePipeline, createInitialContext } from '../plugins/pipeline.js';
+import { validateExampleMetadata } from '../plugins/validation.js';
 import type {
   FileConflict,
   PathMapping,
@@ -148,6 +149,26 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
           file.hunks = result.hunks;
         }
       }
+    }
+  }
+
+  // Step 8: Run metadata validators
+  const metadataValidators = registry.getMetadataValidators();
+  if (metadataValidators.length > 0) {
+    const validationResult = validateExampleMetadata({
+      validators: metadataValidators,
+      examples: finalExamples.map((e) => ({
+        id: e.id,
+        metadata: e.metadata as Record<string, unknown>,
+      })),
+    });
+
+    // Convert validation errors to ExtractorErrors
+    for (const error of validationResult.errors) {
+      errors.push({
+        path: `example:${error.exampleId}`,
+        message: `[${error.pluginName}] ${error.path}: ${error.message}`,
+      });
     }
   }
 
