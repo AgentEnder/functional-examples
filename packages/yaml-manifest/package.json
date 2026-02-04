@@ -1,0 +1,43 @@
+{
+  "name": "@functional-examples/yaml-manifest",
+  "version": "0.0.1",
+  "description": "YAML manifest plugin for multi-file examples in functional-examples",
+  "author": {
+    "name": "Craigory Coppola",
+    "url": "https://craigory.dev"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.0",
+    "yaml": "catalog:"
+  },
+  "peerDependencies": {
+    "functional-examples": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "functional-examples": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

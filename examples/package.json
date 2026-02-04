@@ -1,0 +1,16 @@
+{
+  "name": "@functional-examples/examples",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/extractor-frontmatter": "workspace:*",
+    "@functional-examples/yaml-manifest": "workspace:*",
+    "fast-glob": "^3.3.2"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:"
+  }
+}

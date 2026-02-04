@@ -1,8 +1,9 @@
 /**
- * Metadata extraction system
+ * Extractor module - types for building extractors
+ *
+ * Note: Actual extractor implementations have moved to separate packages:
+ * - @functional-examples/extractor-frontmatter
+ * - @functional-examples/yaml-manifest
  */
 
-export type { MetadataExtractor, ExtractionContext, ExtractedMetadata } from './types.js';
-export { ExtractorRegistry, createDefaultRegistry } from './registry.js';
-export { YamlFrontmatterExtractor } from './yaml-frontmatter.js';
-export { MetaYmlExtractor } from './meta-yml.js';
+export type { ExtractionContext, ExtractedMetadata } from './types.js';
