@@ -61,7 +61,8 @@ describe('createJavaScriptPlugin', () => {
   describe('combined parser behavior', () => {
     it('should run frontmatter parsing first, then region parsing', () => {
       const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       // Content with frontmatter that contains a region marker inside
       // If region ran first, it would incorrectly process the frontmatter content
@@ -104,7 +105,8 @@ const after = 3;`;
 
     it('should handle content with only frontmatter', () => {
       const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// ---
 // title: Frontmatter Only
@@ -120,7 +122,8 @@ const x = 1;`;
 
     it('should handle content with only regions', () => {
       const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// #region example
 const x = 1;
@@ -136,7 +139,8 @@ const x = 1;
 
     it('should handle content with neither frontmatter nor regions', () => {
       const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `const x = 1;
 const y = 2;`;
@@ -152,7 +156,8 @@ const y = 2;`;
   describe('skipFrontmatter option', () => {
     it('should skip frontmatter parsing when skipFrontmatter is true', () => {
       const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// ---
 // title: Should Not Extract
@@ -171,7 +176,8 @@ const x = 1;`;
 
     it('should still parse regions when skipFrontmatter is true', () => {
       const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// #region example
 const x = 1;
@@ -187,7 +193,8 @@ const x = 1;
   describe('skipRegions option', () => {
     it('should skip region parsing when skipRegions is true', () => {
       const plugin = createJavaScriptPlugin({ skipRegions: true });
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// #region example
 const x = 1;
@@ -205,7 +212,8 @@ const x = 1;
 
     it('should still parse frontmatter when skipRegions is true', () => {
       const plugin = createJavaScriptPlugin({ skipRegions: true });
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// ---
 // title: Should Extract
@@ -225,7 +233,8 @@ const x = 1;`;
         skipFrontmatter: true,
         skipRegions: true,
       });
-      const parser = plugin.fileContentsParser!;
+      const parser = plugin.fileContentsParser;
+      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// ---
 // title: Should Not Extract
@@ -266,5 +275,121 @@ describe('existing exports', () => {
   it('should export createJavaScriptExtractor', () => {
     expect(createJavaScriptExtractor).toBeDefined();
     expect(typeof createJavaScriptExtractor).toBe('function');
+  });
+});
+
+describe('schemas', () => {
+  it('should include options schema', () => {
+    const plugin = createJavaScriptPlugin();
+    const optionsSchema = plugin.schemas?.options;
+    expect(optionsSchema).toBeDefined();
+    if (optionsSchema) {
+      expect(() => JSON.parse(optionsSchema)).not.toThrow();
+    }
+  });
+
+  it('should include metadata schema', () => {
+    const plugin = createJavaScriptPlugin();
+    const metadataSchema = plugin.schemas?.metadata;
+    expect(metadataSchema).toBeDefined();
+    if (metadataSchema) {
+      expect(() => JSON.parse(metadataSchema)).not.toThrow();
+    }
+  });
+
+  it('should have valid options schema structure', () => {
+    const plugin = createJavaScriptPlugin();
+    const optionsSchema = plugin.schemas?.options;
+    expect(optionsSchema).toBeDefined();
+    if (!optionsSchema) return;
+
+    const schema = JSON.parse(optionsSchema);
+    expect(schema.type).toBe('object');
+    expect(schema.properties).toHaveProperty('skipFrontmatter');
+    expect(schema.properties).toHaveProperty('skipRegions');
+  });
+
+  it('should have valid metadata schema structure', () => {
+    const plugin = createJavaScriptPlugin();
+    const metadataSchema = plugin.schemas?.metadata;
+    expect(metadataSchema).toBeDefined();
+    if (!metadataSchema) return;
+
+    const schema = JSON.parse(metadataSchema);
+    expect(schema.type).toBe('object');
+    expect(schema.properties).toHaveProperty('id');
+    expect(schema.properties).toHaveProperty('title');
+    expect(schema.required).toContain('id');
+    expect(schema.required).toContain('title');
+  });
+});
+
+describe('validators', () => {
+  it('should validate metadata with id and title', () => {
+    const plugin = createJavaScriptPlugin();
+    const validate = plugin.validators?.metadata;
+    expect(validate).toBeDefined();
+    if (!validate) return;
+
+    const result = validate({ id: 'test', title: 'Test' });
+    expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('should reject metadata without id', () => {
+    const plugin = createJavaScriptPlugin();
+    const validate = plugin.validators?.metadata;
+    expect(validate).toBeDefined();
+    if (!validate) return;
+
+    const result = validate({ title: 'Test' });
+    expect(result.success).toBe(false);
+    expect(result.errors.some((e) => e.path === 'id')).toBe(true);
+  });
+
+  it('should reject metadata without title', () => {
+    const plugin = createJavaScriptPlugin();
+    const validate = plugin.validators?.metadata;
+    expect(validate).toBeDefined();
+    if (!validate) return;
+
+    const result = validate({ id: 'test' });
+    expect(result.success).toBe(false);
+    expect(result.errors.some((e) => e.path === 'title')).toBe(true);
+  });
+
+  it('should reject empty id', () => {
+    const plugin = createJavaScriptPlugin();
+    const validate = plugin.validators?.metadata;
+    expect(validate).toBeDefined();
+    if (!validate) return;
+
+    const result = validate({ id: '', title: 'Test' });
+    expect(result.success).toBe(false);
+    expect(result.errors.some((e) => e.path === 'id')).toBe(true);
+  });
+
+  it('should reject empty title', () => {
+    const plugin = createJavaScriptPlugin();
+    const validate = plugin.validators?.metadata;
+    expect(validate).toBeDefined();
+    if (!validate) return;
+
+    const result = validate({ id: 'test', title: '' });
+    expect(result.success).toBe(false);
+    expect(result.errors.some((e) => e.path === 'title')).toBe(true);
+  });
+});
+
+describe('_options tracking', () => {
+  it('should track options for validation introspection', () => {
+    const options = { skipFrontmatter: true, skipRegions: false };
+    const plugin = createJavaScriptPlugin(options);
+    expect(plugin._options).toEqual(options);
+  });
+
+  it('should track undefined options', () => {
+    const plugin = createJavaScriptPlugin();
+    expect(plugin._options).toBeUndefined();
   });
 });

@@ -2,6 +2,7 @@ import type {
   Plugin,
   FileContentsParser,
   FileParseContext,
+  ValidationResult,
 } from 'functional-examples';
 import { createJavaScriptParser } from './parser.js';
 import { createFrontmatterParser } from './frontmatter.js';
@@ -30,6 +31,61 @@ export interface JavaScriptPluginOptions {
   skipFrontmatter?: boolean;
   /** Skip region extraction (default: false) */
   skipRegions?: boolean;
+}
+
+/**
+ * JSON Schema for JavaScript plugin options.
+ */
+const OPTIONS_SCHEMA = JSON.stringify({
+  type: 'object',
+  properties: {
+    skipFrontmatter: {
+      type: 'boolean',
+      description: 'Skip frontmatter parsing',
+    },
+    skipRegions: {
+      type: 'boolean',
+      description: 'Skip region parsing',
+    },
+  },
+});
+
+/**
+ * JSON Schema for metadata this plugin expects.
+ */
+const METADATA_SCHEMA = JSON.stringify({
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string',
+      description: 'Unique example identifier',
+    },
+    title: {
+      type: 'string',
+      description: 'Example title',
+    },
+    description: {
+      type: 'string',
+      description: 'Example description',
+    },
+  },
+  required: ['id', 'title'],
+});
+
+/**
+ * Validate metadata extracted by this plugin.
+ */
+function validateMetadata(metadata: Record<string, unknown>): ValidationResult {
+  const errors: Array<{ path: string; message: string }> = [];
+
+  if (typeof metadata.id !== 'string' || !metadata.id) {
+    errors.push({ path: 'id', message: 'must be a non-empty string' });
+  }
+  if (typeof metadata.title !== 'string' || !metadata.title) {
+    errors.push({ path: 'title', message: 'must be a non-empty string' });
+  }
+
+  return { success: errors.length === 0, errors };
 }
 
 /**
@@ -78,5 +134,13 @@ export function createJavaScriptPlugin(
     extensions: [...JAVASCRIPT_EXTENSIONS],
     extractor: createJavaScriptExtractor(),
     fileContentsParser: combinedParser,
+    schemas: {
+      options: OPTIONS_SCHEMA,
+      metadata: METADATA_SCHEMA,
+    },
+    validators: {
+      metadata: validateMetadata,
+    },
+    _options: options,
   };
 }
