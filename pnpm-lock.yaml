@@ -83,6 +83,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
+      functional-examples:
+        specifier: 'workspace:'
+        version: link:packages/functional-examples
       nx:
         specifier: 'catalog:'
         version: 22.4.3

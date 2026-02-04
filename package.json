@@ -16,7 +16,8 @@
     "nx": "catalog:",
     "prettier": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "functional-examples": "workspace:"
   },
   "nx": {
     "includedScripts": []
