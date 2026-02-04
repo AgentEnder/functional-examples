@@ -60,3 +60,6 @@ export { findConfigFile, loadConfig } from './config/loader.js';
 export { mergeConfigs } from './config/merger.js';
 export { resolveConfig } from './config/resolver.js';
 export { validateConfig } from './config/validator.js';
+
+// Plugin system
+export { PluginRegistry, runParsePipeline, createInitialContext } from './plugins/index.js';
