@@ -2,7 +2,7 @@
  * Configuration resolver - converts config references to actual extractors
  */
 
-import type { Extractor } from '../types/index.js';
+import type { Extractor, Plugin } from '../types/index.js';
 import type {
   Config,
   ExtractorConfig,
@@ -10,6 +10,17 @@ import type {
   ScanConfig,
 } from './types.js';
 import type { PathMapping } from '../scanner/types.js';
+import { PluginRegistry } from '../plugins/registry.js';
+import { validatePluginOptions } from '../plugins/validation.js';
+import type { OptionsValidationError } from '../plugins/validation.js';
+
+/**
+ * Error from config validation
+ */
+export interface ConfigValidationError {
+  path: string;
+  message: string;
+}
 
 /**
  * Resolved configuration with actual extractor instances
@@ -17,10 +28,16 @@ import type { PathMapping } from '../scanner/types.js';
 export interface ResolvedConfig<TMetadata = Record<string, unknown>> {
   /** Resolved extractor instances */
   extractors: Extractor<TMetadata>[];
+  /** Resolved plugins */
+  plugins: Plugin<TMetadata>[];
+  /** Plugin registry for accessing validators/schemas */
+  registry: PluginRegistry;
   /** Path mappings for conflict resolution */
   pathMappings: PathMapping[];
   /** Scan configuration with defaults applied */
   scan: Required<ScanConfig>;
+  /** Config validation errors (options validation failures) */
+  validationErrors: ConfigValidationError[];
 }
 
 /**
@@ -62,9 +79,52 @@ const DEFAULT_SCAN: Required<ScanConfig> = {
 export async function resolveConfig<TMetadata = Record<string, unknown>>(
   config: Config<TMetadata>
 ): Promise<ResolvedConfig<TMetadata>> {
+  const validationErrors: ConfigValidationError[] = [];
+
+  // Build plugin registry from config plugins
+  const registry = new PluginRegistry();
+  const plugins = (config.plugins ?? []) as Plugin<TMetadata>[];
+
+  for (const plugin of plugins) {
+    registry.register(plugin);
+  }
+
+  // Run options validation for plugins that have validators and _options
+  const optionsValidators = registry.getOptionsValidators();
+  if (optionsValidators.length > 0) {
+    // Build plugin options map from plugins that expose _options
+    const pluginOptions = new Map<string, unknown>();
+    for (const plugin of plugins) {
+      if ('_options' in plugin && plugin._options !== undefined) {
+        pluginOptions.set(plugin.name, plugin._options);
+      }
+    }
+
+    const optionsResult = validatePluginOptions({
+      validators: optionsValidators,
+      pluginOptions,
+    });
+
+    if (!optionsResult.success) {
+      for (const error of optionsResult.errors) {
+        validationErrors.push({
+          path: `plugins.${error.pluginName}.${error.path}`,
+          message: error.message,
+        });
+      }
+    }
+  }
+
+  // Resolve extractors (legacy path)
   let extractors: Extractor<TMetadata>[];
 
-  if (!config.extractors || config.extractors.length === 0) {
+  // Get extractors from plugins
+  const pluginExtractors = registry.getExtractors() as Extractor<TMetadata>[];
+
+  if (pluginExtractors.length > 0) {
+    // Prefer plugin extractors
+    extractors = pluginExtractors;
+  } else if (!config.extractors || config.extractors.length === 0) {
     // Auto-detect installed extractors
     extractors = await autoDetectExtractors<TMetadata>();
   } else {
@@ -74,11 +134,14 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
 
   return {
     extractors,
+    plugins,
+    registry,
     pathMappings: config.pathMappings ?? [],
     scan: {
       ...DEFAULT_SCAN,
       ...config.scan,
     },
+    validationErrors,
   };
 }
 

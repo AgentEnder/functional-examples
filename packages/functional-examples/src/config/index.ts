@@ -12,7 +12,11 @@ export { loadConfig, findConfigFile } from './loader.js';
 export { validateConfig } from './validator.js';
 export type { ValidationError } from './validator.js';
 export { mergeConfigs } from './merger.js';
-export { resolveConfig, type ResolvedConfig } from './resolver.js';
+export {
+  resolveConfig,
+  type ResolvedConfig,
+  type ConfigValidationError,
+} from './resolver.js';
 export {
   ConfigSchema,
   ExtractorConfigSchema,

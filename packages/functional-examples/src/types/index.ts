@@ -271,4 +271,11 @@ export interface Plugin<TMetadata = Record<string, unknown>> {
    * @see PluginValidators
    */
   readonly validators?: PluginValidators<TMetadata>;
+
+  /**
+   * Options passed to the plugin factory (for validation introspection).
+   * Plugin factories should set this to enable options validation.
+   * @internal
+   */
+  readonly _options?: unknown;
 }
