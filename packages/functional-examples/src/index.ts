@@ -4,23 +4,34 @@
  * @packageDocumentation
  */
 
-// Types
+// Core Types
 export type {
+  BaseMetadata,
   Example,
   ExampleFile,
-  BaseMetadata,
-  ScanOptions,
-  ScanResult,
+  Extractor,
+  ExtractorFactory,
+  ExtractorError,
+  ExtractorOptions,
+  ExtractorResult,
 } from './types/index.js';
 
-// Extractors
-export type { MetadataExtractor, ExtractionContext } from './extractors/index.js';
-export {
-  ExtractorRegistry,
-  createDefaultRegistry,
-  YamlFrontmatterExtractor,
-  MetaYmlExtractor,
-} from './extractors/index.js';
+// Plugin system types
+export type {
+  Plugin,
+  FileContentsParser,
+  FileParseContext,
+  ParsedRegion,
+} from './types/index.js';
+
+// Scanner
+export { scanExamples } from './scanner/index.js';
+export type {
+  FileConflict,
+  PathMapping,
+  ScanOptions,
+  ScanResult,
+} from './scanner/index.js';
 
 // Regions
 export type { RegionInfo, RegionMap, RegionOptions } from './regions/index.js';
@@ -32,8 +43,20 @@ export {
   LANGUAGE_CONFIGS,
 } from './regions/index.js';
 
-// Scanner
-export { ExampleScanner, scanExamples } from './scanner/index.js';
-
 // File helpers
 export { readExampleFile, readExampleFiles } from './files/index.js';
+
+// Configuration
+export type {
+  Config,
+  ExtractorConfig,
+  ExtractorConfigOrFunction,
+  ExtractorReference,
+  ScanConfig,
+} from './config/types.js';
+export type { ResolvedConfig } from './config/resolver.js';
+export type { ValidationError } from './config/validator.js';
+export { findConfigFile, loadConfig } from './config/loader.js';
+export { mergeConfigs } from './config/merger.js';
+export { resolveConfig } from './config/resolver.js';
+export { validateConfig } from './config/validator.js';
