@@ -2,6 +2,34 @@
  * Core type definitions for functional-examples
  */
 
+// ============================================================================
+// Validation Types
+// ============================================================================
+
+/**
+ * A single validation error.
+ */
+export interface ValidationError {
+  /** JSON path to the invalid value (e.g., "metadata.tags[0]") */
+  path: string;
+  /** Human-readable error message */
+  message: string;
+}
+
+/**
+ * Result of a validation operation.
+ */
+export interface ValidationResult {
+  /** Whether validation passed */
+  success: boolean;
+  /** Validation errors (empty if success is true) */
+  errors: ValidationError[];
+}
+
+// ============================================================================
+// Metadata Types
+// ============================================================================
+
 /**
  * Base metadata that all examples should have.
  * Used for type constraints when users want stricter typing.
@@ -169,8 +197,54 @@ export interface FileContentsParser {
   ): FileParseContext | Promise<FileParseContext>;
 }
 
+// ============================================================================
+// Plugin Schema and Validation Types
+// ============================================================================
+
 /**
- * Plugin containing optional extractors and file content parsers.
+ * Schema definitions for a plugin (JSON Schema format).
+ * Used for IDE autocomplete and documentation generation.
+ */
+export interface PluginSchemas {
+  /**
+   * JSON Schema for plugin options (passed to createPlugin()).
+   * Used to generate config file schema for IDE autocomplete.
+   */
+  options?: string;
+
+  /**
+   * JSON Schema for metadata this plugin produces or expects.
+   * Used for metadata.d.ts generation and documentation.
+   */
+  metadata?: string;
+}
+
+/**
+ * Validator functions for a plugin.
+ * Allows plugins to use any validation library (Zod, TypeBox, etc.)
+ */
+export interface PluginValidators<TMetadata = Record<string, unknown>> {
+  /**
+   * Validates plugin options before extraction begins.
+   * Called during config resolution.
+   * @param options - The options passed to the plugin factory
+   */
+  options?: (options: unknown) => ValidationResult;
+
+  /**
+   * Validates extracted metadata after all extractors complete.
+   * Called for each example's metadata.
+   * @param metadata - The metadata from an extracted example
+   */
+  metadata?: (metadata: TMetadata) => ValidationResult;
+}
+
+// ============================================================================
+// Plugin Interface
+// ============================================================================
+
+/**
+ * Plugin containing optional extractors, parsers, schemas, and validators.
  * Auto-registers for declared file extensions.
  */
 export interface Plugin<TMetadata = Record<string, unknown>> {
@@ -185,4 +259,16 @@ export interface Plugin<TMetadata = Record<string, unknown>> {
 
   /** Parser that processes file contents (runs in pipeline order) */
   readonly fileContentsParser?: FileContentsParser;
+
+  /**
+   * JSON Schema definitions for IDE tooling.
+   * @see PluginSchemas
+   */
+  readonly schemas?: PluginSchemas;
+
+  /**
+   * Runtime validators for options and metadata.
+   * @see PluginValidators
+   */
+  readonly validators?: PluginValidators<TMetadata>;
 }
