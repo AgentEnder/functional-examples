@@ -34,8 +34,9 @@ export function createTestCommand(
     description: 'Run tests for functional examples',
     builder: (cmd) =>
       cmd
-        .positional('path', {
+        .option('path', {
           type: 'string',
+          alias: ['p'],
           description: 'Path to examples directory',
           default: '.',
         })

@@ -1,3 +1,4 @@
+import { createTestPlugin } from '@functional-examples/test';
 import { createYamlManifestPlugin } from '@functional-examples/yaml-manifest';
 import type { Config } from 'functional-examples';
 
@@ -9,7 +10,7 @@ import type { Config } from 'functional-examples';
  * has its own meta.yml describing what it demonstrates.
  */
 const config: Config = {
-  plugins: [createYamlManifestPlugin()],
+  plugins: [createYamlManifestPlugin(), createTestPlugin()],
   scan: {
     // Match only the top-level project directories (not nested examples)
     include: [
@@ -18,6 +19,7 @@ const config: Config = {
       '**/metadata-validation',
       '**/mixed-plugins',
       '**/custom-extractor',
+      '**/test-plugin-example',
     ],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },

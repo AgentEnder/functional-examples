@@ -17,8 +17,9 @@ export function createListCommand(config: ResolvedConfig) {
     description: 'List available tests',
     builder: (cmd) =>
       cmd
-        .positional('path', {
+        .option('path', {
           type: 'string',
+          alias: ['p'],
           description: 'Path to examples directory',
           default: '.',
         })
