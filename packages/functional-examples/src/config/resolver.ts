@@ -2,17 +2,16 @@
  * Configuration resolver - converts config references to actual extractors
  */
 
+import { PluginRegistry } from '../plugins/registry.js';
+import { validatePluginOptions } from '../plugins/validation.js';
 import type {
   ConfigValidationError,
   Extractor,
-  PathMapping,
   Plugin,
   ResolvedConfig,
   ScanConfig,
 } from '../types/index.js';
-import type { Config, ExtractorConfig, ExtractorConfigOrFunction } from './types.js';
-import { PluginRegistry } from '../plugins/registry.js';
-import { validatePluginOptions } from '../plugins/validation.js';
+import type { ConfigWithRoot } from './types.js';
 
 // Re-export for backward compatibility
 export type { ConfigValidationError, ResolvedConfig } from '../types/index.js';
@@ -54,7 +53,7 @@ const DEFAULT_SCAN: Required<ScanConfig> = {
  * ```
  */
 export async function resolveConfig<TMetadata = Record<string, unknown>>(
-  config: Config<TMetadata>
+  config: ConfigWithRoot<TMetadata>
 ): Promise<ResolvedConfig<TMetadata>> {
   const validationErrors: ConfigValidationError[] = [];
 
@@ -102,15 +101,13 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
   if (pluginExtractors.length > 0) {
     // Prefer plugin extractors
     extractors = pluginExtractors;
-  } else if (!config.extractors || config.extractors.length === 0) {
+  } else {
     // Auto-detect installed extractors
     extractors = await autoDetectExtractors<TMetadata>();
-  } else {
-    // Resolve configured extractors
-    extractors = await resolveExtractors<TMetadata>(config.extractors);
   }
 
   return {
+    ...config,
     extractors,
     plugins,
     registry,
@@ -143,44 +140,6 @@ async function autoDetectExtractors<
   }
 
   return extractors;
-}
-
-/**
- * Resolve an array of extractor references to actual instances
- */
-async function resolveExtractors<TMetadata = Record<string, unknown>>(
-  refs: ExtractorConfigOrFunction<TMetadata>[]
-): Promise<Extractor<TMetadata>[]> {
-  const extractors: Extractor<TMetadata>[] = [];
-
-  for (const ref of refs) {
-    const extractor = await resolveExtractor<TMetadata>(ref);
-    if (extractor) {
-      extractors.push(extractor);
-    }
-  }
-
-  return extractors;
-}
-
-/**
- * Resolve a single extractor reference
- */
-async function resolveExtractor<TMetadata = Record<string, unknown>>(
-  ref: ExtractorConfigOrFunction<TMetadata>
-): Promise<Extractor<TMetadata> | null> {
-  // Already an extractor instance
-  if (isExtractorInstance<TMetadata>(ref)) {
-    return ref;
-  }
-
-  // String reference (package name)
-  if (typeof ref === 'string') {
-    return loadExtractorFromPackage<TMetadata>(ref);
-  }
-
-  // Full config object
-  return loadExtractorFromConfig<TMetadata>(ref);
 }
 
 /**
@@ -220,11 +179,6 @@ async function loadExtractorFromPackage<TMetadata = Record<string, unknown>>(
 /**
  * Load extractor from config object
  */
-async function loadExtractorFromConfig<TMetadata = Record<string, unknown>>(
-  config: ExtractorConfig
-): Promise<Extractor<TMetadata> | null> {
-  return loadExtractorFromPackage<TMetadata>(config.module, config.options);
-}
 
 /**
  * Check if value is an extractor instance

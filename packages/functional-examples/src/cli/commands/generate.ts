@@ -2,45 +2,43 @@
  * Generate command - create JSON Schema and TypeScript types
  */
 
-import path from 'node:path';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { cli } from 'cli-forge';
-import { findConfigFile, loadConfig } from '../../config/loader.js';
-import { resolveConfig } from '../../config/resolver.js';
-import { mergeConfigSchema, mergeMetadataSchemas } from '../../schema/merger.js';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { ResolvedConfig } from '../../config/resolver.js';
+import {
+  mergeConfigSchema,
+  mergeMetadataSchemas,
+} from '../../schema/merger.js';
 import { generateMetadataTypes } from '../../schema/typegen.js';
 
 const DEFAULT_OUTPUT_DIR = '.functional-examples';
 
 export const generateCommand = cli('generate', {
-  description: 'Generate JSON Schema and TypeScript types from config and plugins',
+  description:
+    'Generate JSON Schema and TypeScript types from config and plugins',
   builder: (cmd) =>
-    cmd
-      .option('config', {
-        type: 'string',
-        alias: ['c'],
-        description: 'Path to config file',
-      })
-      .option('output', {
-        type: 'string',
-        alias: ['o'],
-        description: 'Output directory',
-        default: DEFAULT_OUTPUT_DIR,
-      }),
+    cmd.option('output', {
+      type: 'string',
+      alias: ['o'],
+      description: 'Output directory',
+      default: DEFAULT_OUTPUT_DIR,
+    }),
   handler: async (options) => {
     try {
       // Load and resolve config
-      const configPath = options.config ?? (await findConfigFile(process.cwd()));
-      const config = configPath ? await loadConfig(configPath) : {};
-      const resolved = await resolveConfig(config);
+      const opts = options as typeof options & {
+        resolvedConfig: ResolvedConfig;
+      };
+      const resolved = opts.resolvedConfig;
 
       // Get schemas from all plugins
       const pluginSchemas = resolved.registry.getSchemas();
 
       // Determine output directory
       const outputDir = path.resolve(
-        process.cwd(),
-        options.output ?? (config as { generate?: { outputDir?: string } }).generate?.outputDir ?? DEFAULT_OUTPUT_DIR
+        resolved.root,
+        options.output ?? resolved.generate?.outputDir ?? DEFAULT_OUTPUT_DIR
       );
       await mkdir(outputDir, { recursive: true });
 
@@ -52,7 +50,7 @@ export const generateCommand = cli('generate', {
 
       // Merge metadata schemas (config takes priority over plugins)
       const mergedMetadataSchema = mergeMetadataSchemas({
-        configSchema: (config as { metadata?: Record<string, unknown> }).metadata,
+        configSchema: resolved.metadata,
         pluginSchemas,
       });
 

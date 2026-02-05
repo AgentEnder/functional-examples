@@ -19,6 +19,27 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
     return (schema.enum as unknown[]).map((v) => JSON.stringify(v)).join(' | ');
   }
 
+  if (schema.anyOf) {
+    const variants = (schema.anyOf as Record<string, unknown>[]).map((s) =>
+      schemaTypeToTS(s)
+    );
+    return variants.join(' | ');
+  }
+
+  if (schema.oneOf) {
+    const variants = (schema.oneOf as Record<string, unknown>[]).map((s) =>
+      schemaTypeToTS(s)
+    );
+    return variants.join(' | ');
+  }
+
+  if (schema.allOf) {
+    const variants = (schema.allOf as Record<string, unknown>[]).map((s) =>
+      schemaTypeToTS(s)
+    );
+    return variants.join(' & ');
+  }
+
   switch (type) {
     case 'string':
       return 'string';
@@ -37,6 +58,13 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
       const properties = schema.properties as
         | Record<string, Record<string, unknown>>
         | undefined;
+      const additionalProps = schema.additionalProperties;
+
+      // Dictionary type: { additionalProperties: { type: "string" } }
+      if (!properties && additionalProps && typeof additionalProps === 'object') {
+        return `Record<string, ${schemaTypeToTS(additionalProps as Record<string, unknown>)}>`;
+      }
+
       if (!properties) return 'Record<string, unknown>';
 
       const required = new Set((schema.required as string[]) ?? []);

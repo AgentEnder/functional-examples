@@ -1,47 +1,53 @@
 #!/usr/bin/env node
 import { cli } from 'cli-forge';
+import { findConfigFile, loadConfig, resolveConfig } from '../config/index.js';
+import { generateCommand } from './commands/generate.js';
+import { initCommand } from './commands/init.js';
 import { scanCommand } from './commands/scan.js';
 import { validateCommand } from './commands/validate.js';
-import { initCommand } from './commands/init.js';
-import { generateCommand } from './commands/generate.js';
 import { loadPluginCommands } from './plugin-commands.js';
-import { loadConfig, findConfigFile, resolveConfig } from '../config/index.js';
-
-async function main() {
-  const app = cli('functional-examples', {
-    description: 'Extract and manage code examples',
-  })
-    .version('0.0.1')
-    .commands(scanCommand, validateCommand, initCommand, generateCommand);
-
-  // Try to load config and register plugin commands
-  try {
-    const configPath = await findConfigFile(process.cwd());
-    if (configPath) {
-      const config = await loadConfig(configPath);
-      const resolved = await resolveConfig(config);
-
-      if (resolved.plugins.length > 0) {
-        const pluginCLIs = await loadPluginCommands(resolved.plugins, resolved);
-        if (pluginCLIs.length > 0) {
-          app.commands(...pluginCLIs);
-        }
-      }
-    }
-  } catch {
-    // Config loading failed - continue without plugin commands
-    // Individual commands will report config errors as needed
-  }
-
-  app.forge();
-}
 
 const app = cli('functional-examples', {
   description: 'Extract and manage code examples',
+  builder: (args) =>
+    args
+      .option('config', {
+        alias: ['c'],
+        type: 'string',
+      })
+      .middleware(async (args) => {
+        const configPath = args.config ?? (await findConfigFile(process.cwd()));
+        if (!configPath) {
+          throw new Error('Unable to locate config file');
+        }
+        args.config = configPath;
+        const rawConfig = await loadConfig(configPath);
+        const config = await resolveConfig(rawConfig);
+        return {
+          ...args,
+          resolvedConfig: config,
+        };
+      }),
+  handler: async (args) => {
+    const plugins = args.resolvedConfig.plugins;
+    const pluginCLIs = await loadPluginCommands(plugins, args.resolvedConfig);
+
+    if (pluginCLIs.length) {
+      const extendedCLI = cli('functional-examples').commands(pluginCLIs);
+      return extendedCLI.forge();
+    }
+
+    throw new Error(`Unknown command ${args.unmatched[0]}`);
+  },
 })
   .version('0.0.1')
   .commands(scanCommand, validateCommand, initCommand, generateCommand);
 
+async function main() {
+  app.forge();
+}
+
 export default app;
 
+// Run CLI when this is the entry point
 main();

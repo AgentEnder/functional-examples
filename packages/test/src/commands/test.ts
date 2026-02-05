@@ -1,10 +1,10 @@
 import { cli } from 'cli-forge';
-import type { ResolvedConfig, Example } from 'functional-examples';
+import type { Example, ResolvedConfig } from 'functional-examples';
 import { scanExamples } from 'functional-examples';
-import type { ResolvedTestPluginOptions } from '../types.js';
+import { normalizeTests, runTest } from '../runner.js';
 import type { TestCase } from '../schema.js';
-import { testMetadataSchema } from '../schema.js';
-import { runTest, normalizeTests } from '../runner.js';
+import { TestMetadata, testMetadataSchema } from '../schema.js';
+import type { ResolvedTestPluginOptions } from '../types.js';
 
 function isCI(): boolean {
   return !!(
@@ -79,13 +79,20 @@ export function createTestCommand(
       const reporter = reporterFactory();
 
       // Scan for examples
-      const { examples } = await scanExamples({
+      const { examples, errors } = await scanExamples<TestMetadata>({
         root: args.path ?? '.',
         plugins: config.plugins,
         pathMappings: config.pathMappings,
         include: config.scan.include,
         exclude: config.scan.exclude,
       });
+
+      if (errors.length) {
+        for (const error of errors) {
+          console.error(`Error in ${error.path}: ${error.message}`);
+        }
+        process.exit(1);
+      }
 
       // Filter to examples with tests
       let testableExamples = examples.filter(hasTests);
