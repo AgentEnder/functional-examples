@@ -1,0 +1,20 @@
+id: test-plugin-example
+title: Test Plugin Example
+description: Demonstrates the test plugin
+
+test:
+  - name: runs hello script
+    options:
+      command: node hello.js
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: "Hello from example"
+
+  - name: fails with bad args
+    options:
+      command: node hello.js --fail
+    assertions:
+      exitCode: 1
+      stderr:
+        contains: "Error"
