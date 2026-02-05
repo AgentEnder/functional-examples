@@ -1,0 +1,36 @@
+{
+  "name": "@functional-examples/test",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Test runner plugin for functional-examples",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "functional-examples": "workspace:*"
+  },
+  "dependencies": {
+    "zod": "^3.24.0",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "devDependencies": {
+    "cli-forge": "^1.1.0",
+    "functional-examples": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
