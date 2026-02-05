@@ -24,12 +24,14 @@
     "functional-examples": "workspace:*"
   },
   "devDependencies": {
+    "@types/picomatch": "^4.0.2",
     "functional-examples": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
     "fast-glob": "^3.3.0",
+    "picomatch": "^4.0.3",
     "yaml": "catalog:"
   }
 }

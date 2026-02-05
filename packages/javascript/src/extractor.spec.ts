@@ -1,8 +1,43 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createJavaScriptExtractor } from './extractor.js';
+import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import type { ExtractorOptions } from 'functional-examples';
+
+/**
+ * Helper to create a mock Dirent object for testing
+ */
+function createMockDirent(
+  name: string,
+  parentPath: string,
+  isDirectory: boolean
+): Dirent {
+  return {
+    name,
+    parentPath,
+    isFile: () => !isDirectory,
+    isDirectory: () => isDirectory,
+    isBlockDevice: () => false,
+    isCharacterDevice: () => false,
+    isSymbolicLink: () => false,
+    isFIFO: () => false,
+    isSocket: () => false,
+    path: parentPath,
+  } as Dirent;
+}
+
+/**
+ * Helper to get directory entries as Dirent objects
+ */
+async function getDirents(dirPath: string): Promise<Dirent[]> {
+  try {
+    return await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+}
 
 describe('createJavaScriptExtractor', () => {
   let tempDir: string;
@@ -25,6 +60,13 @@ describe('createJavaScriptExtractor', () => {
     return fullPath;
   }
 
+  function makeOptions(overrides?: Partial<ExtractorOptions>): ExtractorOptions {
+    return {
+      rootPath: tempDir,
+      ...overrides,
+    };
+  }
+
   describe('finding files with valid frontmatter', () => {
     it('should find TypeScript files with line comment frontmatter', async () => {
       await writeFile(
@@ -39,7 +81,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('my-example');
@@ -62,7 +105,8 @@ function hello() {}
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('js-example');
@@ -93,7 +137,8 @@ const b = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(2);
       const ids = result.examples.map((e) => e.id);
@@ -144,7 +189,8 @@ const b = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(5);
     });
@@ -160,7 +206,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
       expect(result.claimedFiles.size).toBe(0);
@@ -176,7 +223,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -194,7 +242,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -210,7 +259,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -227,7 +277,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -245,7 +296,8 @@ const x = 1;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -263,7 +315,8 @@ const y = 2;
       await writeFile('raw.ts', content);
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].files).toHaveLength(1);
@@ -281,7 +334,9 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      // Pass subdir as a directory candidate
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       const file = result.examples[0].files[0];
@@ -300,7 +355,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples[0].rootPath).toBe(filePath);
     });
@@ -326,7 +382,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('valid-test');
@@ -351,7 +408,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('valid-test');
@@ -368,7 +426,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -384,7 +443,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(0);
     });
@@ -408,9 +468,11 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir, {
-        exclude: ['**/ignored/**'],
-      });
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(
+        candidates,
+        makeOptions({ exclude: ['**/ignored/**'] })
+      );
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('valid');
@@ -429,7 +491,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.claimedFiles.has(filePath)).toBe(true);
     });
@@ -453,7 +516,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.claimedFiles.size).toBe(2);
       expect(result.claimedFiles.has(path1)).toBe(true);
@@ -472,7 +536,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.claimedFiles.size).toBe(1);
       expect(result.claimedFiles.has(claimedPath)).toBe(true);
@@ -496,16 +561,31 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples[0].extractorName).toBe('javascript-extractor');
     });
   });
 
   describe('error handling', () => {
-    it('should return empty results for non-existent directory', async () => {
+    it('should return empty results for empty candidates', async () => {
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract('/non/existent/path');
+      const result = await extractor.extract([], makeOptions());
+
+      expect(result.examples).toHaveLength(0);
+      expect(result.claimedFiles.size).toBe(0);
+    });
+
+    it('should handle non-existent directory candidates gracefully', async () => {
+      const extractor = createJavaScriptExtractor();
+      const candidates = [
+        createMockDirent('nonexistent', '/fake/path', true),
+      ];
+      const result = await extractor.extract(
+        candidates,
+        makeOptions({ rootPath: '/fake/path' })
+      );
 
       expect(result.examples).toHaveLength(0);
       expect(result.claimedFiles.size).toBe(0);
@@ -530,7 +610,8 @@ const y = 2;
       );
 
       const extractor = createJavaScriptExtractor();
-      const result = await extractor.extract(tempDir);
+      const candidates = await getDirents(tempDir);
+      const result = await extractor.extract(candidates, makeOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].description).toBe('Has description');

@@ -1,13 +1,14 @@
 import fg from 'fast-glob';
+import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import picomatch from 'picomatch';
 import { parse as parseYaml } from 'yaml';
 import type {
   Extractor,
   ExtractorOptions,
   ExtractorResult,
   Example,
-  ExampleFile,
 } from 'functional-examples';
 
 const EXTRACTOR_NAME = 'javascript-extractor';
@@ -20,6 +21,14 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '**/build/**',
 ];
 
+/** Default directories to skip when processing directory candidates */
+const DEFAULT_EXCLUDED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+]);
+
 /** File extensions to scan for JavaScript/TypeScript examples */
 const FILE_PATTERNS = [
   '**/*.ts',
@@ -30,6 +39,18 @@ const FILE_PATTERNS = [
   '**/*.cjs',
   '**/*.mts',
   '**/*.cts',
+];
+
+/** File extensions this extractor handles */
+const FILE_EXTENSIONS = [
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.mts',
+  '.cts',
 ];
 
 /** Pattern matching line comment frontmatter start: // --- */
@@ -165,96 +186,136 @@ function hasValidMetadata(
  * Create a JavaScript/TypeScript single-file extractor.
  *
  * This extractor:
- * - Scans for JS/TS files using fast-glob
- * - Extracts frontmatter from each file
+ * - Receives pre-filtered candidates (files and directories)
+ * - Extracts frontmatter from JS/TS files
  * - Only includes files with valid frontmatter (id + title required)
  * - Loads raw content into ExampleFile
  * - Respects exclude patterns (default: node_modules, .git, dist, build)
  * - Tracks claimed files for conflict detection
  */
 export function createJavaScriptExtractor(): Extractor {
+  async function tryExtractFromFile(
+    absolutePath: string,
+    rootPath: string
+  ): Promise<Example | null> {
+    let content: string;
+    try {
+      content = await fs.readFile(absolutePath, 'utf-8');
+    } catch {
+      return null;
+    }
+
+    const metadata = extractFrontmatter(content);
+    if (!metadata || !hasValidMetadata(metadata)) {
+      return null;
+    }
+
+    const { id, title, description, ...restMetadata } = metadata;
+    const relativePath = path.relative(rootPath, absolutePath);
+
+    return {
+      id,
+      title,
+      description: typeof description === 'string' ? description : undefined,
+      rootPath: absolutePath,
+      files: [{ absolutePath, relativePath, raw: content }],
+      metadata: restMetadata,
+      extractorName: EXTRACTOR_NAME,
+    };
+  }
+
+  async function extractFromDirectory(
+    dirPath: string,
+    options: ExtractorOptions
+  ): Promise<Array<{ example: Example; filePath: string }>> {
+    const results: Array<{ example: Example; filePath: string }> = [];
+
+    const excludePatterns = [
+      ...DEFAULT_EXCLUDE_PATTERNS,
+      ...(options.exclude ?? []),
+    ];
+
+    // Use fast-glob to find JS/TS files in this directory
+    let files: string[];
+    try {
+      files = await fg(FILE_PATTERNS, {
+        cwd: dirPath,
+        absolute: true,
+        ignore: excludePatterns,
+      });
+    } catch {
+      return [];
+    }
+
+    for (const filePath of files) {
+      if (options.signal?.aborted) break;
+
+      const example = await tryExtractFromFile(filePath, options.rootPath);
+      if (example) {
+        results.push({ example, filePath });
+      }
+    }
+
+    return results;
+  }
+
   return {
     name: EXTRACTOR_NAME,
 
     async extract(
-      rootPath: string,
-      options?: ExtractorOptions
+      candidates: Dirent[],
+      options: ExtractorOptions
     ): Promise<ExtractorResult> {
       const examples: Example[] = [];
       const claimedFiles = new Set<string>();
 
-      const excludePatterns = [
-        ...DEFAULT_EXCLUDE_PATTERNS,
-        ...(options?.exclude ?? []),
-      ];
+      for (const candidate of candidates) {
+        if (options.signal?.aborted) break;
 
-      let files: string[];
-      try {
-        files = await fg(FILE_PATTERNS, {
-          cwd: rootPath,
-          absolute: true,
-          ignore: excludePatterns,
-        });
-      } catch {
-        // Directory doesn't exist or other error
-        return {
-          examples: [],
-          errors: [],
-          claimedFiles: new Set(),
-        };
-      }
+        const fullPath = path.join(candidate.parentPath, candidate.name);
 
-      for (const absolutePath of files) {
-        // Check for abort signal
-        if (options?.signal?.aborted) {
-          break;
-        }
+        // Handle file candidates directly
+        if (candidate.isFile()) {
+          const ext = path.extname(candidate.name);
+          if (!FILE_EXTENSIONS.includes(ext)) continue;
 
-        let content: string;
-        try {
-          content = await fs.readFile(absolutePath, 'utf-8');
-        } catch {
-          // Skip files that can't be read
+          const example = await tryExtractFromFile(fullPath, options.rootPath);
+          if (example) {
+            examples.push(example);
+            claimedFiles.add(fullPath);
+          }
           continue;
         }
 
-        const metadata = extractFrontmatter(content);
+        // Handle directory candidates - scan for JS/TS files inside
+        if (candidate.isDirectory()) {
+          // Skip excluded directories (default ones)
+          if (DEFAULT_EXCLUDED_DIRS.has(candidate.name)) continue;
 
-        if (!metadata || !hasValidMetadata(metadata)) {
-          continue;
+          // Skip directories matching custom exclude patterns
+          const excludePatterns = options.exclude ?? [];
+          const relativeDirPath = path.relative(options.rootPath, fullPath);
+          const pathsToCheck = [
+            candidate.name,
+            relativeDirPath,
+            `${relativeDirPath}/`,
+            `${candidate.name}/`,
+          ];
+          const isExcluded = excludePatterns.some((pattern) => {
+            const matcher = picomatch(pattern);
+            return pathsToCheck.some((p) => matcher(p));
+          });
+          if (isExcluded) continue;
+
+          const dirExamples = await extractFromDirectory(fullPath, options);
+          for (const { example, filePath } of dirExamples) {
+            examples.push(example);
+            claimedFiles.add(filePath);
+          }
         }
-
-        // Extract id, title, description from metadata
-        const { id, title, description, ...restMetadata } = metadata;
-
-        const relativePath = path.relative(rootPath, absolutePath);
-
-        const exampleFile: ExampleFile = {
-          absolutePath,
-          relativePath,
-          raw: content,
-        };
-
-        const example: Example = {
-          id,
-          title,
-          description:
-            typeof description === 'string' ? description : undefined,
-          rootPath: absolutePath,
-          files: [exampleFile],
-          metadata: restMetadata,
-          extractorName: EXTRACTOR_NAME,
-        };
-
-        examples.push(example);
-        claimedFiles.add(absolutePath);
       }
 
-      return {
-        examples,
-        errors: [],
-        claimedFiles,
-      };
+      return { examples, errors: [], claimedFiles };
     },
   };
 }
