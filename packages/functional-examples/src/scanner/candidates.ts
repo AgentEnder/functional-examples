@@ -4,7 +4,7 @@
  */
 
 import type { Dirent, Stats } from 'node:fs';
-import { lstat, readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { glob } from 'tinyglobby';
 
@@ -26,6 +26,7 @@ function createDirentFromStats(
 ): Dirent {
   return {
     name,
+    path: path.join(parentPath, name),
     parentPath,
     isFile: () => stats.isFile(),
     isDirectory: () => stats.isDirectory(),
@@ -68,10 +69,11 @@ export async function resolveCandidates(
       const fullPath = path.join(root, match);
       const name = path.basename(match);
       const parentPath = path.dirname(fullPath);
+      const relativeToScanRoot = path.relative(root, parentPath);
 
       try {
-        const stats = await lstat(fullPath);
-        candidates.push(createDirentFromStats(name, parentPath, stats));
+        const stats = await stat(fullPath);
+        candidates.push(createDirentFromStats(name, relativeToScanRoot, stats));
       } catch {
         // File doesn't exist or can't be stat'd, skip
       }

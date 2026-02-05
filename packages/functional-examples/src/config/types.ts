@@ -2,8 +2,16 @@
  * Type definitions for the configuration system
  */
 
-import type { PathMapping } from '../scanner/types.js';
-import type { BaseMetadata, Extractor, Plugin } from '../types/index.js';
+import type {
+  BaseMetadata,
+  Extractor,
+  PathMapping,
+  Plugin,
+  ScanConfig,
+} from '../types/index.js';
+
+// Re-export for backward compatibility
+export type { PathMapping, ScanConfig } from '../types/index.js';
 
 /**
  * Reference to an extractor package (for config files)
@@ -21,16 +29,6 @@ export interface ExtractorConfig {
  * Extractor can be specified as string (package name) or full config
  */
 export type ExtractorReference = string | ExtractorConfig;
-
-/**
- * Scan configuration
- */
-export interface ScanConfig {
-  /** Include patterns (applied after extraction) */
-  include?: string[];
-  /** Exclude patterns (applied after extraction) */
-  exclude?: string[];
-}
 
 /**
  * An extractor can be a reference (to load) or an instance
@@ -105,8 +103,6 @@ export interface BaseConfig<TMetadata = Record<string, unknown>> {
 export type Config<TMetadata = Record<string, unknown>> =
   BaseConfig<TMetadata>;
 
-// Legacy exports for backward compatibility
-export type { PathMapping } from '../scanner/types.js';
 
 /**
  * @deprecated Use Extractor from ../types/index.js

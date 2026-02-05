@@ -2,6 +2,7 @@
  * Core type definitions for functional-examples
  */
 
+import type { CLI } from 'cli-forge';
 import type { Dirent } from 'node:fs';
 
 // ============================================================================
@@ -243,6 +244,115 @@ export interface PluginValidators<TMetadata = Record<string, unknown>> {
 }
 
 // ============================================================================
+// Configuration Types (defined here to avoid circular dependencies)
+// ============================================================================
+
+/**
+ * Scan configuration options.
+ */
+export interface ScanConfig {
+  /** Include patterns (applied after extraction) */
+  include?: string[];
+  /** Exclude patterns (applied after extraction) */
+  exclude?: string[];
+}
+
+/**
+ * Path-to-extractor mapping for conflict resolution.
+ */
+export interface PathMapping {
+  /** Glob pattern for paths */
+  pattern: string;
+  /** Extractor name that wins for matching paths */
+  extractor: string;
+}
+
+/**
+ * Error from config validation.
+ */
+export interface ConfigValidationError {
+  /** JSON path to the invalid value */
+  path: string;
+  /** Human-readable error message */
+  message: string;
+  /** Location code (e.g., Zod issue code) */
+  location?: string;
+  /** Suggested fix for the error */
+  fix?: string;
+}
+
+/**
+ * Wrapper for a plugin's validator function with plugin name context.
+ */
+export interface PluginValidatorEntry<T = unknown> {
+  pluginName: string;
+  validate: (value: T) => ValidationResult;
+}
+
+/**
+ * Schema entry from a plugin with plugin name context.
+ */
+export interface PluginSchemaEntry {
+  pluginName: string;
+  options?: string;
+  metadata?: string;
+}
+
+/**
+ * Plugin registry interface for accessing validators/schemas.
+ * Full implementation is in plugins/registry.ts.
+ */
+export interface PluginRegistryInterface {
+  /** Register a plugin */
+  register(plugin: Plugin): void;
+  /** Get all registered plugins */
+  getPlugins(): readonly Plugin[];
+  /** Get plugins for a file extension */
+  getPluginsForExtension(extension: string): Plugin[];
+  /** Get all extractors from plugins */
+  getExtractors(): Extractor[];
+  /** Get parsers for a file extension */
+  getParsersForExtension(extension: string): FileContentsParser[];
+  /** Get all options validators */
+  getOptionsValidators(): PluginValidatorEntry<unknown>[];
+  /** Get all metadata validators */
+  getMetadataValidators(): PluginValidatorEntry[];
+  /** Get all schemas from plugins */
+  getSchemas(): PluginSchemaEntry[];
+}
+
+/**
+ * Resolved configuration with actual extractor instances.
+ * This is the runtime-ready configuration after all plugins are loaded.
+ */
+export interface ResolvedConfig<TMetadata = Record<string, unknown>> {
+  /** Resolved extractor instances */
+  extractors: Extractor<TMetadata>[];
+  /** Resolved plugins */
+  plugins: Plugin<TMetadata>[];
+  /** Plugin registry for accessing validators/schemas */
+  registry: PluginRegistryInterface;
+  /** Path mappings for conflict resolution */
+  pathMappings: PathMapping[];
+  /** Scan configuration with defaults applied */
+  scan: Required<ScanConfig>;
+  /** Config validation errors (options validation failures) */
+  validationErrors: ConfigValidationError[];
+}
+
+// ============================================================================
+// Plugin Commands Types
+// ============================================================================
+
+/**
+ * Plugin commands can be a static array or a function that receives
+ * the resolved config and returns commands (sync or async).
+ */
+export type PluginCommands<TMetadata = Record<string, unknown>> =
+  | CLI[]
+  | ((config: ResolvedConfig<TMetadata>) => CLI[] | Promise<CLI[]>);
+
+// ============================================================================
 // Plugin Interface
 // ============================================================================
 
@@ -274,6 +384,13 @@ export interface Plugin<TMetadata = Record<string, unknown>> {
    * @see PluginValidators
    */
   readonly validators?: PluginValidators<TMetadata>;
+
+  /**
+   * CLI commands provided by this plugin.
+   * Can be static commands or a function that receives the resolved config.
+   * @see PluginCommands
+   */
+  readonly commands?: PluginCommands<TMetadata>;
 
   /**
    * Options passed to the plugin factory (for validation introspection).

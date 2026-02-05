@@ -19,6 +19,7 @@ export type {
 // Plugin system types
 export type {
   Plugin,
+  PluginCommands,
   FileContentsParser,
   FileParseContext,
   ParsedRegion,
@@ -62,8 +63,10 @@ export type {
   ExtractorReference,
   ScanConfig,
 } from './config/types.js';
-export type { ResolvedConfig } from './config/resolver.js';
-export type { ConfigValidationError } from './config/validator.js';
+export type {
+  ConfigValidationError,
+  ResolvedConfig,
+} from './types/index.js';
 export { findConfigFile, loadConfig } from './config/loader.js';
 export { mergeConfigs } from './config/merger.js';
 export { resolveConfig } from './config/resolver.js';

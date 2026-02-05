@@ -1,0 +1,9 @@
+id: custom-extractor
+title: Custom Extractor
+description: Demonstrates creating a custom Extractor implementation to support alternative metadata formats like TOML.
+entryPoint: scan.ts
+tags:
+  - custom
+  - extractor
+  - toml
+  - advanced

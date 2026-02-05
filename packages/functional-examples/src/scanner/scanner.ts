@@ -2,10 +2,14 @@
  * Core scanner that orchestrates multiple extractors
  */
 
+import { minimatch } from 'minimatch';
+import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import type { Dirent } from 'node:fs';
-import { minimatch } from 'minimatch';
+import { createInitialContext, runParsePipeline } from '../plugins/pipeline.js';
+import { PluginRegistry } from '../plugins/registry.js';
+import { validateExampleMetadata } from '../plugins/validation.js';
+import { createSchemaValidator } from '../schema/validator.js';
 import type {
   Example,
   Extractor,
@@ -13,17 +17,13 @@ import type {
   ExtractorResult,
   Plugin,
 } from '../types/index.js';
-import { PluginRegistry } from '../plugins/registry.js';
-import { runParsePipeline, createInitialContext } from '../plugins/pipeline.js';
-import { validateExampleMetadata } from '../plugins/validation.js';
-import { createSchemaValidator } from '../schema/validator.js';
+import { getDefaultIncludePattern, resolveCandidates } from './candidates.js';
 import type {
   FileConflict,
   PathMapping,
   ScanOptions,
   ScanResult,
 } from './types.js';
-import { resolveCandidates, getDefaultIncludePattern } from './candidates.js';
 
 /**
  * Scan a directory for examples using the provided extractors.
@@ -199,7 +199,9 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
         for (const error of result.errors) {
           errors.push({
             path: `example:${example.id}`,
-            message: `[config.metadata] ${error.path || '(root)'}: ${error.message}`,
+            message: `[config.metadata] ${error.path || '(root)'}: ${
+              error.message
+            }`,
           });
         }
       }

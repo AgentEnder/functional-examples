@@ -1,0 +1,8 @@
+id: mixed-plugins
+title: Mixed Plugins
+description: Demonstrates using multiple plugins together with path-based conflict resolution via pathMappings configuration.
+entryPoint: functional-examples.config.ts
+tags:
+  - plugin
+  - pathMappings
+  - conflict-resolution

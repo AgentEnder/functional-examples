@@ -1,0 +1,8 @@
+id: metadata-validation
+title: Metadata Validation
+description: Demonstrates enforcing metadata requirements using JSON Schema validation to ensure examples have required fields like category and difficulty.
+entryPoint: functional-examples.config.ts
+tags:
+  - validation
+  - json-schema
+  - quality

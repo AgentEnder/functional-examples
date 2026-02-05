@@ -6,19 +6,13 @@ import type {
   Example,
   Extractor,
   ExtractorError,
+  PathMapping,
   Plugin,
 } from '../types/index.js';
 import type { JSONSchema } from '../schema/merger.js';
 
-/**
- * Path-to-extractor mapping for conflict resolution
- */
-export interface PathMapping {
-  /** Glob pattern for paths */
-  pattern: string;
-  /** Extractor name that wins for matching paths */
-  extractor: string;
-}
+// Re-export for backward compatibility
+export type { PathMapping } from '../types/index.js';
 
 /**
  * Conflict when multiple extractors claim the same file

@@ -2,42 +2,20 @@
  * Configuration resolver - converts config references to actual extractors
  */
 
-import type { Extractor, Plugin } from '../types/index.js';
 import type {
-  Config,
-  ExtractorConfig,
-  ExtractorConfigOrFunction,
+  ConfigValidationError,
+  Extractor,
+  PathMapping,
+  Plugin,
+  ResolvedConfig,
   ScanConfig,
-} from './types.js';
-import type { PathMapping } from '../scanner/types.js';
+} from '../types/index.js';
+import type { Config, ExtractorConfig, ExtractorConfigOrFunction } from './types.js';
 import { PluginRegistry } from '../plugins/registry.js';
 import { validatePluginOptions } from '../plugins/validation.js';
 
-/**
- * Error from config validation
- */
-export interface ConfigValidationError {
-  path: string;
-  message: string;
-}
-
-/**
- * Resolved configuration with actual extractor instances
- */
-export interface ResolvedConfig<TMetadata = Record<string, unknown>> {
-  /** Resolved extractor instances */
-  extractors: Extractor<TMetadata>[];
-  /** Resolved plugins */
-  plugins: Plugin<TMetadata>[];
-  /** Plugin registry for accessing validators/schemas */
-  registry: PluginRegistry;
-  /** Path mappings for conflict resolution */
-  pathMappings: PathMapping[];
-  /** Scan configuration with defaults applied */
-  scan: Required<ScanConfig>;
-  /** Config validation errors (options validation failures) */
-  validationErrors: ConfigValidationError[];
-}
+// Re-export for backward compatibility
+export type { ConfigValidationError, ResolvedConfig } from '../types/index.js';
 
 /**
  * Known extractor packages that can be auto-detected

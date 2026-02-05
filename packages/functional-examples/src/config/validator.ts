@@ -3,17 +3,10 @@
  */
 
 import { ConfigSchema } from './schema.js';
+import type { ConfigValidationError } from '../types/index.js';
 
-/**
- * Error from config file validation (Zod-based).
- * Extended version with location and fix suggestions.
- */
-export interface ConfigValidationError {
-  path: string;
-  message: string;
-  location?: string;
-  fix?: string;
-}
+// Re-export for backward compatibility
+export type { ConfigValidationError } from '../types/index.js';
 
 /**
  * @deprecated Use ConfigValidationError instead
