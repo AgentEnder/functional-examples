@@ -8,9 +8,11 @@
  */
 import {
   type Extractor,
+  type ExtractorOptions,
   type ExtractorResult,
   type Example,
 } from 'functional-examples';
+import type { Dirent } from 'node:fs';
 import fg from 'fast-glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -29,27 +31,43 @@ export interface TomlMetadata {
 /**
  * Create a custom extractor that reads TOML metadata files.
  *
- * Extractors implement the "tree-scan" pattern: they're called once
- * with the root directory and return ALL examples they find.
+ * Extractors implement a candidate-based pattern: they're called with
+ * pre-filtered candidates (files and directories) and decide which to handle.
  */
 export function createTomlExtractor(): Extractor<TomlMetadata> {
   return {
     name: 'toml-extractor',
 
     async extract(
-      rootPath: string,
-      options?: { include?: string[]; exclude?: string[] }
+      candidates: Dirent[],
+      options: ExtractorOptions
     ): Promise<ExtractorResult<TomlMetadata>> {
       const examples: Example<TomlMetadata>[] = [];
       const claimedFiles = new Set<string>();
       const errors: { path: string; message: string }[] = [];
 
-      // Find all meta.toml files
-      const tomlFiles = await fg('**/meta.toml', {
-        cwd: rootPath,
-        absolute: true,
-        ignore: options?.exclude ?? ['**/node_modules/**'],
-      });
+      // Find meta.toml files from candidates
+      const tomlFiles: string[] = [];
+
+      for (const candidate of candidates) {
+        const fullPath = path.join(candidate.parentPath, candidate.name);
+
+        if (candidate.isFile()) {
+          // Direct file candidate: check if it's a meta.toml
+          if (candidate.name === 'meta.toml') {
+            tomlFiles.push(fullPath);
+          }
+        } else if (candidate.isDirectory()) {
+          // Directory candidate: look for meta.toml inside
+          const metaPath = path.join(fullPath, 'meta.toml');
+          try {
+            await readFile(metaPath, 'utf-8');
+            tomlFiles.push(metaPath);
+          } catch {
+            // No meta.toml in this directory, skip
+          }
+        }
+      }
 
       for (const tomlFile of tomlFiles) {
         try {
@@ -63,6 +81,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
             cwd: exampleDir,
             absolute: true,
             onlyFiles: true,
+            ignore: options.exclude ?? ['**/node_modules/**'],
           });
 
           // Claim all files
