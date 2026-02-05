@@ -1,12 +1,12 @@
 /**
  * Meta.yml extractor for multi-file examples
  *
- * Scans a directory tree for folders containing meta.yml files.
+ * Receives candidates (files and directories) and looks for meta.yml files.
  * Each folder with meta.yml is treated as a multi-file example,
  * where all files in the folder belong to that example.
  */
 
-import { glob } from 'fast-glob';
+import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { parse as parseYaml } from 'yaml';
 import path from 'node:path';
@@ -76,71 +76,92 @@ export function createMetaYmlExtractor(
 ): Extractor {
   const options = { ...DEFAULT_OPTIONS, ...opts };
 
+  async function extractFromManifest(
+    metaPath: string,
+    exampleDir: string
+  ): Promise<{ example: Example; claimedFiles: string[] }> {
+    const metaContent = await readFile(metaPath, 'utf-8');
+    const metadata = parseYaml(metaContent) as Record<string, unknown>;
+
+    const dirName = path.basename(exampleDir);
+    const id = (metadata.id as string) ?? dirName;
+
+    const files = await collectFiles(
+      exampleDir,
+      [...options.excludeFiles, options.metaFileName],
+      options.excludePatterns
+    );
+
+    const claimedFiles = [metaPath, ...files.map((f) => f.absolutePath)];
+
+    return {
+      example: {
+        id,
+        title: (metadata.title as string) ?? dirName,
+        description: metadata.description as string | undefined,
+        rootPath: exampleDir,
+        files,
+        metadata,
+        extractorName: 'meta-yml',
+      },
+      claimedFiles,
+    };
+  }
+
   return {
     name: 'meta-yml',
 
     async extract(
-      rootPath: string,
-      extractorOpts?: ExtractorOptions
+      candidates: Dirent[],
+      extractorOpts: ExtractorOptions
     ): Promise<ExtractorResult> {
       const examples: Example[] = [];
       const errors: ExtractorError[] = [];
       const claimedFiles = new Set<string>();
+      // Track processed directories to avoid duplicate extraction
+      // (when both directory and meta file are candidates)
+      const processedDirs = new Set<string>();
 
-      // Find all meta.yml files
-      const metaFiles = await glob(`**/${options.metaFileName}`, {
-        cwd: rootPath,
-        absolute: true,
-        ignore: extractorOpts?.exclude ?? [
-          '**/node_modules/**',
-          '**/dist/**',
-          '**/.git/**',
-        ],
-      });
+      for (const candidate of candidates) {
+        if (extractorOpts.signal?.aborted) break;
 
-      // Process each meta.yml
-      for (const metaPath of metaFiles) {
-        // Check for abort signal
-        if (extractorOpts?.signal?.aborted) {
-          break;
+        const fullPath = path.join(candidate.parentPath, candidate.name);
+
+        // File candidate: check if it's our meta file
+        if (candidate.isFile() && candidate.name === options.metaFileName) {
+          const exampleDir = path.dirname(fullPath);
+          // Skip if we already processed this directory
+          if (processedDirs.has(exampleDir)) continue;
+
+          try {
+            const result = await extractFromManifest(fullPath, exampleDir);
+            examples.push(result.example);
+            result.claimedFiles.forEach((f) => claimedFiles.add(f));
+            processedDirs.add(exampleDir);
+          } catch (error) {
+            errors.push({
+              path: fullPath,
+              message: (error as Error).message,
+              cause: error as Error,
+            });
+          }
+          continue;
         }
 
-        try {
-          const exampleDir = path.dirname(metaPath);
-          const metaContent = await readFile(metaPath, 'utf-8');
-          const metadata = parseYaml(metaContent) as Record<string, unknown>;
+        // Directory candidate: look for meta file inside
+        if (candidate.isDirectory()) {
+          // Skip if we already processed this directory
+          if (processedDirs.has(fullPath)) continue;
 
-          const dirName = path.basename(exampleDir);
-          const id = (metadata.id as string) ?? dirName;
-
-          // Collect all files in the directory
-          const files = await collectFiles(
-            exampleDir,
-            [...options.excludeFiles, options.metaFileName],
-            options.excludePatterns
-          );
-
-          // Claim the meta file and all collected files
-          claimedFiles.add(metaPath);
-          for (const file of files) {
-            claimedFiles.add(file.absolutePath);
+          const metaPath = path.join(fullPath, options.metaFileName);
+          try {
+            const result = await extractFromManifest(metaPath, fullPath);
+            examples.push(result.example);
+            result.claimedFiles.forEach((f) => claimedFiles.add(f));
+            processedDirs.add(fullPath);
+          } catch {
+            // No meta file in this directory, skip silently
           }
-
-          examples.push({
-            id,
-            title: (metadata.title as string) ?? dirName,
-            description: metadata.description as string | undefined,
-            rootPath: exampleDir,
-            files,
-            metadata,
-            extractorName: 'meta-yml',
-          });
-        } catch (error) {
-          errors.push({
-            path: metaPath,
-            message: (error as Error).message,
-            cause: error as Error,
-          });
         }
       }
 

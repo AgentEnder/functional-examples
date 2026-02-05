@@ -1,8 +1,31 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, rm, readdir } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { createMetaYmlExtractor } from './extractor.js';
+import type { ExtractorOptions } from 'functional-examples';
+
+/**
+ * Helper to recursively collect all Dirent entries from a directory tree.
+ * This simulates what the scanner would provide to extractors.
+ */
+async function collectCandidates(dir: string): Promise<Dirent[]> {
+  const candidates: Dirent[] = [];
+
+  async function walk(currentDir: string): Promise<void> {
+    const entries = await readdir(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      candidates.push(entry);
+      if (entry.isDirectory()) {
+        await walk(path.join(currentDir, entry.name));
+      }
+    }
+  }
+
+  await walk(dir);
+  return candidates;
+}
 
 describe('createMetaYmlExtractor', () => {
   let testDir: string;
@@ -17,6 +40,14 @@ describe('createMetaYmlExtractor', () => {
     // Clean up test directory
     await rm(testDir, { recursive: true, force: true });
   });
+
+  const defaultOptions: ExtractorOptions = {
+    rootPath: '',
+  };
+
+  function getOptions(): ExtractorOptions {
+    return { ...defaultOptions, rootPath: testDir };
+  }
 
   describe('basic extraction', () => {
     it('extracts metadata from folder with meta.yml', async () => {
@@ -37,7 +68,8 @@ description: A simple multi-file example
       );
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('basic-example');
@@ -63,7 +95,8 @@ description: A simple multi-file example
       await writeFile(path.join(exampleDir, 'index.ts'), 'export {};');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('my-example');
@@ -77,7 +110,8 @@ description: A simple multi-file example
       await writeFile(path.join(regularDir, 'main.ts'), 'const x = 1;');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(0);
       expect(result.errors).toHaveLength(0);
@@ -106,7 +140,8 @@ title: Example 2
       await writeFile(path.join(example2, 'main.ts'), '');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(2);
       const ids = result.examples.map((e) => e.id).sort();
@@ -125,7 +160,8 @@ title: Example 2
       await writeFile(path.join(exampleDir, 'config.json'), '{}');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples[0].files).toHaveLength(3);
       const paths = result.examples[0].files.map((f) => f.relativePath).sort();
@@ -141,7 +177,8 @@ title: Example 2
       await writeFile(path.join(exampleDir, 'src', 'helper.ts'), 'helper');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples[0].files).toHaveLength(2);
       const paths = result.examples[0].files.map((f) => f.relativePath).sort();
@@ -156,7 +193,8 @@ title: Example 2
       await writeFile(path.join(exampleDir, 'main.ts'), 'code');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       const paths = result.examples[0].files.map((f) => f.relativePath);
       expect(paths).not.toContain('meta.yml');
@@ -173,7 +211,8 @@ title: Example 2
       const extractor = createMetaYmlExtractor({
         excludeFiles: ['content.md'],
       });
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       const paths = result.examples[0].files.map((f) => f.relativePath);
       expect(paths).toEqual(['main.ts']);
@@ -196,7 +235,8 @@ title: Custom Meta
       const extractor = createMetaYmlExtractor({
         metaFileName: 'example.yaml',
       });
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('custom');
@@ -213,7 +253,8 @@ title: Custom Meta
       await writeFile(path.join(exampleDir, 'helper.ts'), 'helper');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       // Should claim: meta.yml + main.ts + helper.ts = 3 files
       expect(result.claimedFiles.size).toBe(3);
@@ -248,7 +289,8 @@ commands:
       await writeFile(path.join(exampleDir, 'main.ts'), '');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples[0].metadata).toMatchObject({
         id: 'complex',
@@ -277,7 +319,8 @@ malformed: [unclosed
       );
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(0);
       expect(result.errors).toHaveLength(1);
@@ -299,10 +342,66 @@ title: Nested Example
       await writeFile(path.join(nestedDir, 'main.ts'), 'code');
 
       const extractor = createMetaYmlExtractor();
-      const result = await extractor.extract(testDir);
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
 
       expect(result.examples).toHaveLength(1);
       expect(result.examples[0].id).toBe('nested');
+    });
+  });
+
+  describe('file candidates', () => {
+    it('handles file candidates (meta.yml passed directly)', async () => {
+      const exampleDir = path.join(testDir, 'file-candidate');
+      await mkdir(exampleDir);
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: from-file
+title: From File Candidate
+`
+      );
+      await writeFile(path.join(exampleDir, 'main.ts'), 'code');
+
+      const extractor = createMetaYmlExtractor();
+      // Only pass the meta.yml file as a candidate
+      const entries = await readdir(exampleDir, { withFileTypes: true });
+      const metaFile = entries.find((e) => e.name === 'meta.yml');
+      if (!metaFile) {
+        throw new Error('meta.yml not found in test directory');
+      }
+
+      const result = await extractor.extract([metaFile], getOptions());
+
+      expect(result.examples).toHaveLength(1);
+      expect(result.examples[0].id).toBe('from-file');
+      expect(result.examples[0].title).toBe('From File Candidate');
+    });
+
+    it('handles directory candidates', async () => {
+      const exampleDir = path.join(testDir, 'dir-candidate');
+      await mkdir(exampleDir);
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: from-dir
+title: From Directory Candidate
+`
+      );
+      await writeFile(path.join(exampleDir, 'main.ts'), 'code');
+
+      const extractor = createMetaYmlExtractor();
+      // Only pass the directory as a candidate
+      const entries = await readdir(testDir, { withFileTypes: true });
+      const dirEntry = entries.find((e) => e.name === 'dir-candidate');
+      if (!dirEntry) {
+        throw new Error('dir-candidate directory not found in test directory');
+      }
+
+      const result = await extractor.extract([dirEntry], getOptions());
+
+      expect(result.examples).toHaveLength(1);
+      expect(result.examples[0].id).toBe('from-dir');
     });
   });
 });
