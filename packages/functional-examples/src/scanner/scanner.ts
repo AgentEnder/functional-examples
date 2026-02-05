@@ -4,6 +4,7 @@
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import type { Dirent } from 'node:fs';
 import { minimatch } from 'minimatch';
 import type {
   Example,
@@ -22,6 +23,7 @@ import type {
   ScanOptions,
   ScanResult,
 } from './types.js';
+import { resolveCandidates, getDefaultIncludePattern } from './candidates.js';
 
 /**
  * Scan a directory for examples using the provided extractors.
@@ -64,6 +66,15 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     metadataSchema,
   } = options;
 
+  // Determine effective include pattern (smart default detection)
+  const effectiveInclude =
+    include.length > 0 && !(include.length === 1 && include[0] === '*')
+      ? include
+      : await getDefaultIncludePattern(root);
+
+  // Resolve candidates from include/exclude patterns
+  const candidates = await resolveCandidates(root, effectiveInclude, exclude);
+
   // Build plugin registry
   const registry = new PluginRegistry();
   for (const plugin of plugins as Plugin[]) {
@@ -97,11 +108,15 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
   }
 
   // Step 1: Run all extractors in parallel
-  const extractorResults = await runExtractorsInParallel(allExtractors, root, {
-    include,
-    exclude,
-    signal,
-  });
+  const extractorResults = await runExtractorsInParallel(
+    allExtractors,
+    candidates,
+    {
+      rootPath: root,
+      exclude,
+      signal,
+    }
+  );
 
   // Step 2: Build file claim map (file -> [extractor names])
   const fileClaimMap = buildFileClaimMap(extractorResults);
@@ -210,13 +225,13 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
  */
 async function runExtractorsInParallel<TMetadata>(
   extractors: Extractor<TMetadata>[],
-  root: string,
-  options: { include?: string[]; exclude?: string[]; signal?: AbortSignal }
+  candidates: Dirent[],
+  options: { rootPath: string; exclude?: string[]; signal?: AbortSignal }
 ): Promise<Array<ExtractorResult<TMetadata> & { extractorName: string }>> {
   const results = await Promise.all(
     extractors.map(async (extractor) => {
       try {
-        const result = await extractor.extract(root, options);
+        const result = await extractor.extract(candidates, options);
         return { ...result, extractorName: extractor.name };
       } catch (error) {
         // Extractor threw unexpectedly - wrap as error result
@@ -224,7 +239,7 @@ async function runExtractorsInParallel<TMetadata>(
           examples: [] as Example<TMetadata>[],
           errors: [
             {
-              path: root,
+              path: options.rootPath,
               message: `Extractor "${extractor.name}" failed: ${
                 (error as Error).message
               }`,

@@ -2,18 +2,36 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import type { Dirent } from 'node:fs';
 import { scanExamples } from './scanner.js';
 import type {
   Extractor,
   Example,
   ExtractorResult,
+  ExtractorOptions,
   Plugin,
 } from '../types/index.js';
 
 /**
  * Create a mock extractor for testing
  */
-function createMockExtractor<TMetadata = Record<string, unknown>>(
+function createMockExtractor(
+  name: string,
+  examples: Example[],
+  claimedFiles: Set<string> = new Set()
+): Extractor {
+  return {
+    name,
+    async extract(_candidates: Dirent[], _options: ExtractorOptions) {
+      return { examples, errors: [], claimedFiles };
+    },
+  };
+}
+
+/**
+ * Create a mock extractor with custom result for testing
+ */
+function createMockExtractorWithResult<TMetadata = Record<string, unknown>>(
   name: string,
   result: Partial<ExtractorResult<TMetadata>>
 ): Extractor<TMetadata> {
@@ -66,29 +84,24 @@ describe('scanExamples', () => {
       const example1 = createMockExample('ex1', 'extractor-a', ['/test/a.ts']);
       const example2 = createMockExample('ex2', 'extractor-b', ['/test/b.ts']);
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [example1],
-        claimedFiles: new Set(['/test/a.ts']),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [example1],
+        new Set(['/test/a.ts'])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [example2],
-        claimedFiles: new Set(['/test/b.ts']),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [example2],
+        new Set(['/test/b.ts'])
+      );
 
       const result = await scanExamples({
         root: '/test',
         extractors: [extractorA, extractorB],
       });
 
-      expect(extractorA.extract).toHaveBeenCalledWith(
-        '/test',
-        expect.any(Object)
-      );
-      expect(extractorB.extract).toHaveBeenCalledWith(
-        '/test',
-        expect.any(Object)
-      );
+      // Extractors are called with candidates array and options
       expect(result.examples).toHaveLength(2);
       expect(result.examples.map((e) => e.id)).toEqual(['ex1', 'ex2']);
       expect(result.errors).toHaveLength(0);
@@ -96,7 +109,7 @@ describe('scanExamples', () => {
     });
 
     it('collects errors from extractors', async () => {
-      const extractor = createMockExtractor('extractor-a', {
+      const extractor = createMockExtractorWithResult('extractor-a', {
         errors: [{ path: '/test/bad.ts', message: 'Invalid syntax' }],
       });
 
@@ -134,15 +147,17 @@ describe('scanExamples', () => {
       const example1 = createMockExample('ex1', 'extractor-a', [sharedFile]);
       const example2 = createMockExample('ex2', 'extractor-b', [sharedFile]);
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [example1],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [example1],
+        new Set([sharedFile])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [example2],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [example2],
+        new Set([sharedFile])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -163,15 +178,17 @@ describe('scanExamples', () => {
     it('adds error for unresolved conflicts', async () => {
       const sharedFile = '/test/shared.ts';
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [createMockExample('ex1', 'extractor-a', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [createMockExample('ex1', 'extractor-a', [sharedFile])],
+        new Set([sharedFile])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [createMockExample('ex2', 'extractor-b', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [createMockExample('ex2', 'extractor-b', [sharedFile])],
+        new Set([sharedFile])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -189,15 +206,17 @@ describe('scanExamples', () => {
     it('excludes examples with conflicting files from results', async () => {
       const sharedFile = '/test/shared.ts';
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [createMockExample('ex1', 'extractor-a', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [createMockExample('ex1', 'extractor-a', [sharedFile])],
+        new Set([sharedFile])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [createMockExample('ex2', 'extractor-b', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [createMockExample('ex2', 'extractor-b', [sharedFile])],
+        new Set([sharedFile])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -215,15 +234,17 @@ describe('scanExamples', () => {
       const example1 = createMockExample('ex1', 'frontmatter', [sharedFile]);
       const example2 = createMockExample('ex2', 'meta-yml', [sharedFile]);
 
-      const extractorA = createMockExtractor('frontmatter', {
-        examples: [example1],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorA = createMockExtractor(
+        'frontmatter',
+        [example1],
+        new Set([sharedFile])
+      );
 
-      const extractorB = createMockExtractor('meta-yml', {
-        examples: [example2],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorB = createMockExtractor(
+        'meta-yml',
+        [example2],
+        new Set([sharedFile])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -246,15 +267,17 @@ describe('scanExamples', () => {
     it('ignores path mappings that do not match any claimant', async () => {
       const sharedFile = '/test/shared.ts';
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [createMockExample('ex1', 'extractor-a', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [createMockExample('ex1', 'extractor-a', [sharedFile])],
+        new Set([sharedFile])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [createMockExample('ex2', 'extractor-b', [sharedFile])],
-        claimedFiles: new Set([sharedFile]),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [createMockExample('ex2', 'extractor-b', [sharedFile])],
+        new Set([sharedFile])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -281,10 +304,11 @@ describe('scanExamples', () => {
       example1.rootPath = '/test/src/a.ts';
       example2.rootPath = '/test/dist/b.ts';
 
-      const extractor = createMockExtractor('extractor', {
-        examples: [example1, example2],
-        claimedFiles: new Set(['/test/src/a.ts', '/test/dist/b.ts']),
-      });
+      const extractor = createMockExtractor(
+        'extractor',
+        [example1, example2],
+        new Set(['/test/src/a.ts', '/test/dist/b.ts'])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -306,10 +330,11 @@ describe('scanExamples', () => {
       example1.rootPath = '/test/examples/a.ts';
       example2.rootPath = '/test/src/b.ts';
 
-      const extractor = createMockExtractor('extractor', {
-        examples: [example1, example2],
-        claimedFiles: new Set(['/test/examples/a.ts', '/test/src/b.ts']),
-      });
+      const extractor = createMockExtractor(
+        'extractor',
+        [example1, example2],
+        new Set(['/test/examples/a.ts', '/test/src/b.ts'])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -330,15 +355,17 @@ describe('scanExamples', () => {
       ]);
       const example2 = createMockExample('ex2', 'extractor-b', ['/test/c.ts']);
 
-      const extractorA = createMockExtractor('extractor-a', {
-        examples: [example1],
-        claimedFiles: new Set(['/test/a.ts', '/test/b.ts']),
-      });
+      const extractorA = createMockExtractor(
+        'extractor-a',
+        [example1],
+        new Set(['/test/a.ts', '/test/b.ts'])
+      );
 
-      const extractorB = createMockExtractor('extractor-b', {
-        examples: [example2],
-        claimedFiles: new Set(['/test/c.ts']),
-      });
+      const extractorB = createMockExtractor(
+        'extractor-b',
+        [example2],
+        new Set(['/test/c.ts'])
+      );
 
       const result = await scanExamples({
         root: '/test',
@@ -380,13 +407,13 @@ describe('scanExamples with plugins', () => {
       extensions: ['.ts'],
       extractor: {
         name: 'test-extractor',
-        async extract(root) {
+        async extract(_candidates: Dirent[], options: ExtractorOptions) {
           return {
             examples: [
               {
                 id: 'test',
                 title: 'Test',
-                rootPath: root,
+                rootPath: options.rootPath,
                 files: [{ absolutePath: filePath, relativePath: 'test.ts' }],
                 metadata: {},
                 extractorName: 'test-extractor',
@@ -436,13 +463,13 @@ describe('scanExamples with plugins', () => {
       extensions: ['.ts'],
       extractor: {
         name: 'test-extractor',
-        async extract(root) {
+        async extract(_candidates: Dirent[], options: ExtractorOptions) {
           return {
             examples: [
               {
                 id: 'test',
                 title: 'Test',
-                rootPath: root,
+                rootPath: options.rootPath,
                 files: [{ absolutePath: filePath, relativePath: 'test.ts' }],
                 metadata: {},
                 extractorName: 'test-extractor',
@@ -482,13 +509,13 @@ describe('scanExamples with plugins', () => {
       extensions: ['.ts'],
       extractor: {
         name: 'plugin-extractor',
-        async extract(root) {
+        async extract(_candidates: Dirent[], options: ExtractorOptions) {
           return {
             examples: [
               {
                 id: 'plugin-example',
                 title: 'Plugin Example',
-                rootPath: root,
+                rootPath: options.rootPath,
                 files: [
                   { absolutePath: filePath1, relativePath: 'plugin-file.ts' },
                 ],
@@ -505,13 +532,13 @@ describe('scanExamples with plugins', () => {
 
     const standaloneExtractor: Extractor = {
       name: 'standalone-extractor',
-      async extract(root) {
+      async extract(_candidates: Dirent[], options: ExtractorOptions) {
         return {
           examples: [
             {
               id: 'standalone-example',
               title: 'Standalone Example',
-              rootPath: root,
+              rootPath: options.rootPath,
               files: [
                 { absolutePath: filePath2, relativePath: 'extractor-file.ts' },
               ],

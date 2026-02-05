@@ -2,6 +2,8 @@
  * Core type definitions for functional-examples
  */
 
+import type { Dirent } from 'node:fs';
+
 // ============================================================================
 // Validation Types
 // ============================================================================
@@ -109,19 +111,19 @@ export interface ExtractorError {
 }
 
 /**
- * Options passed to extractor during scan
+ * Options passed to extractor during extraction
  */
 export interface ExtractorOptions {
-  /** Glob patterns to include */
-  include?: string[];
-  /** Glob patterns to exclude */
+  /** Absolute path to the config root (for context/relative paths) */
+  rootPath: string;
+  /** Glob patterns to exclude (for internal filtering within directories) */
   exclude?: string[];
   /** Signal for cancellation */
   signal?: AbortSignal;
 }
 
 /**
- * Result from a tree-scan extractor
+ * Result from a candidate-based extractor
  */
 export interface ExtractorResult<TMetadata = Record<string, unknown>> {
   /** All examples found by this extractor */
@@ -133,24 +135,25 @@ export interface ExtractorResult<TMetadata = Record<string, unknown>> {
 }
 
 /**
- * Tree-scan extractor interface.
- * Called once with root path, scans tree, returns ALL examples found.
+ * Candidate-based extractor interface.
+ * Called with pre-filtered candidates (files and/or directories).
+ * Extractor decides which candidates it can handle.
  */
 export interface Extractor<TMetadata = Record<string, unknown>> {
   /** Unique name for this extractor */
   readonly name: string;
 
   /**
-   * Scan the directory tree starting at rootPath.
-   * Extractor owns traversal and file collection.
+   * Extract examples from the provided candidates.
+   * Candidates are pre-filtered by include/exclude patterns.
    *
-   * @param rootPath - Absolute path to start scanning
-   * @param options - Extraction options
+   * @param candidates - Dirent entries (files and/or directories) to consider
+   * @param options - Extraction options including rootPath for context
    * @returns All examples found and files claimed
    */
   extract(
-    rootPath: string,
-    options?: ExtractorOptions
+    candidates: Dirent[],
+    options: ExtractorOptions
   ): Promise<ExtractorResult<TMetadata>>;
 }
 
