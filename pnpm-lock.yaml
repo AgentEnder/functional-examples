@@ -101,6 +101,9 @@ importers:
 
   examples:
     dependencies:
+      '@functional-examples/test':
+        specifier: workspace:*
+        version: link:../packages/test
       '@functional-examples/yaml-manifest':
         specifier: workspace:*
         version: link:../packages/yaml-manifest
