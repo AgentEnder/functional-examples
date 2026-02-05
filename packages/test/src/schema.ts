@@ -26,22 +26,22 @@ const assertionsSchema = z
  * Test execution options
  */
 const testOptionsSchema = z.object({
-  command: z.string().describe('Command to execute'),
-  cwd: z.string().optional().describe('Working directory relative to example'),
-  env: z.record(z.string()).optional().describe('Environment variables'),
-  timeout: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe('Timeout in milliseconds'),
+  /** Command to execute */
+  command: z.string(),
+  /** Working directory relative to example */
+  cwd: z.string().optional(),
+  /** Environment variables */
+  env: z.record(z.string(), z.string()).optional(),
+  /** Timeout in milliseconds */
+  timeout: z.number().int().positive().optional(),
 });
 
 /**
  * Single test case
  */
 export const testCaseSchema = z.object({
-  name: z.string().describe('Test name'),
+  /** Test name */
+  name: z.string(),
   options: testOptionsSchema,
   assertions: assertionsSchema,
 });
@@ -65,7 +65,11 @@ export type TestAssertions = z.infer<typeof assertionsSchema>;
 export type TestMetadata = z.infer<typeof testMetadataSchema>;
 
 // JSON Schema for plugin registration
-export const TEST_METADATA_JSON_SCHEMA = zodToJsonSchema(testMetadataSchema, {
-  name: 'TestMetadata',
-  $refStrategy: 'none',
-});
+// Note: Cast as any because zod-to-json-schema types may lag behind zod v4
+export const TEST_METADATA_JSON_SCHEMA = zodToJsonSchema(
+  testMetadataSchema as unknown as Parameters<typeof zodToJsonSchema>[0],
+  {
+    name: 'TestMetadata',
+    $refStrategy: 'none',
+  }
+);
