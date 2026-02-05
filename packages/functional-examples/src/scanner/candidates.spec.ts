@@ -12,6 +12,7 @@ describe('resolveCandidates', () => {
     // Create test structure
     await fs.mkdir(path.join(tempDir, 'example-a'));
     await fs.mkdir(path.join(tempDir, 'example-b'));
+    await fs.mkdir(path.join(tempDir, 'excluded-dir'));
     await fs.writeFile(path.join(tempDir, 'single-file.ts'), '// test');
     await fs.mkdir(path.join(tempDir, 'node_modules'));
   });
@@ -26,13 +27,15 @@ describe('resolveCandidates', () => {
     expect(names).toContain('example-a');
     expect(names).toContain('example-b');
     expect(names).toContain('single-file.ts');
-    expect(names).toContain('node_modules');
+    // node_modules is always ignored
+    expect(names).not.toContain('node_modules');
   });
 
   it('should filter by exclude patterns', async () => {
-    const candidates = await resolveCandidates(tempDir, ['*'], ['node_modules']);
+    const candidates = await resolveCandidates(tempDir, ['*'], ['excluded-dir']);
     const names = candidates.map((c) => c.name);
-    expect(names).not.toContain('node_modules');
+    expect(names).not.toContain('excluded-dir');
+    expect(names).toContain('example-a');
   });
 
   it('should handle nested patterns like examples/*', async () => {

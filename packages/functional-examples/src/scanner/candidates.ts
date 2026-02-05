@@ -3,10 +3,39 @@
  * Evaluates include/exclude patterns and returns Dirent candidates.
  */
 
-import { readdir } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
-import { glob } from 'tinyglobby';
+import type { Dirent, Stats } from 'node:fs';
+import { lstat, readdir } from 'node:fs/promises';
 import * as path from 'node:path';
+import { glob } from 'tinyglobby';
+
+/**
+ * A list of polyglot vendor dirs and other
+ * directories that probably just make sense to
+ * never crawl
+ */
+const ALWAYS_IGNORE = ['node_modules', '.git'];
+
+/**
+ * Create a Dirent-like object from a Stats object.
+ * This allows us to stat individual files instead of reading entire directories.
+ */
+function createDirentFromStats(
+  name: string,
+  parentPath: string,
+  stats: Stats
+): Dirent {
+  return {
+    name,
+    parentPath,
+    isFile: () => stats.isFile(),
+    isDirectory: () => stats.isDirectory(),
+    isBlockDevice: () => stats.isBlockDevice(),
+    isCharacterDevice: () => stats.isCharacterDevice(),
+    isFIFO: () => stats.isFIFO(),
+    isSocket: () => stats.isSocket(),
+    isSymbolicLink: () => stats.isSymbolicLink(),
+  } as Dirent;
+}
 
 /**
  * Resolve candidates by evaluating include patterns against the root.
@@ -25,44 +54,29 @@ export async function resolveCandidates(
   // Use tinyglobby to match patterns
   const matches = await glob(include, {
     cwd: root,
-    ignore: exclude,
+    ignore: exclude.concat(ALWAYS_IGNORE),
     onlyFiles: false,
     expandDirectories: false,
     absolute: false,
   });
 
-  // For each match, we need to get the Dirent
-  // Group by parent directory to batch readdir calls
-  const parentDirs = new Map<string, Set<string>>();
-
-  for (const match of matches) {
-    const parentDir = path.dirname(match);
-    const name = path.basename(match);
-    const parent = parentDir === '.' ? root : path.join(root, parentDir);
-
-    const existing = parentDirs.get(parent);
-    if (existing) {
-      existing.add(name);
-    } else {
-      parentDirs.set(parent, new Set([name]));
-    }
-  }
-
-  // Read each parent directory and filter to matched names
+  // Stat each match to get Dirent-like info
   const candidates: Dirent[] = [];
 
-  for (const [parentPath, names] of parentDirs) {
-    try {
-      const entries = await readdir(parentPath, { withFileTypes: true });
-      for (const entry of entries) {
-        if (names.has(entry.name)) {
-          candidates.push(entry);
-        }
+  await Promise.all(
+    matches.map(async (match) => {
+      const fullPath = path.join(root, match);
+      const name = path.basename(match);
+      const parentPath = path.dirname(fullPath);
+
+      try {
+        const stats = await lstat(fullPath);
+        candidates.push(createDirentFromStats(name, parentPath, stats));
+      } catch {
+        // File doesn't exist or can't be stat'd, skip
       }
-    } catch {
-      // Directory doesn't exist or can't be read, skip
-    }
-  }
+    })
+  );
 
   return candidates;
 }
@@ -74,7 +88,9 @@ export async function resolveCandidates(
  * @param root - Absolute path to the config root
  * @returns Default include pattern array
  */
-export async function getDefaultIncludePattern(root: string): Promise<string[]> {
+export async function getDefaultIncludePattern(
+  root: string
+): Promise<string[]> {
   try {
     const entries = await readdir(root, { withFileTypes: true });
     const hasExamplesDir = entries.some(
