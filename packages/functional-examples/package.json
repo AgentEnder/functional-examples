@@ -37,6 +37,7 @@
     "cli-forge": "^1.1.0",
     "jiti": "^2.4.2",
     "minimatch": "^10.0.0",
+    "tinyglobby": "^0.2.15",
     "yaml": "catalog:"
   },
   "devDependencies": {
