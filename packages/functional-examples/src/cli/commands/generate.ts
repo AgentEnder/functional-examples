@@ -70,10 +70,14 @@ export const generateCommand = cli('generate', {
       );
       console.log(`✓ Generated ${metadataSchemaPath}`);
 
-      console.log('\nDone! Add to your config file:');
-      console.log(
-        `  "$schema": "./${options.output ?? DEFAULT_OUTPUT_DIR}/schema.json"`
-      );
+      const outputDirName = options.output ?? DEFAULT_OUTPUT_DIR;
+      console.log('\nDone! To enable type-safe metadata:');
+      console.log('');
+      console.log('1. Add to your tsconfig.json include:');
+      console.log(`   "${outputDirName}/**/*.d.ts"`);
+      console.log('');
+      console.log('2. Add to your config file for IDE autocomplete:');
+      console.log(`   "$schema": "./${outputDirName}/schema.json"`);
     } catch (error) {
       console.error(
         'Error:',

@@ -4,6 +4,17 @@
 
 import type { CLI } from 'cli-forge';
 import type { Dirent } from 'node:fs';
+import { ConfigWithRoot } from '../config/types.js';
+
+// Re-export utility classes
+export { DefaultMap } from './default-map.js';
+export {
+  asSettled,
+  AsyncExtendedIterable,
+  asyncIter,
+  ExtendedIterable,
+  iter,
+} from './extended-iterable.js';
 
 // ============================================================================
 // Validation Types
@@ -47,6 +58,43 @@ export interface BaseMetadata {
 }
 
 /**
+ * Augmentable registry for example metadata typing.
+ *
+ * Run `functional-examples generate` to create a declaration file that
+ * augments this interface, providing type-safe metadata for your examples.
+ *
+ * @example Manual augmentation (or use `generate` command):
+ * ```typescript
+ * declare module 'functional-examples' {
+ *   interface ExampleMetadataRegistry {
+ *     metadata: {
+ *       id: string;
+ *       title: string;
+ *       tags?: string[];
+ *     };
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ExampleMetadataRegistry {}
+
+/**
+ * Resolved example metadata type.
+ *
+ * If `ExampleMetadataRegistry` has been augmented with a `metadata` property,
+ * this resolves to that type. Otherwise, falls back to `Record<string, unknown>`.
+ *
+ * This allows the `generate` command to provide project-specific types that
+ * automatically apply to all `Example` types without explicit generic parameters.
+ */
+export type ExampleMetadata = ExampleMetadataRegistry extends {
+  metadata: infer T;
+}
+  ? T
+  : Record<string, unknown>;
+
+/**
  * Parsed code region from #region markers.
  */
 export interface ParsedRegion {
@@ -80,9 +128,13 @@ export interface ExampleFile {
 
 /**
  * A discovered example with metadata and files.
- * Metadata is loosely typed by default but can be constrained via user schema.
+ * This is the base type returned by extractors.
+ *
+ * Metadata is typed via `ExampleMetadata` by default, which can be augmented
+ * by running `functional-examples generate`. You can also pass an explicit
+ * generic parameter for custom typing.
  */
-export interface Example<TMetadata = Record<string, unknown>> {
+export interface Example<TMetadata = ExampleMetadata> {
   /** Unique identifier for this example */
   id: string;
   /** Human-readable title */
@@ -97,6 +149,19 @@ export interface Example<TMetadata = Record<string, unknown>> {
   metadata: TMetadata;
   /** Which extractor produced this example */
   extractorName: string;
+}
+
+/**
+ * An example after processing by the scanner.
+ * Includes computed fields like displayPath that are added during scanning.
+ */
+export interface ScannedExample<TMetadata = ExampleMetadata>
+  extends Example<TMetadata> {
+  /**
+   * Path relative to the config/scan root, useful for display in errors
+   * and snapshots (avoids machine-specific absolute paths).
+   */
+  displayPath: string;
 }
 
 /**
@@ -325,7 +390,8 @@ export interface PluginRegistryInterface {
  * Resolved configuration with actual extractor instances.
  * This is the runtime-ready configuration after all plugins are loaded.
  */
-export interface ResolvedConfig<TMetadata = Record<string, unknown>> {
+export interface ResolvedConfig<TMetadata = Record<string, unknown>>
+  extends ConfigWithRoot<TMetadata> {
   /** Resolved extractor instances */
   extractors: Extractor<TMetadata>[];
   /** Resolved plugins */
@@ -338,6 +404,8 @@ export interface ResolvedConfig<TMetadata = Record<string, unknown>> {
   scan: Required<ScanConfig>;
   /** Config validation errors (options validation failures) */
   validationErrors: ConfigValidationError[];
+  /** Root Path of Config File */
+  root: string;
 }
 
 // ============================================================================

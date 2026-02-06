@@ -9,11 +9,14 @@ export type {
   BaseMetadata,
   Example,
   ExampleFile,
+  ExampleMetadata,
+  ExampleMetadataRegistry,
   Extractor,
   ExtractorFactory,
   ExtractorError,
   ExtractorOptions,
   ExtractorResult,
+  ScannedExample,
 } from './types/index.js';
 
 // Plugin system types

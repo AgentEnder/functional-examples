@@ -82,16 +82,28 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
   }
 }
 
-/**
- * Generate TypeScript interface from JSON Schema.
+const HEADER = `/**
+ * Auto-generated metadata types from config and plugins.
+ * Do not edit manually - regenerate with: functional-examples generate
+ *
+ * This file augments the ExampleMetadataRegistry interface to provide
+ * type-safe metadata for all Example types in your project.
+ *
+ * Include this file in your tsconfig.json to enable type checking.
  */
-function generateInterface(name: string, schema: JSONSchema): string {
+
+`;
+
+/**
+ * Generate a metadata type object literal from JSON Schema.
+ */
+function generateMetadataType(schema: JSONSchema): string {
   const properties = schema.properties as
     | Record<string, Record<string, unknown>>
     | undefined;
 
   if (!properties || Object.keys(properties).length === 0) {
-    return `export interface ${name} extends Record<string, unknown> {}`;
+    return 'Record<string, unknown>';
   }
 
   const required = new Set((schema.required as string[]) ?? []);
@@ -99,22 +111,18 @@ function generateInterface(name: string, schema: JSONSchema): string {
     .map(([key, propSchema]) => {
       const optional = required.has(key) ? '' : '?';
       const tsType = schemaTypeToTS(propSchema);
-      return `  ${key}${optional}: ${tsType};`;
+      return `      ${key}${optional}: ${tsType};`;
     })
     .join('\n');
 
-  return `export interface ${name} {\n${props}\n}`;
+  return `{\n${props}\n    }`;
 }
-
-const HEADER = `/**
- * Auto-generated metadata types from config and plugins.
- * Do not edit manually - regenerate with: functional-examples generate
- */
-
-`;
 
 /**
  * Generate TypeScript type declarations from merged metadata schema.
+ *
+ * Outputs a module augmentation that extends ExampleMetadataRegistry,
+ * which automatically provides types for all Example<> usages.
  */
 export function generateMetadataTypes(
   options: GenerateMetadataTypesOptions
@@ -122,10 +130,21 @@ export function generateMetadataTypes(
   const { mergedSchema } = options;
 
   if (!mergedSchema || !mergedSchema.properties) {
-    return `${HEADER}export type ExampleMetadata = Record<string, unknown>;\n`;
+    // No schema properties - output empty augmentation
+    return `${HEADER}declare module 'functional-examples' {
+  interface ExampleMetadataRegistry {
+    metadata: Record<string, unknown>;
+  }
+}
+`;
   }
 
-  const interfaceCode = generateInterface('ExampleMetadata', mergedSchema);
+  const metadataType = generateMetadataType(mergedSchema);
 
-  return `${HEADER}${interfaceCode}\n`;
+  return `${HEADER}declare module 'functional-examples' {
+  interface ExampleMetadataRegistry {
+    metadata: ${metadataType};
+  }
+}
+`;
 }
