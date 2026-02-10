@@ -1,13 +1,10 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "types": ["node"],
+    "emitDeclarationOnly": true,
+    "outDir": "../dist/tsc/examples"
   },
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "**/node_modules/**",
-    "**/dist/**"
-  ]
+  "include": ["**/*.ts", "../.functional-examples/*.d.ts"],
+  "exclude": ["**/node_modules/**", "**/dist/**"]
 }

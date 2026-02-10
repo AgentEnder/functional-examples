@@ -1,3 +1,4 @@
+// #region frontmatter
 // ---
 // id: getting-started
 // title: Getting Started
@@ -6,6 +7,7 @@
 //   - beginner
 //   - tutorial
 // ---
+// #endregion frontmatter
 
 /**
  * A simple greeting function.

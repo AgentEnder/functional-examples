@@ -7,15 +7,13 @@
  * 3. Claims files and returns Example objects
  */
 import {
-  type Extractor,
-  type ExtractorOptions,
-  type ExtractorResult,
   type Example,
+  type Extractor,
+  type ExtractorResult,
 } from 'functional-examples';
-import type { Dirent } from 'node:fs';
-import fg from 'fast-glob';
+import { readdirSync, type Dirent } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import path, { join } from 'node:path';
 
 /**
  * Metadata structure for TOML examples.
@@ -34,13 +32,13 @@ export interface TomlMetadata {
  * Extractors implement a candidate-based pattern: they're called with
  * pre-filtered candidates (files and directories) and decide which to handle.
  */
+// #region createExtractor
 export function createTomlExtractor(): Extractor<TomlMetadata> {
   return {
     name: 'toml-extractor',
 
     async extract(
-      candidates: Dirent[],
-      options: ExtractorOptions
+      candidates: Dirent[]
     ): Promise<ExtractorResult<TomlMetadata>> {
       const examples: Example<TomlMetadata>[] = [];
       const claimedFiles = new Set<string>();
@@ -77,12 +75,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
           const exampleDir = path.dirname(tomlFile);
 
           // Collect all files in the example directory
-          const files = await fg('**/*', {
-            cwd: exampleDir,
-            absolute: true,
-            onlyFiles: true,
-            ignore: options.exclude ?? ['**/node_modules/**'],
-          });
+          const files = collectExampleFiles(exampleDir);
 
           // Claim all files
           for (const file of files) {
@@ -113,6 +106,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
     },
   };
 }
+// #endregion createExtractor
 
 /**
  * Simplified TOML parser for demonstration.
@@ -140,4 +134,23 @@ function parseSimpleToml(content: string): TomlMetadata {
     description: result['description'],
     author: result['author'],
   };
+}
+
+function collectExampleFiles(root: string) {
+  if (root.endsWith('node_modules')) {
+    return [];
+  }
+
+  let files: string[] = [];
+  const entries = readdirSync(root, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      files = files.concat(
+        collectExampleFiles(join(entry.parentPath, entry.name))
+      );
+    } else {
+      files.push(join(entry.parentPath, entry.name));
+    }
+  }
+  return files;
 }

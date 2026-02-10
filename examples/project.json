@@ -1,0 +1,36 @@
+{
+  "name": "examples",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "examples",
+  "tags": ["scope:examples"],
+  "namedInputs": {
+    "noInputs": []
+  },
+  "targets": {
+    "build": {
+      "command": "echo 'Examples do not need building'",
+      "inputs": ["noInputs"],
+      "outputs": []
+    },
+    "scan": {
+      "command": "functional-examples scan examples",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "scan:json": {
+      "command": "functional-examples scan examples -f json",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "test": {
+      "command": "functional-examples test examples",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      },
+      "dependsOn": ["^build"]
+    }
+  }
+}

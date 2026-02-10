@@ -25,21 +25,7 @@ If a TypeScript file is inside a directory with `meta.yml`, both plugins want it
 
 Use `pathMappings` in your config to specify which extractor wins for each path pattern:
 
-```typescript
-const config: Config = {
-  plugins: [createJavaScriptPlugin(), createYamlManifestPlugin()],
-  pathMappings: [
-    {
-      pattern: 'src/**',
-      extractor: 'javascript-extractor',  // Frontmatter wins in src/
-    },
-    {
-      pattern: 'tutorials/**',
-      extractor: 'meta-yml',              // YAML manifest wins in tutorials/
-    },
-  ],
-};
-```
+<%= region('pathMappings') %>
 
 ## Project Structure
 
@@ -55,7 +41,7 @@ mixed-plugins/
 
 ## Extractor Names
 
-- `javascript-extractor` - The JavaScript/TypeScript plugin
-- `meta-yml` - The YAML manifest plugin
+- `javascript-extractor` — The JavaScript/TypeScript plugin
+- `meta-yml` — The YAML manifest plugin
 
 These names are defined by each plugin and used in `pathMappings`.

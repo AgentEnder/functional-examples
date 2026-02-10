@@ -1,9 +1,0 @@
-id: yaml-manifest
-title: YAML Manifest Plugin
-description: Demonstrates using directory-based examples with separate meta.yml files for metadata, supporting multi-file examples.
-entryPoint: functional-examples.config.ts
-tags:
-  - plugin
-  - yaml
-  - directory-based
-  - multi-file

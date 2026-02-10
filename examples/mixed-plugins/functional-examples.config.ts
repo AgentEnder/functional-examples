@@ -18,6 +18,7 @@ const config: Config = {
     include: ['**/*'],
     exclude: ['**/node_modules/**'],
   },
+  // #region pathMappings
   // Resolve conflicts: specify which extractor wins for each path pattern
   pathMappings: [
     {
@@ -29,6 +30,7 @@ const config: Config = {
       extractor: 'meta-yml',
     },
   ],
+  // #endregion pathMappings
 };
 
 export default config;

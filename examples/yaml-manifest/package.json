@@ -1,8 +1,10 @@
 {
-  "name": "@functional-examples/example-yaml-manifest",
+  "name": "@examples/yaml-manifest",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "description": "Demonstrates using directory-based examples with separate meta.yml files for metadata, supporting multi-file examples",
+  "main": "./functional-examples.config.ts",
   "scripts": {
     "scan": "functional-examples scan .",
     "scan:json": "functional-examples scan . -f json",
@@ -11,5 +13,15 @@
   "dependencies": {
     "functional-examples": "workspace:*",
     "@functional-examples/yaml-manifest": "workspace:*"
+  },
+  "functional-examples": {
+    "title": "YAML Manifest Plugin",
+    "description": "Demonstrates using YAML manifests in examples",
+    "tags": [
+      "plugin",
+      "yaml",
+      "directory-based",
+      "multi-file"
+    ]
   }
 }

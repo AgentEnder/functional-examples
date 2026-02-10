@@ -16,14 +16,20 @@ pnpm scan:json
 
 ```
 examples/
-├── my-example/
+├── basic-usage/
 │   ├── meta.yml      # Required: metadata for this example
-│   ├── index.ts      # Entry point (specified in meta.yml)
-│   └── helper.ts     # Additional files
-└── another-example/
+│   └── scan.ts       # Source file
+└── multi-file/
     ├── meta.yml
-    └── main.py       # Works with any file type
+    ├── main.ts       # Entry point
+    └── utils.ts      # Additional files
 ```
+
+## Configuration
+
+The config file sets up the YAML manifest plugin:
+
+<%= file('functional-examples.config.ts') %>
 
 ## meta.yml Format
 
@@ -45,11 +51,7 @@ Required fields: `id`, `title`
 
 Choose YAML manifest over frontmatter when:
 
-- **Multi-file examples** - Example spans multiple source files
-- **Non-JS/TS files** - Python, Go, Rust, etc.
-- **Clean source files** - No metadata comments in code
-- **Complex metadata** - Easier to write in YAML than comment syntax
-
-## File Discovery
-
-All files in the example directory (except `meta.yml`) are included as example files. Use `entryPoint` to indicate the primary file.
+- **Multi-file examples** — Example spans multiple source files
+- **Non-JS/TS files** — Python, Go, Rust, etc.
+- **Clean source files** — No metadata comments in code
+- **Complex metadata** — Easier to write in YAML than comment syntax

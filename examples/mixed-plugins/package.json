@@ -1,8 +1,10 @@
 {
-  "name": "@functional-examples/example-mixed-plugins",
+  "name": "@examples/mixed-plugins",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "description": "Demonstrates using multiple plugins together with path-based conflict resolution via pathMappings configuration",
+  "main": "./functional-examples.config.ts",
   "scripts": {
     "scan": "functional-examples scan .",
     "scan:json": "functional-examples scan . -f json",
@@ -12,5 +14,9 @@
     "functional-examples": "workspace:*",
     "@functional-examples/javascript": "workspace:*",
     "@functional-examples/yaml-manifest": "workspace:*"
+  },
+  "functional-examples": {
+    "title": "Mixed Plugins",
+    "tags": ["plugin", "pathMappings", "conflict-resolution"]
   }
 }

@@ -1,9 +1,6 @@
 # JavaScript Plugin Example
 
-This example demonstrates the `@functional-examples/javascript` plugin, which extracts code examples from JavaScript and TypeScript files using:
-
-1. **Frontmatter metadata** - YAML in comments at the top of files
-2. **Region markers** - `#region` / `#endregion` for code snippets
+This example demonstrates the `@functional-examples/javascript` plugin, which extracts code examples from JavaScript and TypeScript files using frontmatter metadata and region markers.
 
 ## Usage
 
@@ -17,36 +14,27 @@ pnpm scan:json
 
 ## Frontmatter Format
 
-```typescript
-// ---
-// id: my-example
-// title: My Example Title
-// description: A description of what this example shows
-// tags:
-//   - beginner
-//   - tutorial
-// ---
+Frontmatter is written as YAML inside comment blocks at the top of a file. Here's how `getting-started.ts` defines its metadata:
 
-// Your code here...
-```
+<%= region('frontmatter') %>
 
-Required fields: `id`, `title`
+Required fields: `id`, `title`. Optional: `description`, `tags`, and any custom fields.
 
 ## Region Markers
 
-Extract specific code snippets:
+Extract specific code snippets with `#region` / `#endregion` markers. These are extracted as `hunks` in the scan output.
 
-```typescript
-// #region setup
-const config = { ... };
-// #endregion setup
+For example, the `capitalize` utility:
 
-// #region usage
-doSomething(config);
-// #endregion usage
-```
+<%= region('capitalize') %>
 
-Regions are extracted as `hunks` in the scan output.
+And the `truncate` utility:
+
+<%= region('truncate') %>
+
+## Usage in Action
+
+<%= region('usage') %>
 
 ## Configuration Options
 

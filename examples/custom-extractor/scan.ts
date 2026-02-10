@@ -1,18 +1,27 @@
 /**
  * Scan script using the custom TOML extractor.
  */
-import { scanExamples } from 'functional-examples';
+import { resolveConfig, scanExamples } from 'functional-examples';
 import { createTomlExtractor } from './toml-extractor.js';
 
 async function main() {
   const jsonOutput = process.argv.includes('--json');
 
-  const result = await scanExamples({
+  const config = await resolveConfig({
     root: '.',
-    extractors: [createTomlExtractor()],
-    include: ['**/*'],
-    exclude: ['**/node_modules/**'],
+    plugins: [
+      {
+        name: 'toml-extractor',
+        extractor: createTomlExtractor(),
+      },
+    ],
+    scan: {
+      include: ['**/*'],
+      exclude: ['**/node_modules/**'],
+    },
   });
+
+  const result = await scanExamples(config);
 
   if (jsonOutput) {
     console.log(
@@ -39,7 +48,9 @@ async function main() {
       if (example.description) {
         console.log(`    ${example.description}`);
       }
-      console.log(`    Files: ${example.files.map((f) => f.relativePath).join(', ')}`);
+      console.log(
+        `    Files: ${example.files.map((f) => f.relativePath).join(', ')}`
+      );
       console.log();
     }
 

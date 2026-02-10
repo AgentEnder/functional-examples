@@ -1,3 +1,4 @@
+// #region script
 const args = process.argv.slice(2);
 
 if (args.includes('--fail')) {
@@ -6,3 +7,4 @@ if (args.includes('--fail')) {
 }
 
 console.log('Hello from example!');
+// #endregion script

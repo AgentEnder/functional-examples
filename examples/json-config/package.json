@@ -1,0 +1,18 @@
+{
+  "name": "@examples/json-config",
+  "private": true,
+  "type": "module",
+  "description": "Shows how to use a JSON configuration file for declarative setup with auto-detected plugins, scan patterns, path mappings, and metadata validation via JSON Schema",
+  "files": [
+    "functional-examples.config.json",
+    "snippets/**/*.ts"
+  ],
+  "functional-examples": {
+    "title": "JSON Configuration",
+    "tags": [
+      "configuration",
+      "json",
+      "schema-validation"
+    ]
+  }
+}

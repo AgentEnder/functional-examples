@@ -1,8 +1,10 @@
 {
-  "name": "@functional-examples/example-custom-extractor",
+  "name": "@examples/custom-extractor",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "description": "Demonstrates creating a custom Extractor implementation to support alternative metadata formats like TOML",
+  "main": "./scan.ts",
   "scripts": {
     "scan": "tsx scan.ts",
     "scan:json": "tsx scan.ts --json"
@@ -13,5 +15,9 @@
   },
   "devDependencies": {
     "tsx": "catalog:"
+  },
+  "functional-examples": {
+    "title": "Custom Extractor",
+    "tags": ["custom", "extractor", "toml", "advanced"]
   }
 }

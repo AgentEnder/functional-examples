@@ -1,15 +1,22 @@
 {
-  "name": "@functional-examples/example-metadata-validation",
+  "name": "@examples/metadata-validation",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "description": "Demonstrates enforcing metadata requirements using JSON Schema validation to ensure examples have required fields like category and difficulty",
+  "main": "./functional-examples.config.ts",
   "scripts": {
     "scan": "functional-examples scan .",
     "scan:json": "functional-examples scan . -f json",
     "scan:yaml": "functional-examples scan . -f yaml"
   },
+  "files": ["src/**/*.ts", "functional-examples.config.ts"],
   "dependencies": {
     "functional-examples": "workspace:*",
     "@functional-examples/javascript": "workspace:*"
+  },
+  "functional-examples": {
+    "title": "Metadata Validation",
+    "tags": ["validation", "json-schema", "quality"]
   }
 }

@@ -1,8 +1,10 @@
+// #region frontmatter
 // ---
 // id: utility-functions
 // title: Utility Functions
 // description: Common utility functions demonstrating region markers
 // ---
+// #endregion
 
 // #region capitalize
 /**

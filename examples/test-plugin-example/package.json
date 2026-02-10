@@ -1,0 +1,37 @@
+{
+  "name": "@examples/test-plugin-example",
+  "private": true,
+  "type": "module",
+  "description": "Demonstrates the test plugin with command execution and assertions",
+  "main": "./hello.js",
+  "functional-examples": {
+    "title": "Test Plugin Example",
+    "tags": ["testing", "assertions", "commands"],
+    "test": [
+      {
+        "name": "runs hello script",
+        "options": {
+          "command": "node hello.js"
+        },
+        "assertions": {
+          "exitCode": 0,
+          "stdout": {
+            "contains": "Hello from example"
+          }
+        }
+      },
+      {
+        "name": "fails with bad args",
+        "options": {
+          "command": "node hello.js --fail"
+        },
+        "assertions": {
+          "exitCode": 1,
+          "stderr": {
+            "contains": "Error"
+          }
+        }
+      }
+    ]
+  }
+}

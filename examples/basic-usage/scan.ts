@@ -3,13 +3,12 @@
  */
 import { resolveConfig, scanExamples } from 'functional-examples';
 
+// #region scan
 async function main() {
   // Resolve config (auto-detects installed plugins)
-  const config = await resolveConfig({
-    root: process.cwd(),
-  });
+  const config = await resolveConfig({ root: './examples' });
 
-  // Scan for examples using resolved config
+  // Scan for examples
   const result = await scanExamples(config);
 
   console.log(`Found ${result.examples.length} examples:`);
@@ -24,5 +23,6 @@ async function main() {
     }
   }
 }
+// #endregion scan
 
 main().catch(console.error);

@@ -1,0 +1,41 @@
+{
+  "$schema": "./.functional-examples/schema.json",
+  "scan": {
+    "include": ["snippets/**/*"],
+    "exclude": ["**/*.test.*", "**/*.spec.*"]
+  },
+  "pathMappings": [
+    {
+      "pattern": "**/legacy/**",
+      "extractor": "meta-yml"
+    }
+  ],
+  "metadata": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Unique identifier for the example"
+      },
+      "title": {
+        "type": "string",
+        "description": "Human-readable title"
+      },
+      "description": {
+        "type": "string",
+        "description": "What this example demonstrates"
+      },
+      "category": {
+        "type": "string",
+        "enum": ["tutorial", "recipe", "reference", "advanced"],
+        "description": "Example category for filtering"
+      },
+      "tags": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Tags for search and filtering"
+      }
+    },
+    "required": ["id", "title", "category"]
+  }
+}

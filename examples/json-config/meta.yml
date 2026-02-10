@@ -1,0 +1,12 @@
+id: json-config
+title: JSON Configuration
+description: >
+  Shows how to use a JSON configuration file for declarative setup.
+  JSON configs support auto-detected plugins, scan patterns, path mappings,
+  and metadata validation via JSON Schema.
+
+  Usage: npx functional-examples scan .
+tags:
+  - configuration
+  - json
+  - schema-validation

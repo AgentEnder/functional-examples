@@ -12,32 +12,20 @@ pnpm scan
 pnpm scan:json
 ```
 
-## The Extractor Interface
+## The Extractor
 
-```typescript
-interface Extractor<TMetadata> {
-  name: string;
-  extract(
-    rootPath: string,
-    options?: { include?: string[]; exclude?: string[] }
-  ): Promise<ExtractorResult<TMetadata>>;
-}
+The `createTomlExtractor` function implements the full extractor interface — scanning for `meta.toml` files, parsing metadata, and claiming files:
 
-interface ExtractorResult<TMetadata> {
-  examples: Example<TMetadata>[];
-  errors: { path: string; message: string }[];
-  claimedFiles: Set<string>;
-}
-```
+<%= region('createExtractor') %>
 
 ## Key Concepts
 
 ### Tree-Scan Pattern
 
 Extractors implement the "tree-scan" pattern:
-- Called once with the root directory
-- Return ALL examples found in that tree
-- Claim files they've processed
+- Called once with candidate `Dirent[]` entries
+- Return ALL examples found in those candidates
+- Claim files they've processed via `claimedFiles`
 
 ### Claimed Files
 
@@ -48,22 +36,12 @@ The `claimedFiles` set tells the scanner which files this extractor owns. This i
 ### Example Shape
 
 Each example must have:
-- `id` - Unique identifier
-- `title` - Display name
-- `rootPath` - Base directory
-- `files` - Array of file info
-- `metadata` - Your custom metadata type
-- `extractorName` - Your extractor's name
-
-## Creating Your Own
-
-1. Define your metadata interface
-2. Implement the `Extractor` interface
-3. Scan for your file pattern (e.g., `meta.toml`)
-4. Parse metadata and collect files
-5. Return examples with claimed files
-
-See `toml-extractor.ts` for a complete implementation.
+- `id` — Unique identifier
+- `title` — Display name
+- `rootPath` — Base directory
+- `files` — Array of file info
+- `metadata` — Your custom metadata type
+- `extractorName` — Your extractor's name
 
 ## When to Create a Custom Extractor
 

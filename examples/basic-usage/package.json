@@ -1,0 +1,11 @@
+{
+  "name": "@examples/basic-usage",
+  "private": true,
+  "type": "module",
+  "description": "Basic example demonstrating how to scan for examples in a directory",
+  "main": "./scan.ts",
+  "functional-examples": {
+    "title": "Basic Usage",
+    "tags": ["beginner", "scanning"]
+  }
+}

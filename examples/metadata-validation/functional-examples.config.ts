@@ -18,6 +18,7 @@ const config: Config = {
     include: ['**/*'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
+  // #region schema
   // JSON Schema for example metadata
   metadata: {
     type: 'object',
@@ -34,6 +35,7 @@ const config: Config = {
     },
     required: ['category', 'difficulty'],
   },
+  // #endregion schema
 };
 
 export default config;

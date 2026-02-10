@@ -1,8 +1,10 @@
+// #region frontmatter
 // ---
 // id: missing-fields
 // title: Missing Required Fields
 // description: This example is missing category and difficulty
 // ---
+// #endregion frontmatter
 
 /**
  * This example will produce validation errors because

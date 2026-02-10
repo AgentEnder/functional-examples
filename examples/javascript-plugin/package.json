@@ -1,8 +1,10 @@
 {
-  "name": "@functional-examples/example-javascript-plugin",
+  "name": "@examples/javascript-plugin",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "description": "Demonstrates using frontmatter comments in TypeScript/JavaScript files to define example metadata, including region markers for code snippets",
+  "main": "./functional-examples.config.ts",
   "scripts": {
     "scan": "functional-examples scan .",
     "scan:json": "functional-examples scan . -f json",
@@ -11,5 +13,17 @@
   "dependencies": {
     "functional-examples": "workspace:*",
     "@functional-examples/javascript": "workspace:*"
-  }
+  },
+  "functional-examples": {
+    "title": "JavaScript Plugin",
+    "tags": [
+      "plugin",
+      "frontmatter",
+      "typescript",
+      "regions"
+    ]
+  },
+  "files": [
+    "src/**"
+  ]
 }

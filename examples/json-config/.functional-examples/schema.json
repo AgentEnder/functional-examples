@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "plugins": {
+      "type": "array",
+      "description": "Plugins to use for scanning and parsing",
+      "items": {
+        "type": "object"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "JSON Schema defining the expected metadata structure for examples"
+    },
+    "scan": {
+      "type": "object",
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to include"
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to exclude"
+        }
+      }
+    },
+    "pathMappings": {
+      "type": "array",
+      "description": "Path mappings for conflict resolution",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "extractor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern",
+          "extractor"
+        ]
+      }
+    },
+    "generate": {
+      "type": "object",
+      "properties": {
+        "outputDir": {
+          "type": "string",
+          "description": "Output directory for generated files"
+        }
+      }
+    }
+  },
+  "$defs": {}
+}
