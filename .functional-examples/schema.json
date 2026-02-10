@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "plugins": {
+      "type": "array",
+      "description": "Plugins to use for scanning and parsing",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "javascript"
+              },
+              "options": {
+                "$ref": "#/$defs/javascriptOptions"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "const": "@functional-examples/documentation"
+              },
+              "options": {
+                "$ref": "#/$defs/functionalexamplesdocumentationOptions"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "JSON Schema defining the expected metadata structure for examples"
+    },
+    "scan": {
+      "type": "object",
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to include"
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to exclude"
+        }
+      }
+    },
+    "pathMappings": {
+      "type": "array",
+      "description": "Path mappings for conflict resolution",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "extractor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern",
+          "extractor"
+        ]
+      }
+    },
+    "generate": {
+      "type": "object",
+      "properties": {
+        "outputDir": {
+          "type": "string",
+          "description": "Output directory for generated files"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "javascriptOptions": {
+      "type": "object",
+      "properties": {
+        "skipFrontmatter": {
+          "type": "boolean",
+          "description": "Skip frontmatter parsing"
+        },
+        "skipRegions": {
+          "type": "boolean",
+          "description": "Skip region parsing"
+        }
+      },
+      "description": "Options for javascript plugin"
+    },
+    "functionalexamplesdocumentationOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "outputDir": {
+          "default": "./docs",
+          "type": "string"
+        },
+        "format": {
+          "default": "markdown",
+          "type": "string",
+          "enum": [
+            "markdown",
+            "mdoc"
+          ]
+        },
+        "templates": {
+          "type": "string"
+        },
+        "enableExtractor": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "outputDir",
+        "format",
+        "enableExtractor"
+      ],
+      "additionalProperties": false,
+      "description": "Options for @functional-examples/documentation plugin"
+    }
+  }
+}

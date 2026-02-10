@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:dispatching-parallel-agents)",
+      "WebFetch(domain:markdoc.dev)",
+      "WebFetch(domain:eta.js.org)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "Bash(fi)",
+      "mcp__plugin_playwright_playwright__browser_click"
+    ]
+  }
+}

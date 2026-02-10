@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs-site/public/logo.svg" alt="functional-examples" width="96" />
+</p>
+
 # functional-examples
 
 A language-agnostic library for treating code examples as first-class citizens.
