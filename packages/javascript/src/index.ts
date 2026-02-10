@@ -3,7 +3,7 @@ import type {
   FileContentsParser,
   FileParseContext,
   ValidationResult,
-} from 'functional-examples';
+} from '@functional-examples/devkit';
 import { createJavaScriptParser } from './parser.js';
 import { createFrontmatterParser } from './frontmatter.js';
 import { createJavaScriptExtractor } from './extractor.js';
@@ -74,15 +74,19 @@ const METADATA_SCHEMA = JSON.stringify({
 
 /**
  * Validate metadata extracted by this plugin.
+ * Note: id and title are validated by the extractor and are top-level example fields,
+ * not part of the metadata object passed here.
  */
 function validateMetadata(metadata: Record<string, unknown>): ValidationResult {
   const errors: Array<{ path: string; message: string }> = [];
 
-  if (typeof metadata.id !== 'string' || !metadata.id) {
-    errors.push({ path: 'id', message: 'must be a non-empty string' });
-  }
-  if (typeof metadata.title !== 'string' || !metadata.title) {
-    errors.push({ path: 'title', message: 'must be a non-empty string' });
+  // Validate tags array if present
+  if (metadata.tags !== undefined) {
+    if (!Array.isArray(metadata.tags)) {
+      errors.push({ path: 'tags', message: 'must be an array' });
+    } else if (!metadata.tags.every((t) => typeof t === 'string')) {
+      errors.push({ path: 'tags', message: 'must be an array of strings' });
+    }
   }
 
   return { success: errors.length === 0, errors };
@@ -112,12 +116,12 @@ export function createJavaScriptPlugin(
   const combinedParser: FileContentsParser = {
     name: 'javascript-combined-parser',
 
-    parse(context: FileParseContext): FileParseContext {
+    async parse(context: FileParseContext): Promise<FileParseContext> {
       let result = context;
 
       // Run frontmatter parser first (extracts metadata, strips frontmatter)
       if (!skipFrontmatter) {
-        result = createFrontmatterParser().parse(result) as FileParseContext;
+        result = await createFrontmatterParser().parse(result);
       }
 
       // Run region parser second (extracts hunks, strips markers)

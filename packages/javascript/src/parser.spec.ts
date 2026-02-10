@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createJavaScriptParser } from './parser.js';
-import type { FileParseContext } from 'functional-examples';
+import type { FileParseContext } from '@functional-examples/devkit';
 
 describe('createJavaScriptParser', () => {
   const parser = createJavaScriptParser();

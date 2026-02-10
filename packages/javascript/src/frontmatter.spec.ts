@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createFrontmatterParser } from './frontmatter.js';
-import type { FileParseContext } from 'functional-examples';
+import type { FileParseContext } from '@functional-examples/devkit';
 
 describe('createFrontmatterParser', () => {
   const parser = createFrontmatterParser();
@@ -18,19 +18,19 @@ describe('createFrontmatterParser', () => {
     };
   }
 
-  function parse(content: string): FileParseContext {
-    return parser.parse(makeContext(content)) as FileParseContext;
+  async function parse(content: string): Promise<FileParseContext> {
+    return (await parser.parse(makeContext(content))) as FileParseContext;
   }
 
   describe('line comment frontmatter', () => {
-    it('should extract metadata from line comment frontmatter', () => {
+    it('should extract metadata from line comment frontmatter', async () => {
       const content = `// ---
 // title: My Example
 // description: A demo
 // ---
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({
         title: 'My Example',
@@ -38,7 +38,7 @@ const x = 1;`;
       });
     });
 
-    it('should handle nested YAML in line comments', () => {
+    it('should handle nested YAML in line comments', async () => {
       const content = `// ---
 // title: Example
 // tags:
@@ -47,7 +47,7 @@ const x = 1;`;
 // ---
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({
         title: 'Example',
@@ -55,14 +55,14 @@ const x = 1;`;
       });
     });
 
-    it('should strip frontmatter from parsed content', () => {
+    it('should strip frontmatter from parsed content', async () => {
       const content = `// ---
 // title: My Example
 // ---
 const x = 1;
 const y = 2;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.parsed).toBe(`const x = 1;
 const y = 2;`);
@@ -70,14 +70,14 @@ const y = 2;`);
   });
 
   describe('block comment frontmatter', () => {
-    it('should extract metadata from block comment frontmatter', () => {
+    it('should extract metadata from block comment frontmatter', async () => {
       const content = `/* ---
 title: My Example
 description: A demo
 --- */
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({
         title: 'My Example',
@@ -85,7 +85,7 @@ const x = 1;`;
       });
     });
 
-    it('should handle nested YAML in block comments', () => {
+    it('should handle nested YAML in block comments', async () => {
       const content = `/* ---
 title: Example
 config:
@@ -94,7 +94,7 @@ config:
 --- */
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({
         title: 'Example',
@@ -105,14 +105,14 @@ const x = 1;`;
       });
     });
 
-    it('should strip block comment frontmatter from parsed content', () => {
+    it('should strip block comment frontmatter from parsed content', async () => {
       const content = `/* ---
 title: My Example
 --- */
 const x = 1;
 const y = 2;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.parsed).toBe(`const x = 1;
 const y = 2;`);
@@ -120,17 +120,17 @@ const y = 2;`);
   });
 
   describe('no frontmatter passthrough', () => {
-    it('should return context unchanged when no frontmatter present', () => {
+    it('should return context unchanged when no frontmatter present', async () => {
       const content = `const x = 1;
 const y = 2;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({});
       expect(result.parsed).toBe(content);
     });
 
-    it('should preserve existing metadata when no frontmatter present', () => {
+    it('should preserve existing metadata when no frontmatter present', async () => {
       const context: FileParseContext = {
         raw: 'const x = 1;',
         parsed: 'const x = 1;',
@@ -139,46 +139,46 @@ const y = 2;`;
         filePath: '/test.ts',
       };
 
-      const result = parser.parse(context) as FileParseContext;
+      const result = (await parser.parse(context)) as FileParseContext;
 
       expect(result.metadata).toEqual({ existing: 'value' });
     });
   });
 
   describe('top-of-file detection only', () => {
-    it('should ignore line comment frontmatter mid-file', () => {
+    it('should ignore line comment frontmatter mid-file', async () => {
       const content = `const x = 1;
 // ---
 // title: Ignored
 // ---
 const y = 2;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({});
       expect(result.parsed).toBe(content);
     });
 
-    it('should ignore block comment frontmatter mid-file', () => {
+    it('should ignore block comment frontmatter mid-file', async () => {
       const content = `const x = 1;
 /* ---
 title: Ignored
 --- */
 const y = 2;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({});
       expect(result.parsed).toBe(content);
     });
 
-    it('should detect frontmatter with leading whitespace on first line', () => {
+    it('should detect frontmatter with leading whitespace on first line', async () => {
       const content = `  // ---
   // title: Indented Example
   // ---
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({
         title: 'Indented Example',
@@ -187,7 +187,7 @@ const x = 1;`;
   });
 
   describe('metadata merging', () => {
-    it('should merge frontmatter with existing metadata', () => {
+    it('should merge frontmatter with existing metadata', async () => {
       const context: FileParseContext = {
         raw: `// ---
 // title: From Frontmatter
@@ -202,7 +202,7 @@ const x = 1;`,
         filePath: '/test.ts',
       };
 
-      const result = parser.parse(context) as FileParseContext;
+      const result = (await parser.parse(context)) as FileParseContext;
 
       // Frontmatter should override existing
       expect(result.metadata).toEqual({
@@ -213,35 +213,35 @@ const x = 1;`,
   });
 
   describe('edge cases', () => {
-    it('should handle empty frontmatter', () => {
+    it('should handle empty frontmatter', async () => {
       const content = `// ---
 // ---
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({});
       expect(result.parsed).toBe('const x = 1;');
     });
 
-    it('should handle frontmatter with only whitespace content', () => {
+    it('should handle frontmatter with only whitespace content', async () => {
       const content = `/* ---
 --- */
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.metadata).toEqual({});
       expect(result.parsed).toBe('const x = 1;');
     });
 
-    it('should preserve original raw content', () => {
+    it('should preserve original raw content', async () => {
       const content = `// ---
 // title: Example
 // ---
 const x = 1;`;
 
-      const result = parse(content);
+      const result = await parse(content);
 
       expect(result.raw).toBe(content);
     });

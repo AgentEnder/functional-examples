@@ -1,5 +1,8 @@
-import type { FileContentsParser, FileParseContext } from 'functional-examples';
-import { parse as parseYaml } from 'yaml';
+import {
+  type FileContentsParser,
+  type FileParseContext,
+  parseYaml,
+} from '@functional-examples/devkit';
 
 /** Pattern matching line comment frontmatter start: // --- */
 const LINE_COMMENT_START = /^[ \t]*\/\/\s*---\s*$/;
@@ -27,9 +30,9 @@ interface FrontmatterResult {
  * // key: value
  * // ---
  */
-function extractLineCommentFrontmatter(
+async function extractLineCommentFrontmatter(
   lines: string[]
-): FrontmatterResult | null {
+): Promise<FrontmatterResult | null> {
   if (lines.length < 2) return null;
 
   // First line must be // ---
@@ -67,7 +70,7 @@ function extractLineCommentFrontmatter(
 
   const yamlContent = yamlLines.join('\n');
   const metadata = yamlContent.trim()
-    ? (parseYaml(yamlContent) as Record<string, unknown>) ?? {}
+    ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
   return {
@@ -83,9 +86,9 @@ function extractLineCommentFrontmatter(
  * key: value
  * --- *\/
  */
-function extractBlockCommentFrontmatter(
+async function extractBlockCommentFrontmatter(
   lines: string[]
-): FrontmatterResult | null {
+): Promise<FrontmatterResult | null> {
   if (lines.length < 2) return null;
 
   // First line must be /* ---
@@ -117,7 +120,7 @@ function extractBlockCommentFrontmatter(
 
   const yamlContent = yamlLines.join('\n');
   const metadata = yamlContent.trim()
-    ? (parseYaml(yamlContent) as Record<string, unknown>) ?? {}
+    ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
   return {
@@ -148,13 +151,13 @@ export function createFrontmatterParser(): FileContentsParser {
   return {
     name: 'javascript-frontmatter-parser',
 
-    parse(context: FileParseContext): FileParseContext {
+    async parse(context: FileParseContext): Promise<FileParseContext> {
       const lines = context.parsed.split('\n');
 
       // Try line comment style first, then block comment style
       const result =
-        extractLineCommentFrontmatter(lines) ??
-        extractBlockCommentFrontmatter(lines);
+        (await extractLineCommentFrontmatter(lines)) ??
+        (await extractBlockCommentFrontmatter(lines));
 
       if (!result) {
         // No frontmatter found, return context unchanged

@@ -2,7 +2,7 @@ import type {
   FileContentsParser,
   FileParseContext,
   ParsedRegion,
-} from 'functional-examples';
+} from '@functional-examples/devkit';
 
 const LINE_COMMENT_REGION = /^[ \t]*\/\/\s*#region\s+(\S+)\s*$/;
 const LINE_COMMENT_ENDREGION = /^[ \t]*\/\/\s*#endregion(?:\s+(\S+))?\s*$/;

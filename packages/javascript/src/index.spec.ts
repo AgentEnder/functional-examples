@@ -6,7 +6,7 @@ import {
   createJavaScriptExtractor,
   JAVASCRIPT_EXTENSIONS,
 } from './index.js';
-import type { FileParseContext } from 'functional-examples';
+import type { FileParseContext } from '@functional-examples/devkit';
 
 describe('createJavaScriptPlugin', () => {
   function makeContext(
@@ -59,7 +59,7 @@ describe('createJavaScriptPlugin', () => {
   });
 
   describe('combined parser behavior', () => {
-    it('should run frontmatter parsing first, then region parsing', () => {
+    it('should run frontmatter parsing first, then region parsing', async () => {
       const plugin = createJavaScriptPlugin();
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -76,7 +76,7 @@ const inside = 2;
 // #endregion main
 const after = 3;`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       // Frontmatter should be extracted
       expect(result.metadata).toEqual({
@@ -103,7 +103,7 @@ const after = 3;`;
       expect(result.parsed).toContain('const after = 3;');
     });
 
-    it('should handle content with only frontmatter', () => {
+    it('should handle content with only frontmatter', async () => {
       const plugin = createJavaScriptPlugin();
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -113,14 +113,14 @@ const after = 3;`;
 // ---
 const x = 1;`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       expect(result.metadata).toEqual({ title: 'Frontmatter Only' });
       expect(result.parsed).toBe('const x = 1;');
       expect(result.hunks).toHaveLength(0);
     });
 
-    it('should handle content with only regions', () => {
+    it('should handle content with only regions', async () => {
       const plugin = createJavaScriptPlugin();
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -129,7 +129,7 @@ const x = 1;`;
 const x = 1;
 // #endregion example`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       expect(result.metadata).toEqual({});
       expect(result.hunks).toHaveLength(1);
@@ -137,7 +137,7 @@ const x = 1;
       expect(result.parsed).toBe('const x = 1;');
     });
 
-    it('should handle content with neither frontmatter nor regions', () => {
+    it('should handle content with neither frontmatter nor regions', async () => {
       const plugin = createJavaScriptPlugin();
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -145,7 +145,7 @@ const x = 1;
       const content = `const x = 1;
 const y = 2;`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       expect(result.metadata).toEqual({});
       expect(result.hunks).toHaveLength(0);
@@ -154,7 +154,7 @@ const y = 2;`;
   });
 
   describe('skipFrontmatter option', () => {
-    it('should skip frontmatter parsing when skipFrontmatter is true', () => {
+    it('should skip frontmatter parsing when skipFrontmatter is true', async () => {
       const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -164,7 +164,7 @@ const y = 2;`;
 // ---
 const x = 1;`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       // Frontmatter should NOT be extracted
       expect(result.metadata).toEqual({});
@@ -174,7 +174,7 @@ const x = 1;`;
       expect(result.parsed).toContain('title: Should Not Extract');
     });
 
-    it('should still parse regions when skipFrontmatter is true', () => {
+    it('should still parse regions when skipFrontmatter is true', async () => {
       const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -183,7 +183,7 @@ const x = 1;`;
 const x = 1;
 // #endregion example`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       expect(result.hunks).toHaveLength(1);
       expect(result.hunks[0].id).toBe('example');
@@ -191,7 +191,7 @@ const x = 1;
   });
 
   describe('skipRegions option', () => {
-    it('should skip region parsing when skipRegions is true', () => {
+    it('should skip region parsing when skipRegions is true', async () => {
       const plugin = createJavaScriptPlugin({ skipRegions: true });
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -200,7 +200,7 @@ const x = 1;
 const x = 1;
 // #endregion example`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       // Regions should NOT be extracted
       expect(result.hunks).toHaveLength(0);
@@ -210,7 +210,7 @@ const x = 1;
       expect(result.parsed).toContain('// #endregion example');
     });
 
-    it('should still parse frontmatter when skipRegions is true', () => {
+    it('should still parse frontmatter when skipRegions is true', async () => {
       const plugin = createJavaScriptPlugin({ skipRegions: true });
       const parser = plugin.fileContentsParser;
       if (!parser) throw new Error('Expected fileContentsParser');
@@ -220,7 +220,7 @@ const x = 1;
 // ---
 const x = 1;`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       expect(result.metadata).toEqual({ title: 'Should Extract' });
       expect(result.parsed).toBe('const x = 1;');
@@ -228,7 +228,7 @@ const x = 1;`;
   });
 
   describe('both options combined', () => {
-    it('should skip both when both options are true', () => {
+    it('should skip both when both options are true', async () => {
       const plugin = createJavaScriptPlugin({
         skipFrontmatter: true,
         skipRegions: true,
@@ -243,7 +243,7 @@ const x = 1;`;
 const x = 1;
 // #endregion example`;
 
-      const result = parser.parse(makeContext(content)) as FileParseContext;
+      const result = (await parser.parse(makeContext(content))) as FileParseContext;
 
       // Neither should be extracted
       expect(result.metadata).toEqual({});
@@ -325,59 +325,52 @@ describe('schemas', () => {
 });
 
 describe('validators', () => {
-  it('should validate metadata with id and title', () => {
+  // Note: id and title are validated by the extractor (required fields in
+  // frontmatter or package.json). The metadata validator only validates
+  // optional fields like tags.
+
+  it('should accept metadata with valid tags', () => {
     const plugin = createJavaScriptPlugin();
     const validate = plugin.validators?.metadata;
     expect(validate).toBeDefined();
     if (!validate) return;
 
-    const result = validate({ id: 'test', title: 'Test' });
+    const result = validate({ tags: ['foo', 'bar'] });
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 
-  it('should reject metadata without id', () => {
+  it('should accept metadata without tags', () => {
     const plugin = createJavaScriptPlugin();
     const validate = plugin.validators?.metadata;
     expect(validate).toBeDefined();
     if (!validate) return;
 
-    const result = validate({ title: 'Test' });
-    expect(result.success).toBe(false);
-    expect(result.errors.some((e) => e.path === 'id')).toBe(true);
+    const result = validate({});
+    expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
   });
 
-  it('should reject metadata without title', () => {
+  it('should reject non-array tags', () => {
     const plugin = createJavaScriptPlugin();
     const validate = plugin.validators?.metadata;
     expect(validate).toBeDefined();
     if (!validate) return;
 
-    const result = validate({ id: 'test' });
+    const result = validate({ tags: 'not-an-array' });
     expect(result.success).toBe(false);
-    expect(result.errors.some((e) => e.path === 'title')).toBe(true);
+    expect(result.errors.some((e) => e.path === 'tags')).toBe(true);
   });
 
-  it('should reject empty id', () => {
+  it('should reject tags with non-string elements', () => {
     const plugin = createJavaScriptPlugin();
     const validate = plugin.validators?.metadata;
     expect(validate).toBeDefined();
     if (!validate) return;
 
-    const result = validate({ id: '', title: 'Test' });
+    const result = validate({ tags: ['valid', 123, 'also-valid'] });
     expect(result.success).toBe(false);
-    expect(result.errors.some((e) => e.path === 'id')).toBe(true);
-  });
-
-  it('should reject empty title', () => {
-    const plugin = createJavaScriptPlugin();
-    const validate = plugin.validators?.metadata;
-    expect(validate).toBeDefined();
-    if (!validate) return;
-
-    const result = validate({ id: 'test', title: '' });
-    expect(result.success).toBe(false);
-    expect(result.errors.some((e) => e.path === 'title')).toBe(true);
+    expect(result.errors.some((e) => e.path === 'tags')).toBe(true);
   });
 });
 
