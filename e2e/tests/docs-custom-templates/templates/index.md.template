@@ -1,0 +1,10 @@
+---
+layout: custom-index
+---
+
+# Custom Index
+
+Total: <%= it.examples.length %> example(s)
+<% it.examples.forEach(function(example) { -%>
+* <%= example.id %> (<%= example.title %>)
+<% }); -%>

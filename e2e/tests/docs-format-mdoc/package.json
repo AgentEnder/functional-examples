@@ -1,0 +1,63 @@
+{
+  "name": "@e2e/docs-format-mdoc",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --format mdoc generates .mdoc files with Markdoc annotations",
+  "main": "./src/config.js",
+  "functional-examples": {
+    "title": "Docs Format Mdoc",
+    "tags": ["e2e", "docs", "mdoc", "format"],
+    "test": [
+      {
+        "name": "generates .mdoc files instead of .md",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-mdoc"
+          },
+          {
+            "command": "npx functional-examples documentation --format mdoc --filter docs-format-mdoc --output ./tmp-mdoc",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "contains": "Generating mdoc documentation" },
+              "files": [
+                { "path": "./tmp-mdoc/docs-format-mdoc.mdoc" },
+                { "path": "./tmp-mdoc/index.mdoc" }
+              ],
+              "not": { "file": { "path": "./tmp-mdoc/docs-format-mdoc.md" } }
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-mdoc"
+          }
+        ]
+      },
+      {
+        "name": "mdoc output contains Markdoc heading annotations",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-mdoc-content"
+          },
+          {
+            "command": "npx functional-examples documentation --format mdoc --filter docs-format-mdoc --output ./tmp-mdoc-content",
+            "assertions": {
+              "exitCode": 0,
+              "files": [
+                {
+                  "path": "./tmp-mdoc-content/docs-format-mdoc.mdoc",
+                  "matches": "# Docs Format Mdoc \\{%.*%\\}"
+                },
+                {
+                  "path": "./tmp-mdoc-content/index.mdoc",
+                  "contains": "docs-format-mdoc.mdoc"
+                }
+              ]
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-mdoc-content"
+          }
+        ]
+      }
+    ]
+  }
+}

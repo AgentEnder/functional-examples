@@ -1,0 +1,73 @@
+{
+  "name": "@e2e/step-env-propagation",
+  "private": true,
+  "type": "module",
+  "description": "Tests environment variable inheritance and override in steps",
+  "main": "./dump-env.js",
+  "functional-examples": {
+    "title": "Step Env Propagation",
+    "tags": ["e2e", "steps", "env"],
+    "test": [
+      {
+        "name": "inherits default env across steps",
+        "options": {
+          "env": {
+            "BASE_VAR": "from-defaults",
+            "DUMP_KEYS": "BASE_VAR"
+          }
+        },
+        "steps": [
+          {
+            "command": "node dump-env.js",
+            "assertions": {
+              "stdout": { "contains": "BASE_VAR=from-defaults" }
+            }
+          },
+          {
+            "command": "node dump-env.js",
+            "assertions": {
+              "stdout": { "contains": "BASE_VAR=from-defaults" }
+            }
+          }
+        ]
+      },
+      {
+        "name": "step env overrides default while preserving others",
+        "options": {
+          "env": {
+            "COLOR": "red",
+            "SIZE": "large",
+            "DUMP_KEYS": "COLOR,SIZE"
+          }
+        },
+        "steps": [
+          {
+            "command": "node dump-env.js",
+            "assertions": {
+              "stdout": { "contains": "COLOR=red" }
+            }
+          },
+          {
+            "command": "node dump-env.js",
+            "env": { "COLOR": "blue" },
+            "assertions": {
+              "stdout": { "matches": "COLOR=blue[\\s\\S]*SIZE=large" }
+            }
+          }
+        ]
+      },
+      {
+        "name": "step-only env without defaults",
+        "steps": [
+          {
+            "command": "node dump-env.js",
+            "env": { "UNIQUE": "step-only", "DUMP_KEYS": "UNIQUE" },
+            "assertions": {
+              "stdout": { "contains": "UNIQUE=step-only" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

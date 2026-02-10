@@ -1,0 +1,34 @@
+{
+  "name": "@e2e/step-stderr-assertions",
+  "private": true,
+  "type": "module",
+  "description": "Tests that step assertions can check both stdout and stderr independently",
+  "main": "./warn-and-continue.js",
+  "functional-examples": {
+    "title": "Step Stderr Assertions",
+    "tags": ["e2e", "steps", "stderr"],
+    "test": {
+      "name": "each step checks stdout and stderr independently",
+      "steps": [
+        {
+          "command": "node warn-and-continue.js",
+          "env": { "LABEL": "step1" },
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "step1 ok" },
+            "stderr": { "contains": "[warn] step1: deprecated API usage" }
+          }
+        },
+        {
+          "command": "node warn-and-continue.js",
+          "env": { "LABEL": "step2" },
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "step2 ok" },
+            "stderr": { "contains": "[warn] step2" }
+          }
+        }
+      ]
+    }
+  }
+}

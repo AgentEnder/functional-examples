@@ -1,0 +1,59 @@
+{
+  "name": "@e2e/docs-generate-check",
+  "private": true,
+  "type": "module",
+  "description": "Verifies generate then --check passes, and --check detects stale docs",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Generate Check",
+    "tags": ["e2e", "docs", "check"],
+    "test": [
+      {
+        "name": "generate then check passes",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-check-pass"
+          },
+          {
+            "command": "npx functional-examples documentation --filter docs-generate-check --output ./tmp-check-pass",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "contains": "1 example(s) documented" }
+            }
+          },
+          {
+            "command": "npx functional-examples documentation --check --filter docs-generate-check --output ./tmp-check-pass",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "contains": "Documentation is up to date" }
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-check-pass"
+          }
+        ]
+      },
+      {
+        "name": "check detects stale docs",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-check-stale && mkdir -p ./tmp-check-stale"
+          },
+          {
+            "command": "echo 'outdated content' > ./tmp-check-stale/docs-generate-check.md"
+          },
+          {
+            "command": "npx functional-examples documentation --check --filter docs-generate-check --output ./tmp-check-stale",
+            "assertions": {
+              "exitCode": 1,
+              "stderr": { "contains": "Documentation is out of date" }
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-check-stale"
+          }
+        ]
+      }
+    ]
+  }
+}

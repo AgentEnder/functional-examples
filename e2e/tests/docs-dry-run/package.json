@@ -1,0 +1,29 @@
+{
+  "name": "@e2e/docs-dry-run",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --dry-run previews output without writing files",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Dry Run",
+    "tags": ["e2e", "docs", "dry-run"],
+    "test": {
+      "name": "dry-run lists files but does not create output dir",
+      "steps": [
+        {
+          "command": "rm -rf ./tmp-dry-run"
+        },
+        {
+          "command": "npx functional-examples documentation --dry-run --filter docs-dry-run --output ./tmp-dry-run",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": {
+              "matches": "\\[dry-run\\].*docs-dry-run\\.md"
+            },
+            "not": { "dir": { "path": "./tmp-dry-run" } }
+          }
+        }
+      ]
+    }
+  }
+}

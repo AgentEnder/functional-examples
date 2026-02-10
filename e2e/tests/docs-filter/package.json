@@ -1,0 +1,37 @@
+{
+  "name": "@e2e/docs-filter",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --filter scopes generation to matching examples",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Filter",
+    "tags": ["e2e", "docs", "filter"],
+    "test": [
+      {
+        "name": "filter matches only targeted example",
+        "steps": [
+          {
+            "command": "npx functional-examples documentation --dry-run --filter docs-filter --output ./tmp-filter",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "matches": "1 example\\(s\\)" }
+            }
+          }
+        ]
+      },
+      {
+        "name": "filter with no match produces no output",
+        "steps": [
+          {
+            "command": "npx functional-examples documentation --dry-run --filter nonexistent-example-xyz --output ./tmp-filter",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "contains": "No examples found" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

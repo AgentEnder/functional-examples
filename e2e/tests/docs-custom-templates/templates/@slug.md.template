@@ -1,0 +1,9 @@
+---
+title: <%= it.title %>
+id: <%= it.id %>
+---
+
+CUSTOM: <%= it.title %> has <%= it.files.length %> file(s).
+<% it.files.forEach(function(file) { -%>
+- <%= file.relativePath %>
+<% }); -%>

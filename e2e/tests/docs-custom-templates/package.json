@@ -1,0 +1,63 @@
+{
+  "name": "@e2e/docs-custom-templates",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --templates uses a custom templates directory",
+  "main": "./src/utils.js",
+  "functional-examples": {
+    "title": "Docs Custom Templates",
+    "tags": [
+      "e2e",
+      "docs",
+      "templates"
+    ],
+    "test": [
+      {
+        "name": "custom templates produce expected output structure",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-custom-tpl"
+          },
+          {
+            "command": "npx functional-examples documentation --templates ./templates --filter docs-custom-templates --output ./tmp-custom-tpl",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": {
+                "contains": "1 example(s) documented"
+              },
+              "file": {
+                "path": "./tmp-custom-tpl/docs-custom-templates.md",
+                "matches": "---\\ntitle: Docs Custom Templates\\nid: docs-custom-templates\\n---",
+                "contains": "CUSTOM: Docs Custom Templates has"
+              }
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-custom-tpl"
+          }
+        ]
+      },
+      {
+        "name": "custom index template is also used",
+        "steps": [
+          {
+            "command": "rm -rf ./tmp-custom-idx"
+          },
+          {
+            "command": "npx functional-examples documentation --templates ./templates --filter docs-custom-templates --output ./tmp-custom-idx",
+            "assertions": {
+              "exitCode": 0,
+              "file": {
+                "path": "./tmp-custom-idx/index.md",
+                "matches": "layout: custom-index[\\s\\S]*# Custom Index[\\s\\S]*docs-custom-templates \\(Docs Custom Templates\\)"
+              }
+            }
+          },
+          {
+            "command": "rm -rf ./tmp-custom-idx"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+<!-- CUSTOM TEMPLATE -->
+# <%= it.title %> (Custom)
+
+This was rendered with a per-example template.
+
+Files: <%= it.files.length %>
+ID: <%= it.id %>

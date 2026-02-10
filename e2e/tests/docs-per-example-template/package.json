@@ -1,0 +1,36 @@
+{
+  "name": "@e2e/docs-per-example-template",
+  "private": true,
+  "type": "module",
+  "description": "Verifies docs.template metadata overrides the default template for a single example",
+  "main": "./src/main.js",
+  "functional-examples": {
+    "title": "Per Example Template",
+    "tags": ["e2e", "docs", "template-override"],
+    "docs": {
+      "template": "./custom.eta"
+    },
+    "test": {
+      "name": "per-example template produces custom output",
+      "steps": [
+        {
+          "command": "rm -rf ./tmp-per-tpl"
+        },
+        {
+          "command": "npx functional-examples documentation --filter docs-per-example-template --output ./tmp-per-tpl",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "1 example(s) documented" },
+            "file": {
+              "path": "./tmp-per-tpl/docs-per-example-template.md",
+              "matches": "<!-- CUSTOM TEMPLATE -->[\\s\\S]*Per Example Template \\(Custom\\)[\\s\\S]*per-example template"
+            }
+          }
+        },
+        {
+          "command": "rm -rf ./tmp-per-tpl"
+        }
+      ]
+    }
+  }
+}

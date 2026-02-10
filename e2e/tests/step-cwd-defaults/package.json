@@ -1,0 +1,66 @@
+{
+  "name": "@e2e/step-cwd-defaults",
+  "private": true,
+  "type": "module",
+  "description": "Tests that default cwd from options is inherited by steps and can be overridden",
+  "main": "./print-cwd.js",
+  "functional-examples": {
+    "title": "Step Cwd Defaults",
+    "tags": [
+      "e2e",
+      "steps",
+      "cwd"
+    ],
+    "test": [
+      {
+        "name": "all steps inherit default cwd",
+        "options": {
+          "cwd": "sub"
+        },
+        "steps": [
+          {
+            "command": "node greet.js",
+            "assertions": {
+              "stdout": {
+                "contains": "hello from sub"
+              }
+            }
+          },
+          {
+            "command": "node greet.js",
+            "assertions": {
+              "stdout": {
+                "contains": "hello from sub"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "step cwd overrides default cwd",
+        "options": {
+          "cwd": "sub"
+        },
+        "steps": [
+          {
+            "command": "node greet.js",
+            "assertions": {
+              "stdout": {
+                "contains": "hello from sub"
+              }
+            }
+          },
+          {
+            "command": "node deep.js",
+            "cwd": "sub/nested",
+            "assertions": {
+              "stdout": {
+                "contains": "hello from nested"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

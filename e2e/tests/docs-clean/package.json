@@ -1,0 +1,34 @@
+{
+  "name": "@e2e/docs-clean",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --clean removes the output directory before generating",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Clean",
+    "tags": ["e2e", "docs", "clean"],
+    "test": {
+      "name": "clean removes stale files before regenerating",
+      "steps": [
+        {
+          "command": "rm -rf ./tmp-clean && mkdir -p ./tmp-clean"
+        },
+        {
+          "command": "echo 'leftover' > ./tmp-clean/stale-file.txt"
+        },
+        {
+          "command": "npx functional-examples documentation --clean --filter docs-clean --output ./tmp-clean",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "1 example(s) documented" },
+            "not": { "file": { "path": "./tmp-clean/stale-file.txt" } },
+            "file": { "path": "./tmp-clean/docs-clean.md" }
+          }
+        },
+        {
+          "command": "rm -rf ./tmp-clean"
+        }
+      ]
+    }
+  }
+}

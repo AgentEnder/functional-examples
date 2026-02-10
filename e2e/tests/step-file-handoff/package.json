@@ -1,0 +1,37 @@
+{
+  "name": "@e2e/step-file-handoff",
+  "private": true,
+  "type": "module",
+  "description": "Tests that steps can pass data via the filesystem",
+  "main": "./write.js",
+  "functional-examples": {
+    "title": "Step File Handoff",
+    "tags": ["e2e", "steps", "filesystem"],
+    "test": {
+      "name": "write then read then cleanup",
+      "steps": [
+        {
+          "command": "node write.js",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "wrote .tmp-output" }
+          }
+        },
+        {
+          "command": "node read.js",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "read: handoff-value-42" }
+          }
+        },
+        {
+          "command": "node cleanup.js",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "cleaned up" }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@e2e/docs-custom-output",
+  "private": true,
+  "type": "module",
+  "description": "Verifies --output writes to a custom directory and generates valid markdown",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Custom Output",
+    "tags": ["e2e", "docs", "output"],
+    "test": {
+      "name": "generates docs to custom output dir with expected content",
+      "steps": [
+        {
+          "command": "rm -rf ./tmp-custom-out"
+        },
+        {
+          "command": "npx functional-examples documentation --filter docs-custom-output --output ./tmp-custom-out",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "1 example(s) documented" },
+            "files": [
+              {
+                "path": "./tmp-custom-out/docs-custom-output.md",
+                "matches": "# Docs Custom Output[\\s\\S]*```js[\\s\\S]*function add"
+              },
+              {
+                "path": "./tmp-custom-out/index.md"
+              }
+            ]
+          }
+        },
+        {
+          "command": "rm -rf ./tmp-custom-out"
+        }
+      ]
+    }
+  }
+}

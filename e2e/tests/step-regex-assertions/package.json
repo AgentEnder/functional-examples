@@ -1,0 +1,37 @@
+{
+  "name": "@e2e/step-regex-assertions",
+  "private": true,
+  "type": "module",
+  "description": "Tests regex-based stdout assertions in steps for dynamic output",
+  "main": "./generate-id.js",
+  "functional-examples": {
+    "title": "Step Regex Assertions",
+    "tags": ["e2e", "steps", "regex"],
+    "test": [
+      {
+        "name": "matches dynamic hex id and timestamp",
+        "steps": [
+          {
+            "command": "node generate-id.js",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "matches": "id=[0-9a-f]{8} ts=\\d{13}" }
+            }
+          }
+        ]
+      },
+      {
+        "name": "matches across multiple output lines",
+        "steps": [
+          {
+            "command": "node multi-line.js",
+            "assertions": {
+              "exitCode": 0,
+              "stdout": { "matches": "line1: \\w+\\nline2: \\d+\\nline3: done" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

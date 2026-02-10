@@ -1,0 +1,31 @@
+{
+  "name": "@e2e/step-expected-failure",
+  "private": true,
+  "type": "module",
+  "description": "Tests that steps can assert on expected non-zero exit codes and stderr",
+  "main": "./setup.js",
+  "functional-examples": {
+    "title": "Step Expected Failure",
+    "tags": ["e2e", "steps", "error-handling"],
+    "test": {
+      "name": "setup then expected failure",
+      "steps": [
+        {
+          "command": "node setup.js",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "setup complete" }
+          }
+        },
+        {
+          "command": "node fail-gracefully.js",
+          "assertions": {
+            "exitCode": 2,
+            "stderr": { "contains": "config file not found" },
+            "stdout": { "contains": "attempted: ./missing.yml" }
+          }
+        }
+      ]
+    }
+  }
+}

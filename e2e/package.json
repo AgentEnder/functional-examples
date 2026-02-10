@@ -1,0 +1,21 @@
+{
+  "name": "@functional-examples/e2e",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "End-to-end tests for functional-examples",
+  "scripts": {
+    "e2e": "functional-examples test"
+  },
+  "dependencies": {
+    "@functional-examples/devkit": "workspace:*",
+    "@functional-examples/documentation": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
+    "@functional-examples/test": "workspace:*",
+    "functional-examples": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

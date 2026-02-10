@@ -1,0 +1,30 @@
+{
+  "name": "@e2e/docs-skip-example",
+  "private": true,
+  "type": "module",
+  "description": "Verifies docs.skip metadata excludes an example from generation",
+  "main": "./src/index.js",
+  "functional-examples": {
+    "title": "Docs Skip Example",
+    "tags": ["e2e", "docs", "skip"],
+    "docs": {
+      "skip": true
+    },
+    "test": {
+      "name": "skipped example produces no per-item doc when filtered",
+      "steps": [
+        {
+          "command": "rm -rf ./tmp-skip"
+        },
+        {
+          "command": "npx functional-examples documentation --filter docs-skip-example --output ./tmp-skip",
+          "assertions": {
+            "exitCode": 0,
+            "stdout": { "contains": "No examples found" },
+            "not": { "dir": { "path": "./tmp-skip" } }
+          }
+        }
+      ]
+    }
+  }
+}
