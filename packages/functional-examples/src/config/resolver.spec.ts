@@ -2,10 +2,10 @@
  * Tests for configuration resolver
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { resolveConfig } from './resolver.js';
+import { describe, expect, it, vi } from 'vitest';
 import type { Plugin } from '../types/index.js';
-import type { Config } from './types.js';
+import { resolveConfig } from './resolver.js';
+import type { ConfigWithRoot } from './types.js';
 
 describe('resolveConfig', () => {
   describe('plugin options validation', () => {
@@ -27,8 +27,9 @@ describe('resolveConfig', () => {
         },
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [plugin],
+        root: '/virtual',
       };
 
       const result = await resolveConfig(config);
@@ -58,8 +59,9 @@ describe('resolveConfig', () => {
         },
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [plugin],
+        root: '/virtual',
       };
 
       const result = await resolveConfig(config);
@@ -78,8 +80,9 @@ describe('resolveConfig', () => {
         },
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [plugin],
+        root: '/virtual',
       };
 
       await resolveConfig(config);
@@ -111,8 +114,9 @@ describe('resolveConfig', () => {
         },
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [pluginA, pluginB],
+        root: '/virtual',
       };
 
       const result = await resolveConfig(config);
@@ -130,8 +134,9 @@ describe('resolveConfig', () => {
         extensions: ['.test'],
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [plugin],
+        root: '/virtual',
       };
 
       const result = await resolveConfig(config);
@@ -155,8 +160,9 @@ describe('resolveConfig', () => {
         extractor,
       };
 
-      const config: Config = {
+      const config: ConfigWithRoot = {
         plugins: [plugin],
+        root: '/virtual',
       };
 
       const result = await resolveConfig(config);
@@ -167,16 +173,18 @@ describe('resolveConfig', () => {
 
   describe('defaults', () => {
     it('should apply default scan config', async () => {
-      const result = await resolveConfig({});
+      const result = await resolveConfig({ root: '/virtual' });
 
       expect(result.scan).toEqual({
-        include: ['**/*'],
+        include: ['*'],  // Default when no examples/ directory exists
         exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+        root: '.',
       });
     });
 
     it('should merge user scan config with defaults', async () => {
       const result = await resolveConfig({
+        root: '/virtual',
         scan: {
           include: ['examples/**'],
         },

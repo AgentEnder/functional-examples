@@ -2,16 +2,8 @@
  * Configuration validation using Zod
  */
 
-import { ConfigSchema } from './schema.js';
 import type { ConfigValidationError } from '../types/index.js';
-
-// Re-export for backward compatibility
-export type { ConfigValidationError } from '../types/index.js';
-
-/**
- * @deprecated Use ConfigValidationError instead
- */
-export type ValidationError = ConfigValidationError;
+import { ConfigSchema } from './schema.js';
 
 export function validateConfig(config: unknown): ConfigValidationError[] {
   const schema = ConfigSchema();

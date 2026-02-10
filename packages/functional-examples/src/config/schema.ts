@@ -32,6 +32,7 @@ export const ExtractorOrReferenceSchema = z.union([
 export const ScanConfigSchema = z.object({
   include: z.array(z.string().min(1)).optional(),
   exclude: z.array(z.string().min(1)).optional(),
+  root: z.string().optional(),
   recursive: z.boolean().optional(),
   fileExtensions: z.array(z.string().min(1)).optional(),
 });

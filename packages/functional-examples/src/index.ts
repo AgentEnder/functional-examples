@@ -38,10 +38,11 @@ export type {
 
 // Scanner
 export { scanExamples } from './scanner/index.js';
+export { scan } from './scanner/index.js';
+export type { ScanOptions } from './scanner/index.js';
 export type {
   FileConflict,
   PathMapping,
-  ScanOptions,
   ScanResult,
 } from './scanner/index.js';
 

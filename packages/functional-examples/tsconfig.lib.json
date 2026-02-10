@@ -7,6 +7,6 @@
     "declarationMap": true,
     "tsBuildInfoFile": "../../dist/tsc/functional-examples.lib.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", ".functional-examples/"],
   "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
 }

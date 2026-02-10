@@ -2,8 +2,8 @@
  * Deep merge for configuration sources
  */
 
-import type { Config, ScanConfig, ExtractorConfigOrFunction } from './types.js';
 import type { PathMapping } from '../scanner/types.js';
+import type { Config, ExtractorConfigOrFunction, ScanConfig } from './types.js';
 
 /**
  * Merged configuration with all required fields
@@ -32,6 +32,7 @@ export function mergeConfigs<TMetadata = Record<string, unknown>>(
   const defaults: Required<ScanConfig> = {
     include: ['**/*'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+    root: '.',
   };
 
   const mergedExtractors: ExtractorConfigOrFunction<TMetadata>[] = [];
@@ -40,10 +41,6 @@ export function mergeConfigs<TMetadata = Record<string, unknown>>(
 
   for (const config of configs) {
     if (!config) continue;
-
-    if (config.extractors) {
-      mergedExtractors.push(...config.extractors);
-    }
 
     if (config.pathMappings) {
       mergedPathMappings.push(...config.pathMappings);

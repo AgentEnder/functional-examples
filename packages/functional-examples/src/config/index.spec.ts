@@ -30,14 +30,19 @@ describe('Config System', () => {
   });
 
   describe('validateConfig', () => {
-    it('should pass valid config', () => {
+    it('should pass valid config with plugins', () => {
       const config: Config<CustomMetadata> = {
-        extractors: [
-          '@scope/extractor',
+        plugins: [
           {
-            name: 'my-extractor',
-            module: '@scope/extractor',
-            options: { key: 'value' },
+            name: 'test-plugin',
+            extractor: {
+              name: 'test-extractor',
+              extract: async () => ({
+                examples: [],
+                errors: [],
+                claimedFiles: new Set<string>(),
+              }),
+            },
           },
         ],
         scan: {
@@ -50,44 +55,30 @@ describe('Config System', () => {
       expect(errors).toHaveLength(0);
     });
 
-    it('should allow empty extractors (for auto-detection)', () => {
+    it('should allow empty plugins (for auto-detection)', () => {
       const config: Config<CustomMetadata> = {
-        extractors: [],
+        plugins: [],
       };
 
       const errors = validateConfig(config);
-      // Empty extractors is valid - the system will auto-detect
+      // Empty plugins is valid - the system will auto-detect
       expect(errors).toHaveLength(0);
     });
 
-    it('should fail with empty extractor string', () => {
+    it('should pass config with only scan options', () => {
       const config: Config<CustomMetadata> = {
-        extractors: [''],
+        scan: {
+          include: ['**/*.ts'],
+          exclude: ['**/dist/**'],
+        },
       };
 
       const errors = validateConfig(config);
-      expect(errors.length).toBeGreaterThan(0);
-      expect(errors[0].path).toMatch(/extractors/);
-    });
-
-    it('should fail with invalid extractor config', () => {
-      const config: Config<CustomMetadata> = {
-        extractors: [
-          {
-            name: 'test',
-            module: '',
-          },
-        ],
-      };
-
-      const errors = validateConfig(config);
-      expect(errors.length).toBeGreaterThan(0);
-      expect(errors[0].path).toMatch(/extractors.*module/);
+      expect(errors).toHaveLength(0);
     });
 
     it('should validate scan include patterns', () => {
       const config: Config<CustomMetadata> = {
-        extractors: ['@scope/test'],
         scan: {
           include: [''],
         },
@@ -104,7 +95,6 @@ describe('Config System', () => {
 
     it('should validate scan exclude patterns', () => {
       const config: Config<CustomMetadata> = {
-        extractors: ['@scope/test'],
         scan: {
           exclude: ['', 'valid'],
         },
@@ -121,18 +111,6 @@ describe('Config System', () => {
   });
 
   describe('mergeConfigs', () => {
-    it('should merge extractor arrays', () => {
-      const config1: Partial<Config<CustomMetadata>> = {
-        extractors: ['extractor1'],
-      };
-      const config2: Partial<Config<CustomMetadata>> = {
-        extractors: ['extractor2'],
-      };
-
-      const merged = mergeConfigs(config1, config2);
-      expect(merged.extractors).toEqual(['extractor1', 'extractor2']);
-    });
-
     it('should deep merge scan config', () => {
       const config1: Partial<Config<CustomMetadata>> = {
         scan: { include: ['**/*.ts'] },
@@ -145,6 +123,7 @@ describe('Config System', () => {
       expect(merged.scan).toEqual({
         include: ['**/*.ts'],
         exclude: ['**/test/**'],
+        root: '.',
       });
     });
 
@@ -155,6 +134,7 @@ describe('Config System', () => {
       expect(merged.scan).toEqual({
         include: ['**/*'],
         exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+        root: '.',
       });
     });
 
@@ -163,6 +143,7 @@ describe('Config System', () => {
       expect(merged.scan).toEqual({
         include: ['**/*'],
         exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+        root: '.',
       });
     });
 

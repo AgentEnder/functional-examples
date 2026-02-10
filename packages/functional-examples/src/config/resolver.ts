@@ -2,8 +2,10 @@
  * Configuration resolver - converts config references to actual extractors
  */
 
+import { resolve } from 'node:path';
 import { PluginRegistry } from '../plugins/registry.js';
 import { validatePluginOptions } from '../plugins/validation.js';
+import { getDefaultIncludePattern } from '../scanner/candidates.js';
 import type {
   ConfigValidationError,
   Extractor,
@@ -27,9 +29,9 @@ const KNOWN_EXTRACTORS = [
 /**
  * Default scan configuration
  */
-const DEFAULT_SCAN: Required<ScanConfig> = {
-  include: ['**/*'],
+const DEFAULT_SCAN: Omit<Required<ScanConfig>, 'include'> = {
   exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+  root: '.',
 };
 
 /**
@@ -106,6 +108,15 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
     extractors = await autoDetectExtractors<TMetadata>();
   }
 
+  if (config.scan?.root) {
+    config.scan.root = resolve(config.root, config.scan.root);
+  }
+
+  // Determine effective include pattern (smart default detection)
+  const effectiveInclude = config.scan?.include?.length
+    ? config.scan.include
+    : await getDefaultIncludePattern(config.scan?.root ?? config.root);
+
   return {
     ...config,
     extractors,
@@ -115,6 +126,7 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
     scan: {
       ...DEFAULT_SCAN,
       ...config.scan,
+      include: effectiveInclude,
     },
     validationErrors,
   };
