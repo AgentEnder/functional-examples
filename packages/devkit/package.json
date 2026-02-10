@@ -1,0 +1,66 @@
+{
+  "name": "@functional-examples/devkit",
+  "version": "0.0.1",
+  "description": "Plugin development kit for functional-examples",
+  "author": {
+    "name": "Craigory Coppola",
+    "url": "https://craigory.dev"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "cli-forge": "catalog:"
+  },
+  "peerDependencies": {
+    "jsonc-parser": ">=3.0.0",
+    "json5": ">=2.0.0",
+    "picomatch": ">=4.0.0",
+    "tinyglobby": ">=0.2.0",
+    "yaml": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "jsonc-parser": {
+      "optional": true
+    },
+    "json5": {
+      "optional": true
+    },
+    "picomatch": {
+      "optional": true
+    },
+    "tinyglobby": {
+      "optional": true
+    },
+    "yaml": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/picomatch": "^4.0.2",
+    "json5": "^2.2.3",
+    "jsonc-parser": "^3.3.1",
+    "picomatch": "catalog:",
+    "tinyglobby": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "catalog:"
+  }
+}
