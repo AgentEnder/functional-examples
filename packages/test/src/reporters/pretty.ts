@@ -1,5 +1,5 @@
-import type { Reporter, TestResult, TestSummary } from './types.js';
-import type { Example } from 'functional-examples';
+import type { Reporter } from './types.js';
+import type { Example } from '@functional-examples/devkit';
 
 const PASS = '\x1b[32m PASS \x1b[0m';
 const FAIL = '\x1b[31m FAIL \x1b[0m';

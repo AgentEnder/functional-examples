@@ -1,4 +1,4 @@
-import type { ResolvedConfig } from 'functional-examples';
+import type { ResolvedConfig } from '@functional-examples/devkit';
 import type { ResolvedTestPluginOptions } from '../types.js';
 import { createTestCommand } from './test.js';
 import { createListCommand } from './list.js';

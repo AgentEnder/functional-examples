@@ -1,5 +1,5 @@
-import type { Reporter, TestResult } from './types.js';
-import type { Example } from 'functional-examples';
+import type { Reporter } from './types.js';
+import type { Example } from '@functional-examples/devkit';
 
 function countTests(examples: Example[]): number {
   return examples.reduce((sum, e) => {

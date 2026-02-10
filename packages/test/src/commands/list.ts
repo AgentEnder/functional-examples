@@ -1,9 +1,9 @@
 import { cli } from 'cli-forge';
-import type { ResolvedConfig, Example } from 'functional-examples';
+import type { Example, ResolvedConfig } from '@functional-examples/devkit';
 import { scanExamples } from 'functional-examples';
-import type { TestCase } from '../schema.js';
-import { testMetadataSchema } from '../schema.js';
 import { normalizeTests } from '../runner.js';
+import type { TestCase } from '../schema.js';
+import { TestMetadata, testMetadataSchema } from '../schema.js';
 
 function hasTests(
   example: Example
@@ -30,13 +30,7 @@ export function createListCommand(config: ResolvedConfig) {
           default: 'table' as const,
         }),
     handler: async (args) => {
-      const { examples } = await scanExamples({
-        root: args.path ?? '.',
-        plugins: config.plugins,
-        pathMappings: config.pathMappings,
-        include: config.scan.include,
-        exclude: config.scan.exclude,
-      });
+      const { examples } = await scanExamples<TestMetadata>(config);
 
       const testableExamples = examples.filter(hasTests);
 
@@ -45,7 +39,10 @@ export function createListCommand(config: ResolvedConfig) {
         return tests.map((t) => ({
           example: example.id,
           test: t.name,
-          command: t.options.command,
+          command:
+            'steps' in t
+              ? `${t.steps.length} step${t.steps.length > 1 ? 's' : ''}`
+              : t.options.command,
         }));
       });
 

@@ -1,5 +1,5 @@
 import { cli } from 'cli-forge';
-import type { Example, ResolvedConfig } from 'functional-examples';
+import type { Example, ResolvedConfig } from '@functional-examples/devkit';
 import { scanExamples } from 'functional-examples';
 import { normalizeTests, runTest } from '../runner.js';
 import type { TestCase } from '../schema.js';
@@ -30,7 +30,7 @@ export function createTestCommand(
 ) {
   const { reporters, defaultReporter, ciReporter, timeout } = pluginOpts;
 
-  return cli('test', {
+  return cli('$0', {
     description: 'Run tests for functional examples',
     builder: (cmd) =>
       cmd
@@ -79,17 +79,11 @@ export function createTestCommand(
       const reporter = reporterFactory();
 
       // Scan for examples
-      const { examples, errors } = await scanExamples<TestMetadata>({
-        root: args.path ?? '.',
-        plugins: config.plugins,
-        pathMappings: config.pathMappings,
-        include: config.scan.include,
-        exclude: config.scan.exclude,
-      });
+      const { examples, errors } = await scanExamples<TestMetadata>(config);
 
       if (errors.length) {
         for (const error of errors) {
-          console.error(`Error in ${error.path}: ${error.message}`);
+          console.error(`Error in ${error}: ${error.message}`);
         }
         process.exit(1);
       }

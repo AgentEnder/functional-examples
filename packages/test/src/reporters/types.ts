@@ -1,4 +1,4 @@
-import type { Example } from 'functional-examples';
+import type { Example } from '@functional-examples/devkit';
 
 /**
  * Result of a single test execution

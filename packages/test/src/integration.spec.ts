@@ -275,4 +275,200 @@ process.exit(1);
       expect(result).toEqual(tests);
     });
   });
+
+  describe('runTest (filesystem assertions)', () => {
+    it('should assert file existence and content across steps', async () => {
+      const testCase: TestCase = {
+        name: 'file handoff',
+        steps: [
+          {
+            command: 'echo "generated content" > output.txt',
+          },
+          {
+            command: 'echo ok',
+            assertions: {
+              file: { path: './output.txt', contains: 'generated content' },
+            },
+          },
+          {
+            command: 'rm output.txt',
+          },
+          {
+            command: 'echo ok',
+            assertions: {
+              not: { file: { path: './output.txt' } },
+            },
+          },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+
+    it('should assert directory existence', async () => {
+      const testCase: TestCase = {
+        name: 'dir check',
+        options: { command: 'echo ok' },
+        assertions: {
+          dir: { path: './subdir' },
+        },
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+
+    it('should negate directory existence', async () => {
+      const testCase: TestCase = {
+        name: 'not dir',
+        options: { command: 'echo ok' },
+        assertions: {
+          not: { dir: { path: './nonexistent' } },
+        },
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe('runTest (steps integration)', () => {
+    it('should run multi-step with real scripts', async () => {
+      const testCase: TestCase = {
+        name: 'multi-step scripts',
+        steps: [
+          {
+            command: 'node pass.js',
+            assertions: {
+              exitCode: 0,
+              stdout: { contains: 'Hello from test' },
+            },
+          },
+          {
+            command: 'node env.js',
+            env: { TEST_VALUE: 'from-step' },
+            assertions: {
+              stdout: { contains: 'VALUE=from-step' },
+            },
+          },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+      expect(result.actual?.stdout).toContain('VALUE=from-step');
+    });
+
+    it('should stop on first failing step with real scripts', async () => {
+      const testCase: TestCase = {
+        name: 'fail at step 2',
+        steps: [
+          { command: 'node pass.js' },
+          { command: 'node fail.js' },
+          { command: 'node pass.js' },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.error).toContain('Step 2');
+    });
+
+    it('should support custom cwd in steps', async () => {
+      const testCase: TestCase = {
+        name: 'cwd step',
+        steps: [
+          {
+            command: 'node nested.js',
+            cwd: 'subdir',
+            assertions: {
+              stdout: { contains: 'Nested script' },
+            },
+          },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+
+    it('should timeout slow step', async () => {
+      const testCase: TestCase = {
+        name: 'slow step',
+        steps: [
+          { command: 'node pass.js' },
+          { command: 'node slow.js', timeout: 100 },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 30000,
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.error).toMatch(/Step 2.*timeout|Step 2.*timed out/i);
+    });
+
+    it('should inherit default cwd from options', async () => {
+      const testCase: TestCase = {
+        name: 'default cwd',
+        options: { cwd: 'subdir' },
+        steps: [
+          {
+            command: 'node nested.js',
+            assertions: { stdout: { contains: 'Nested script' } },
+          },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+
+    it('should inherit default env from options and merge with step env', async () => {
+      const testCase: TestCase = {
+        name: 'default env',
+        options: { env: { TEST_VALUE: 'from-defaults' } },
+        steps: [
+          {
+            command: 'node env.js',
+            assertions: { stdout: { contains: 'VALUE=from-defaults' } },
+          },
+          {
+            command: 'node env.js',
+            env: { TEST_VALUE: 'overridden' },
+            assertions: { stdout: { contains: 'VALUE=overridden' } },
+          },
+        ],
+      };
+
+      const result = await runTest('test-example', testDir, testCase, {
+        timeout: 10000,
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
 });

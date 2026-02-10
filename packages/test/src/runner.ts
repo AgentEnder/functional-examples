@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
-import { join } from 'path';
-import type { TestCase, TestAssertions } from './schema.js';
+import { existsSync, readFileSync, statSync } from 'fs';
+import { isAbsolute, join } from 'path';
+import type { TestCase, TestAssertions, OptionsTestCase, StepsTestCase } from './schema.js';
 import type { TestResult } from './reporters/types.js';
 
 interface ExecuteOptions {
@@ -23,8 +24,7 @@ async function executeCommand(
   options: ExecuteOptions
 ): Promise<ExecuteResult> {
   return new Promise((resolve, reject) => {
-    const [cmd, ...args] = command.split(/\s+/);
-    const proc = spawn(cmd, args, {
+    const proc = spawn(command, {
       cwd: options.cwd,
       env: { ...process.env, ...options.env },
       shell: true,
@@ -63,11 +63,19 @@ async function executeCommand(
 }
 
 /**
+ * Resolve an assertion path relative to the test's working directory.
+ */
+function resolveAssertionPath(baseCwd: string, filePath: string): string {
+  return isAbsolute(filePath) ? filePath : join(baseCwd, filePath);
+}
+
+/**
  * Check assertions against actual output
  */
 function checkAssertions(
   assertions: TestAssertions | undefined,
-  actual: ExecuteResult
+  actual: ExecuteResult,
+  cwd: string
 ): string[] {
   const failures: string[] = [];
   if (!assertions) return failures;
@@ -116,6 +124,59 @@ function checkAssertions(
     }
   }
 
+  // File existence and content assertions (singular + array)
+  const fileChecks = [
+    ...(assertions.file ? [assertions.file] : []),
+    ...(assertions.files ?? []),
+  ];
+  for (const fileAssertion of fileChecks) {
+    const resolved = resolveAssertionPath(cwd, fileAssertion.path);
+    if (!existsSync(resolved)) {
+      failures.push(`Expected file to exist: ${fileAssertion.path}`);
+    } else {
+      const content = readFileSync(resolved, 'utf-8');
+
+      if (fileAssertion.contains && !content.includes(fileAssertion.contains)) {
+        failures.push(
+          `Expected file "${fileAssertion.path}" to contain "${fileAssertion.contains}"`
+        );
+      }
+
+      if (fileAssertion.matches) {
+        try {
+          const regex = new RegExp(fileAssertion.matches);
+          if (!regex.test(content)) {
+            failures.push(
+              `Expected file "${fileAssertion.path}" to match /${fileAssertion.matches}/`
+            );
+          }
+        } catch {
+          failures.push(`Invalid file regex: ${fileAssertion.matches}`);
+        }
+      }
+    }
+  }
+
+  // Directory existence assertions (singular + array)
+  const dirChecks = [
+    ...(assertions.dir ? [assertions.dir] : []),
+    ...(assertions.directories ?? []),
+  ];
+  for (const dirAssertion of dirChecks) {
+    const resolved = resolveAssertionPath(cwd, dirAssertion.path);
+    if (!existsSync(resolved) || !statSync(resolved).isDirectory()) {
+      failures.push(`Expected directory to exist: ${dirAssertion.path}`);
+    }
+  }
+
+  // Negation wrapper — inverts pass/fail of inner assertions
+  if (assertions.not) {
+    const innerFailures = checkAssertions(assertions.not, actual, cwd);
+    if (innerFailures.length === 0) {
+      failures.push('Expected NOT: all negated assertions passed but should have failed');
+    }
+  }
+
   return failures;
 }
 
@@ -124,7 +185,74 @@ export interface RunTestOptions {
 }
 
 /**
- * Run a single test case against an example
+ * Run a multi-step test case sequentially.
+ * Stops on the first step failure. Steps with no assertions
+ * implicitly assert exitCode === 0.
+ */
+async function runSteps(
+  exampleId: string,
+  examplePath: string,
+  testCase: StepsTestCase,
+  options: RunTestOptions
+): Promise<TestResult> {
+  const startTime = Date.now();
+  let lastActual: ExecuteResult | undefined;
+  const defaults = testCase.options;
+
+  for (let i = 0; i < testCase.steps.length; i++) {
+    const step = testCase.steps[i];
+    const stepCwd = step.cwd ?? defaults?.cwd;
+    const cwd = stepCwd ? join(examplePath, stepCwd) : examplePath;
+    const env = defaults?.env || step.env
+      ? { ...defaults?.env, ...step.env }
+      : undefined;
+
+    try {
+      const actual = await executeCommand(step.command, {
+        cwd,
+        env,
+        timeout: step.timeout ?? defaults?.timeout ?? options.timeout,
+      });
+
+      lastActual = actual;
+
+      // Use explicit assertions if provided, otherwise assert exitCode 0
+      const assertions = step.assertions ?? { exitCode: 0 };
+      const failures = checkAssertions(assertions, actual, cwd);
+
+      if (failures.length > 0) {
+        return {
+          example: exampleId,
+          test: testCase.name,
+          passed: false,
+          duration: Date.now() - startTime,
+          error: failures.map((f) => `Step ${i + 1}: ${f}`).join('\n'),
+          actual,
+        };
+      }
+    } catch (err) {
+      return {
+        example: exampleId,
+        test: testCase.name,
+        passed: false,
+        duration: Date.now() - startTime,
+        error: `Step ${i + 1}: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
+  }
+
+  return {
+    example: exampleId,
+    test: testCase.name,
+    passed: true,
+    duration: Date.now() - startTime,
+    actual: lastActual,
+  };
+}
+
+/**
+ * Run a single test case against an example.
+ * Dispatches to runSteps() for multi-step test cases.
  */
 export async function runTest(
   exampleId: string,
@@ -132,19 +260,24 @@ export async function runTest(
   testCase: TestCase,
   options: RunTestOptions
 ): Promise<TestResult> {
+  if ('steps' in testCase) {
+    return runSteps(exampleId, examplePath, testCase as StepsTestCase, options);
+  }
+
+  const tc = testCase as OptionsTestCase;
   const startTime = Date.now();
-  const cwd = testCase.options.cwd
-    ? join(examplePath, testCase.options.cwd)
+  const cwd = tc.options.cwd
+    ? join(examplePath, tc.options.cwd)
     : examplePath;
 
   try {
-    const actual = await executeCommand(testCase.options.command, {
+    const actual = await executeCommand(tc.options.command, {
       cwd,
-      env: testCase.options.env,
-      timeout: testCase.options.timeout ?? options.timeout,
+      env: tc.options.env,
+      timeout: tc.options.timeout ?? options.timeout,
     });
 
-    const failures = checkAssertions(testCase.assertions, actual);
+    const failures = checkAssertions(tc.assertions, actual, cwd);
 
     return {
       example: exampleId,
