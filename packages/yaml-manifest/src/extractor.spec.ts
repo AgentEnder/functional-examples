@@ -4,7 +4,7 @@ import type { Dirent } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { createMetaYmlExtractor } from './extractor.js';
-import type { ExtractorOptions } from 'functional-examples';
+import type { ExtractorOptions } from '@functional-examples/devkit';
 
 /**
  * Helper to recursively collect all Dirent entries from a directory tree.

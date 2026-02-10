@@ -24,15 +24,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "fast-glob": "^3.3.0",
+    "@functional-examples/devkit": "workspace:*",
     "yaml": "catalog:"
   },
-  "peerDependencies": {
-    "functional-examples": "^0.0.1"
-  },
   "devDependencies": {
+    "@functional-examples/devkit": "workspace:*",
     "@types/node": "catalog:",
-    "functional-examples": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { Plugin } from 'functional-examples';
+import type { Plugin } from '@functional-examples/devkit';
 import {
   createMetaYmlExtractor,
   type MetaYmlExtractorOptions,

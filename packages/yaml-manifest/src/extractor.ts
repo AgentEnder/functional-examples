@@ -6,18 +6,18 @@
  * where all files in the folder belong to that example.
  */
 
-import type { Dirent } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
-import { parse as parseYaml } from 'yaml';
-import path from 'node:path';
 import type {
-  Extractor,
-  ExtractorOptions,
-  ExtractorResult,
   Example,
   ExampleFile,
+  Extractor,
   ExtractorError,
-} from 'functional-examples';
+  ExtractorOptions,
+  ExtractorResult,
+} from '@functional-examples/devkit';
+import { parseYaml } from '@functional-examples/devkit';
+import type { Dirent } from 'node:fs';
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 
 /**
  * Options for creating a meta.yml extractor
@@ -81,7 +81,7 @@ export function createMetaYmlExtractor(
     exampleDir: string
   ): Promise<{ example: Example; claimedFiles: string[] }> {
     const metaContent = await readFile(metaPath, 'utf-8');
-    const metadata = parseYaml(metaContent) as Record<string, unknown>;
+    const metadata = (await parseYaml(metaContent)) as Record<string, unknown>;
 
     const dirName = path.basename(exampleDir);
     const id = (metadata.id as string) ?? dirName;
