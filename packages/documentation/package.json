@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/documentation",
-  "version": "0.0.1",
+  "version": "0.0.0-alpha.1",
   "type": "module",
   "description": "Documentation generation plugin for functional-examples",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "functional-examples": "^workspace:*"
+    "functional-examples": "0.0.0-alpha.1"
   },
   "peerDependenciesMeta": {
     "yaml": {
