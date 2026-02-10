@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Opening curly brace { — tips right (x=40), stem x=28, midpoint left (x=18) -->
+  <path d="M 40 30
+           C 32 30, 28 34, 28 42
+           L 28 54
+           C 28 58, 24 62, 18 64
+           C 24 66, 28 70, 28 74
+           L 28 86
+           C 28 94, 32 98, 40 98"
+        fill="none" stroke="#e8edf4" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Closing curly brace } — tips left (x=88), stem x=100, midpoint right (x=110) -->
+  <path d="M 88 30
+           C 96 30, 100 34, 100 42
+           L 100 54
+           C 100 58, 104 62, 110 64
+           C 104 66, 100 70, 100 74
+           L 100 86
+           C 100 94, 96 98, 88 98"
+        fill="none" stroke="#e8edf4" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Checkmark ✓ — optically centered (shifted left ~3px to balance the long right arm) -->
+  <polyline points="51,65 60,75 74,49"
+            fill="none" stroke="#6cb4e0" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
