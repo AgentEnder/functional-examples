@@ -1,0 +1,9 @@
+---
+generated: true
+---
+
+# Examples
+
+<% it.examples.forEach(function(example) { -%>
+- [<%= example.title %>](./<%= example.id %>.md)<% if (example.description) { %> — <%= example.description %><% } %>
+<% }); -%>

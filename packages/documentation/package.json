@@ -1,0 +1,46 @@
+{
+  "name": "@functional-examples/documentation",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Documentation generation plugin for functional-examples",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "functional-examples": "^workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "yaml": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@functional-examples/devkit": "workspace:*",
+    "cli-forge": "catalog:",
+    "eta": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@functional-examples/devkit": "workspace:*",
+    "@types/node": "catalog:",
+    "functional-examples": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "catalog:"
+  }
+}

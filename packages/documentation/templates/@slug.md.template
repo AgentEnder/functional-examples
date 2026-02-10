@@ -1,0 +1,40 @@
+---
+generated: true
+---
+
+# <%= it.title %>
+
+<% if (it.description) { -%>
+<%= it.description %>
+
+<% } -%>
+<% /* ── Rendered prose (README, docs, etc. with file/region helpers expanded) ── */ -%>
+<% it.renderedProse.forEach(function(content) { -%>
+<%= content %>
+
+<% }); -%>
+<% /* ── Unconsumed code files ── */ -%>
+<% it.unconsumedFiles.forEach(function(file) { -%>
+## `<%= file.relativePath %>`
+
+<% if (file.hunks && file.hunks.length > 0) { -%>
+<% file.hunks.forEach(function(hunk) { -%>
+### Region: `<%= hunk.id %>`
+
+<% var desc = it.helpers.hunkDescription(it.metadata, hunk.id); -%>
+<% if (desc) { -%>
+<%= desc %>
+
+<% } -%>
+```<%= it.helpers.langFromPath(file.relativePath) %>
+<%= hunk.content %>
+```
+
+<% }); -%>
+<% } else { -%>
+```<%= it.helpers.langFromPath(file.relativePath) %>
+<%= file.parsed || file.raw || '' %>
+```
+
+<% } -%>
+<% }); -%>
