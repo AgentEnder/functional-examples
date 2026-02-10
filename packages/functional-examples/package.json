@@ -6,11 +6,15 @@
     "url": "https://craigory.dev"
   },
   "bugs": {
-    "url": "https://github.com/agentender/functional-examples/issues/new"
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
   },
-  "homepage": "https://github.com/agentender/functional-examples",
+  "homepage": "https://craigory.dev/functional-examples",
   "repository": {
-    "url": "https://github.com/agentender/functional-examples"
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "type": "module",

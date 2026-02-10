@@ -6,6 +6,9 @@
     "name": "Craigory Coppola",
     "url": "https://craigory.dev"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,5 +39,13 @@
   "files": [
     "dist",
     "README.md"
-  ]
+  ],
+  "homepage": "https://craigory.dev/functional-examples",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
+  }
 }

@@ -10,6 +10,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -62,5 +65,13 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "yaml": "catalog:"
+  },
+  "homepage": "https://craigory.dev/functional-examples",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
   }
 }

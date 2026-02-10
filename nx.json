@@ -14,7 +14,7 @@
   "release": {
     "projects": ["packages/*"],
     "version": {
-      "preVersionCommand": "npx nx run-many -t build",
+      "preVersionCommand": "npx nx run-many -t build && pnpm sync-metadata",
       "conventionalCommits": true
     },
     "changelog": {

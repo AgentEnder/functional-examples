@@ -2,7 +2,21 @@
   "name": "@functional-examples/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "author": {
+    "name": "Craigory Coppola",
+    "url": "https://craigory.dev"
+  },
+  "homepage": "https://craigory.dev/functional-examples",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
+  },
+  "scripts": {
+    "sync-metadata": "node scripts/sync-package-metadata.mjs"
+  },
   "private": true,
   "devDependencies": {
     "@functional-examples/devkit": "workspace:*",

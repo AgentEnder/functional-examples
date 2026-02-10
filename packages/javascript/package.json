@@ -2,6 +2,9 @@
   "name": "@functional-examples/javascript",
   "version": "0.0.0-alpha.1",
   "description": "JavaScript/TypeScript plugin for functional-examples",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,5 +34,18 @@
     "picomatch": "catalog:",
     "tinyglobby": "catalog:",
     "yaml": "catalog:"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Craigory Coppola",
+    "url": "https://craigory.dev"
+  },
+  "homepage": "https://craigory.dev/functional-examples",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
   }
 }
