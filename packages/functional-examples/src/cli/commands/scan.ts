@@ -5,17 +5,15 @@
 import { cli } from 'cli-forge';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { findConfigFile, loadConfig } from '../../config/loader.js';
-import { resolveConfig } from '../../config/resolver.js';
 import { scanExamples } from '../../scanner/index.js';
 import type { ScanResult } from '../../scanner/types.js';
-import type { Example } from '../../types/index.js';
+import type { Example, ResolvedConfig } from '../../types/index.js';
 
 export const scanCommand = cli('scan', {
   description: 'Scan a directory for code examples',
   builder: (cmd) =>
     cmd
-      .positional('directory', {
+      .option('directory', {
         type: 'string',
         description: 'Directory to scan',
         required: true,
@@ -52,9 +50,8 @@ export const scanCommand = cli('scan', {
       }),
   handler: async (options) => {
     const directory = options.directory ?? '.';
-    const configPath = options.config ?? (await findConfigFile(directory));
-    const rawConfig = configPath ? await loadConfig(configPath) : {};
-    const config = await resolveConfig(rawConfig);
+    const opts = options as typeof options & { resolvedConfig: ResolvedConfig };
+    const config = opts.resolvedConfig;
 
     if (config.extractors.length === 0) {
       console.error('No extractors available.');
@@ -64,15 +61,20 @@ export const scanCommand = cli('scan', {
       process.exit(1);
     }
 
+    // Use config root when scanning from '.' (default), otherwise use specified directory
+    const scanRoot =
+      directory === '.' ? config.root : path.resolve(config.root, directory);
+
     const result = await scanExamples({
-      root: path.resolve(directory),
-      extractors: config.extractors,
-      pathMappings: config.pathMappings,
-      include:
-        options.include.length > 0 ? options.include : config.scan.include,
-      exclude:
-        options.exclude.length > 0 ? options.exclude : config.scan.exclude,
-      metadataSchema: rawConfig.metadata,
+      ...config,
+      root: scanRoot,
+      scan: {
+        ...config.scan,
+        include:
+          options.include.length > 0 ? options.include : config.scan.include,
+        exclude:
+          options.exclude.length > 0 ? options.exclude : config.scan.exclude,
+      },
     });
 
     const output = formatOutput(result, options.format);

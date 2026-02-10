@@ -3,10 +3,10 @@
  * Evaluates include/exclude patterns and returns Dirent candidates.
  */
 
+import { glob } from '@functional-examples/devkit';
 import type { Dirent, Stats } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
-import { glob } from 'tinyglobby';
 
 /**
  * A list of polyglot vendor dirs and other
@@ -55,7 +55,7 @@ export async function resolveCandidates(
   // Use tinyglobby to match patterns
   const matches = await glob(include, {
     cwd: root,
-    ignore: exclude.concat(ALWAYS_IGNORE),
+    ignore: ALWAYS_IGNORE.concat(exclude),
     onlyFiles: false,
     expandDirectories: false,
     absolute: false,
@@ -69,11 +69,10 @@ export async function resolveCandidates(
       const fullPath = path.join(root, match);
       const name = path.basename(match);
       const parentPath = path.dirname(fullPath);
-      const relativeToScanRoot = path.relative(root, parentPath);
 
       try {
         const stats = await stat(fullPath);
-        candidates.push(createDirentFromStats(name, relativeToScanRoot, stats));
+        candidates.push(createDirentFromStats(name, parentPath, stats));
       } catch {
         // File doesn't exist or can't be stat'd, skip
       }

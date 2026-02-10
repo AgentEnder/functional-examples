@@ -7,9 +7,13 @@ export interface GenerateMetadataTypesOptions {
 
 /**
  * Convert JSON Schema type to TypeScript type.
+ * @param schema - The JSON Schema to convert
+ * @param indent - Current indentation level (number of spaces)
  */
-function schemaTypeToTS(schema: Record<string, unknown>): string {
+function schemaTypeToTS(schema: Record<string, unknown>, indent = 0): string {
   const type = schema.type as string | undefined;
+  const pad = ' '.repeat(indent);
+  const innerPad = ' '.repeat(indent + 2);
 
   if (schema.const !== undefined) {
     return JSON.stringify(schema.const);
@@ -21,21 +25,21 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
 
   if (schema.anyOf) {
     const variants = (schema.anyOf as Record<string, unknown>[]).map((s) =>
-      schemaTypeToTS(s)
+      schemaTypeToTS(s, indent)
     );
     return variants.join(' | ');
   }
 
   if (schema.oneOf) {
     const variants = (schema.oneOf as Record<string, unknown>[]).map((s) =>
-      schemaTypeToTS(s)
+      schemaTypeToTS(s, indent)
     );
     return variants.join(' | ');
   }
 
   if (schema.allOf) {
     const variants = (schema.allOf as Record<string, unknown>[]).map((s) =>
-      schemaTypeToTS(s)
+      schemaTypeToTS(s, indent)
     );
     return variants.join(' & ');
   }
@@ -52,7 +56,7 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
       return 'null';
     case 'array': {
       const items = schema.items as Record<string, unknown> | undefined;
-      return items ? `Array<${schemaTypeToTS(items)}>` : 'unknown[]';
+      return items ? `Array<${schemaTypeToTS(items, indent)}>` : 'unknown[]';
     }
     case 'object': {
       const properties = schema.properties as
@@ -62,7 +66,7 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
 
       // Dictionary type: { additionalProperties: { type: "string" } }
       if (!properties && additionalProps && typeof additionalProps === 'object') {
-        return `Record<string, ${schemaTypeToTS(additionalProps as Record<string, unknown>)}>`;
+        return `Record<string, ${schemaTypeToTS(additionalProps as Record<string, unknown>, indent)}>`;
       }
 
       if (!properties) return 'Record<string, unknown>';
@@ -71,11 +75,11 @@ function schemaTypeToTS(schema: Record<string, unknown>): string {
       const props = Object.entries(properties)
         .map(([key, propSchema]) => {
           const optional = required.has(key) ? '' : '?';
-          return `  ${key}${optional}: ${schemaTypeToTS(propSchema)};`;
+          return `${innerPad}${key}${optional}: ${schemaTypeToTS(propSchema, indent + 2)};`;
         })
         .join('\n');
 
-      return `{\n${props}\n}`;
+      return `{\n${props}\n${pad}}`;
     }
     default:
       return 'unknown';
@@ -92,10 +96,14 @@ const HEADER = `/**
  * Include this file in your tsconfig.json to enable type checking.
  */
 
+// Import required to make this an augmentation rather than a replacement
+import '@functional-examples/devkit';
+
 `;
 
 /**
  * Generate a metadata type object literal from JSON Schema.
+ * The output is indented to fit inside the ExampleMetadataRegistry interface.
  */
 function generateMetadataType(schema: JSONSchema): string {
   const properties = schema.properties as
@@ -107,14 +115,17 @@ function generateMetadataType(schema: JSONSchema): string {
   }
 
   const required = new Set((schema.required as string[]) ?? []);
+  // Base indent is 6 spaces (inside `metadata: { ... }` which is inside the interface)
+  const baseIndent = 6;
   const props = Object.entries(properties)
     .map(([key, propSchema]) => {
       const optional = required.has(key) ? '' : '?';
-      const tsType = schemaTypeToTS(propSchema);
-      return `      ${key}${optional}: ${tsType};`;
+      const tsType = schemaTypeToTS(propSchema, baseIndent);
+      return `${' '.repeat(baseIndent)}${key}${optional}: ${tsType};`;
     })
     .join('\n');
 
+  // Closing brace at 4 spaces (level of `metadata:`)
   return `{\n${props}\n    }`;
 }
 
@@ -131,7 +142,7 @@ export function generateMetadataTypes(
 
   if (!mergedSchema || !mergedSchema.properties) {
     // No schema properties - output empty augmentation
-    return `${HEADER}declare module 'functional-examples' {
+    return `${HEADER}declare module '@functional-examples/devkit' {
   interface ExampleMetadataRegistry {
     metadata: Record<string, unknown>;
   }
@@ -141,7 +152,7 @@ export function generateMetadataTypes(
 
   const metadataType = generateMetadataType(mergedSchema);
 
-  return `${HEADER}declare module 'functional-examples' {
+  return `${HEADER}declare module '@functional-examples/devkit' {
   interface ExampleMetadataRegistry {
     metadata: ${metadataType};
   }

@@ -2,10 +2,10 @@
  * Init command - create a configuration file
  */
 
-import path from 'node:path';
+import { cli } from 'cli-forge';
 import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
-import { cli } from 'cli-forge';
+import path from 'node:path';
 import { findConfigFile } from '../../config/loader.js';
 
 const TS_CONFIG_TEMPLATE = `import type { Config } from 'functional-examples';
@@ -20,9 +20,9 @@ const config: Config = {
   // Scan configuration
   scan: {
     // Include patterns (applied after extraction)
-    include: ['**/*'],
+    // include: ['*'],
     // Exclude patterns
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+    // exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
   },
 
   // Path mappings for conflict resolution
@@ -35,10 +35,10 @@ export default config;
 `;
 
 const JSON_CONFIG_TEMPLATE = `{
-  "$schema": "https://unpkg.com/functional-examples/schema.json",
+  "$schema": "./.functional-examples/schema.json",
   "scan": {
-    "include": ["**/*"],
-    "exclude": ["**/node_modules/**", "**/dist/**", "**/.git/**"]
+    // "include": ["**/*"],
+    // "exclude": ["**/node_modules/**", "**/dist/**", "**/.git/**"]
   }
 }
 `;

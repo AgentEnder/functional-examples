@@ -27,18 +27,15 @@ const app = cli('functional-examples', {
           ...args,
           resolvedConfig: config,
         };
+      })
+      .init(async (cli, args) => {
+        const plugins = args.resolvedConfig.plugins;
+        const pluginCLIs = await loadPluginCommands(
+          plugins,
+          args.resolvedConfig
+        );
+        cli.commands(pluginCLIs);
       }),
-  handler: async (args) => {
-    const plugins = args.resolvedConfig.plugins;
-    const pluginCLIs = await loadPluginCommands(plugins, args.resolvedConfig);
-
-    if (pluginCLIs.length) {
-      const extendedCLI = cli('functional-examples').commands(pluginCLIs);
-      return extendedCLI.forge();
-    }
-
-    throw new Error(`Unknown command ${args.unmatched[0]}`);
-  },
 })
   .version('0.0.1')
   .commands(scanCommand, validateCommand, initCommand, generateCommand);

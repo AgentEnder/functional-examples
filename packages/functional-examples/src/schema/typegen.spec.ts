@@ -15,7 +15,7 @@ describe('generateMetadataTypes', () => {
 
     const result = generateMetadataTypes({ mergedSchema });
 
-    expect(result).toContain('export interface ExampleMetadata');
+    expect(result).toContain('interface ExampleMetadataRegistry');
     expect(result).toContain('id: string');
     expect(result).toContain('title: string');
     expect(result).toContain('category?: "tutorial" | "recipe"');
@@ -61,9 +61,8 @@ describe('generateMetadataTypes', () => {
   it('should return Record<string, unknown> when no schema provided', () => {
     const result = generateMetadataTypes({});
 
-    expect(result).toContain(
-      'export type ExampleMetadata = Record<string, unknown>'
-    );
+    expect(result).toContain('interface ExampleMetadataRegistry');
+    expect(result).toContain('metadata: Record<string, unknown>');
   });
 
   it('should handle empty properties object', () => {
@@ -71,7 +70,8 @@ describe('generateMetadataTypes', () => {
       mergedSchema: { type: 'object', properties: {} },
     });
 
-    expect(result).toContain('export interface ExampleMetadata');
+    expect(result).toContain('interface ExampleMetadataRegistry');
+    expect(result).toContain('metadata: Record<string, unknown>');
   });
 
   it('should include auto-generated header', () => {

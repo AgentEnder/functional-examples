@@ -7,23 +7,20 @@ import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { createInitialContext, runParsePipeline } from '../plugins/pipeline.js';
-import { PluginRegistry } from '../plugins/registry.js';
 import { validateExampleMetadata } from '../plugins/validation.js';
 import { createSchemaValidator } from '../schema/validator.js';
-import type {
-  Example,
-  Extractor,
-  ExtractorError,
-  ExtractorResult,
-  Plugin,
+import {
+  DefaultMap,
+  iter,
+  type Example,
+  type Extractor,
+  type ExtractorError,
+  type ExtractorResult,
+  type ResolvedConfig,
+  type ScannedExample,
 } from '../types/index.js';
-import { getDefaultIncludePattern, resolveCandidates } from './candidates.js';
-import type {
-  FileConflict,
-  PathMapping,
-  ScanOptions,
-  ScanResult,
-} from './types.js';
+import { resolveCandidates } from './candidates.js';
+import type { FileConflict, PathMapping, ScanResult } from './types.js';
 
 /**
  * Scan a directory for examples using the provided extractors.
@@ -37,13 +34,10 @@ import type {
  *
  * @example
  * ```typescript
- * import { scanExamples } from 'functional-examples';
- * import { createFrontmatterExtractor } from '@functional-examples/extractor-frontmatter';
+ * import { resolveConfig, scanExamples } from 'functional-examples';
  *
- * const result = await scanExamples({
- *   root: './examples',
- *   extractors: [createFrontmatterExtractor()],
- * });
+ * const config = await resolveConfig({ root: './examples' });
+ * const result = await scanExamples(config);
  *
  * for (const example of result.examples) {
  *   console.log(example.title);
@@ -51,41 +45,29 @@ import type {
  * ```
  */
 export async function scanExamples<TMetadata = Record<string, unknown>>(
-  options: ScanOptions<TMetadata>
+  config: ResolvedConfig<TMetadata>
 ): Promise<ScanResult<TMetadata>> {
   const startTime = Date.now();
   const {
-    root,
-    plugins = [],
-    extractors: standaloneExtractors = [],
+    root: configRoot,
     pathMappings = [],
-    include = ['**/*'],
-    exclude = [],
-    signal,
-    processFileContents = true,
-    metadataSchema,
-  } = options;
-
-  // Determine effective include pattern (smart default detection)
-  const effectiveInclude =
-    include.length > 0 && !(include.length === 1 && include[0] === '*')
-      ? include
-      : await getDefaultIncludePattern(root);
+    registry,
+    metadata: metadataSchema,
+  } = config;
+  const { include, exclude, root: scanRoot } = config.scan;
+  const root = scanRoot ?? configRoot;
+  console.log({ root, scanRoot, configRoot });
 
   // Resolve candidates from include/exclude patterns
-  const candidates = await resolveCandidates(root, effectiveInclude, exclude);
+  // Default to '*' if no include patterns specified (match direct children)
+  const candidates = await resolveCandidates(
+    root,
+    include.length > 0 ? include : ['*'],
+    exclude
+  );
 
-  // Build plugin registry
-  const registry = new PluginRegistry();
-  for (const plugin of plugins as Plugin[]) {
-    registry.register(plugin);
-  }
-
-  // Collect all extractors (from plugins + standalone for backward compat)
-  const allExtractors = [
-    ...registry.getExtractors(),
-    ...standaloneExtractors,
-  ] as Extractor<TMetadata>[];
+  // Collect all extractors from the registry
+  const allExtractors = registry.getExtractors();
 
   if (allExtractors.length === 0) {
     return {
@@ -114,7 +96,6 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     {
       rootPath: root,
       exclude,
-      signal,
     }
   );
 
@@ -133,88 +114,139 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     resolvedConflicts
   );
 
-  // Step 5: Apply include/exclude filters
-  const finalExamples = applyFilters(filteredExamples, include, exclude);
+  // Step 5: No post-extraction filtering - include/exclude only affect candidate resolution
 
-  // Step 6: Collect all errors
-  const errors: ExtractorError[] = [
-    ...extractorResults.flatMap((r) => r.errors),
-    ...unresolvedConflicts.map((c) => ({
-      path: c.filePath,
-      message: `File claimed by multiple extractors: ${c.claimants.join(
+  // Step 6: Convert to ScannedExample (compute displayPath)
+  const scannedExamples: ScannedExample<TMetadata>[] = filteredExamples.map(
+    (example) => ({
+      ...example,
+      displayPath: path.relative(root, example.rootPath) || '.',
+      metadata: example.metadata as TMetadata,
+    })
+  );
+
+  // Build lookup for examples by ID
+  const examplesById = new Map(scannedExamples.map((ex) => [ex.id, ex]));
+
+  // Step 7: Initialize error accumulator (displayPath -> source -> messages[])
+  const errorsByPath = new DefaultMap<string, Map<string, string[]>>(
+    () => new DefaultMap<string, string[]>(() => [])
+  );
+
+  // Helper to add errors to the accumulator
+  const addError = (displayPath: string, source: string, message: string) => {
+    errorsByPath.get(displayPath).get(source).push(message);
+  };
+
+  // Collect extractor errors
+  for (const result of extractorResults) {
+    for (const error of result.errors) {
+      const displayPath = path.relative(root, error.path) || error.path;
+      addError(displayPath, result.extractorName, error.message);
+    }
+  }
+
+  // Collect unresolved conflict errors
+  for (const conflict of unresolvedConflicts) {
+    const displayPath = path.relative(root, conflict.filePath) || '.';
+    addError(
+      displayPath,
+      'conflict',
+      `File claimed by multiple extractors: ${conflict.claimants.join(
         ', '
-      )}. Add a pathMapping to resolve.`,
-    })),
-  ];
+      )}. Add a pathMapping to resolve.`
+    );
+  }
 
-  // Step 7: Process file contents through parser pipelines
-  if (processFileContents) {
-    for (const example of finalExamples) {
-      for (const file of example.files) {
-        const ext = path.extname(file.absolutePath);
-        const parsers = registry.getParsersForExtension(ext);
+  // Step 8: Process file contents through parser pipelines
+  for (const example of scannedExamples) {
+    for (const file of example.files) {
+      const ext = path.extname(file.absolutePath);
+      const parsers = registry.getParsersForExtension(ext);
 
-        if (parsers.length > 0) {
-          // Load file content if not already loaded
-          if (file.raw === undefined) {
-            file.raw = await fs.readFile(file.absolutePath, 'utf-8');
-          }
-
-          const ctx = createInitialContext(file.absolutePath, file.raw);
-          const result = await runParsePipeline(ctx, parsers);
-          file.parsed = result.parsed;
-          file.hunks = result.hunks;
+      if (parsers.length > 0) {
+        // Load file content if not already loaded
+        if (file.raw === undefined) {
+          file.raw = await fs.readFile(file.absolutePath, 'utf-8');
         }
+
+        const ctx = createInitialContext(file.absolutePath, file.raw);
+        const result = await runParsePipeline(ctx, parsers);
+        file.parsed = result.parsed;
+        file.hunks = result.hunks;
       }
     }
   }
 
-  // Step 8: Run plugin metadata validators
+  // Step 9: Run plugin metadata validators
   const metadataValidators = registry.getMetadataValidators();
   if (metadataValidators.length > 0) {
     const validationResult = validateExampleMetadata({
       validators: metadataValidators,
-      examples: finalExamples.map((e) => ({
+      examples: scannedExamples.map((e) => ({
         id: e.id,
         metadata: e.metadata as Record<string, unknown>,
       })),
     });
 
-    // Convert validation errors to ExtractorErrors
     for (const error of validationResult.errors) {
-      errors.push({
-        path: `example:${error.exampleId}`,
-        message: `[${error.pluginName}] ${error.path}: ${error.message}`,
-      });
+      const example = examplesById.get(error.exampleId);
+      if (example) {
+        addError(example.displayPath, error.pluginName, error.message);
+      }
     }
   }
 
-  // Step 9: Run config metadata schema validation (AJV)
+  // Step 10: Run config metadata schema validation (AJV)
   if (metadataSchema) {
     const validateSchema = createSchemaValidator(metadataSchema);
 
-    for (const example of finalExamples) {
+    for (const example of scannedExamples) {
       const result = validateSchema(example.metadata);
       if (!result.success) {
         for (const error of result.errors) {
-          errors.push({
-            path: `example:${example.id}`,
-            message: `[config.metadata] ${error.path || '(root)'}: ${
-              error.message
-            }`,
-          });
+          addError(
+            example.displayPath,
+            'config.metadata',
+            `${error.path || '(root)'}: ${error.message}`
+          );
         }
       }
     }
   }
 
+  // Step 11: Flatten errors into final array
+  const errors: ExtractorError[] = iter(errorsByPath.entries())
+    .map(([displayPath, sourceErrors]) => ({
+      path: displayPath,
+      message: iter(sourceErrors.entries())
+        .map(([source, msgs]) =>
+          iter(msgs)
+            .map((msg) => `    ${msg}`)
+            .prefix([`  [${source}]:`])
+        )
+        .flat()
+        .join('\n'),
+    }))
+    .collect();
+  // for (const [displayPath, sourceErrors] of errorsByPath.entries()) {
+  //   const lines: string[] = [];
+  //   for (const [source, msgs] of sourceErrors.entries()) {
+  //     lines.push(`  [${source}]:`);
+  //     for (const msg of msgs) {
+  //       lines.push(`    ${msg}`);
+  //     }
+  //   }
+  //   errors.push({ path: displayPath, message: lines.join('\n') });
+  // }
+
   return {
-    examples: finalExamples,
+    examples: scannedExamples,
     errors,
     conflicts,
     stats: {
       filesClaimed: fileClaimMap.size,
-      examplesFound: finalExamples.length,
+      examplesFound: scannedExamples.length,
       conflictsDetected: conflicts.length,
       conflictsResolved: resolvedConflicts.length,
       durationMs: Date.now() - startTime,
@@ -228,7 +260,7 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
 async function runExtractorsInParallel<TMetadata>(
   extractors: Extractor<TMetadata>[],
   candidates: Dirent[],
-  options: { rootPath: string; exclude?: string[]; signal?: AbortSignal }
+  options: { rootPath: string; exclude?: string[] }
 ): Promise<Array<ExtractorResult<TMetadata> & { extractorName: string }>> {
   const results = await Promise.all(
     extractors.map(async (extractor) => {
@@ -368,32 +400,5 @@ function filterExamplesByConflicts<TMetadata>(
     }
 
     return true;
-  });
-}
-
-/**
- * Apply include/exclude filters to examples based on their root path
- */
-function applyFilters<TMetadata>(
-  examples: Example<TMetadata>[],
-  include: string[],
-  exclude: string[]
-): Example<TMetadata>[] {
-  return examples.filter((example) => {
-    // Check include patterns (at least one must match)
-    const matchesInclude =
-      include.length === 0 ||
-      include.some((pattern) => minimatch(example.rootPath, pattern));
-
-    if (!matchesInclude) {
-      return false;
-    }
-
-    // Check exclude patterns (none must match)
-    const matchesExclude = exclude.some((pattern) =>
-      minimatch(example.rootPath, pattern)
-    );
-
-    return !matchesExclude;
   });
 }

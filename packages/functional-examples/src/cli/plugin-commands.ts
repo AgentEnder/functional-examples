@@ -2,14 +2,6 @@ import { cli, type CLI } from 'cli-forge';
 import type { Plugin, ResolvedConfig } from '../types/index.js';
 
 /**
- * Internal type to access CLI name property.
- * cli-forge CLI instances are InternalCLI at runtime which has a name property.
- */
-interface CLIWithName extends CLI {
-  name: string;
-}
-
-/**
  * Get the CLI namespace for a plugin.
  * Strips @functional-examples/ scope, keeps everything else.
  */
@@ -53,19 +45,16 @@ export async function loadPluginCommands<T>(
 
     const namespace = getCommandNamespace(plugin.name);
 
-    // If plugin has a single command with same name as namespace,
-    // use it directly (for $0 pattern like test plugin)
-    const firstCommand = commands[0] as CLIWithName;
-    if (commands.length === 1 && firstCommand.name === namespace) {
-      result.push(commands[0]);
-    } else {
-      // Wrap multiple commands under namespace
-      const namespaced = cli(namespace, {
-        description: `Commands from ${plugin.name}`,
-      }).commands(...commands);
+    // Wrap commands under namespace
+    const namespaced = cli(namespace, {
+      description: `Commands from ${plugin.name}`,
+    });
 
-      result.push(namespaced);
+    for (const command of commands) {
+      namespaced.command(command);
     }
+
+    result.push(namespaced);
   }
 
   return result;

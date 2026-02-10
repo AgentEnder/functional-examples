@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { cli, type CLI } from 'cli-forge';
+import { describe, expect, it, vi } from 'vitest';
+import type { Plugin, ResolvedConfig } from '../types/index.js';
 import {
   getCommandNamespace,
-  resolvePluginCommands,
   loadPluginCommands,
+  resolvePluginCommands,
 } from './plugin-commands.js';
-import { cli, type CLI } from 'cli-forge';
-import type { Plugin, ResolvedConfig } from '../types/index.js';
 
 /** Helper to access CLI name at runtime */
 function getCliName(c: CLI): string {
@@ -96,7 +96,7 @@ describe('loadPluginCommands', () => {
     expect(result).toHaveLength(1);
     // Should be the original command, not wrapped
     expect(getCliName(result[0])).toBe('runner');
-    expect(result[0]).toBe(testCmd);
+    expect(result[0].getHandler()).toBe(testCmd.getHandler());
   });
 
   it('wraps single command when name does not match namespace', async () => {

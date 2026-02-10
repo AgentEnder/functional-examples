@@ -1,16 +1,58 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import * as os from 'node:os';
 import type { Dirent } from 'node:fs';
-import { scanExamples } from './scanner.js';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PluginRegistry } from '../plugins/registry.js';
 import type {
-  Extractor,
   Example,
-  ExtractorResult,
+  Extractor,
   ExtractorOptions,
+  ExtractorResult,
   Plugin,
+  ResolvedConfig,
 } from '../types/index.js';
+import { scanExamples } from './scanner.js';
+
+/**
+ * Build a minimal ResolvedConfig for testing.
+ * Accepts plugins and optional overrides, constructs the registry automatically.
+ */
+function buildConfig<TMetadata = Record<string, unknown>>(
+  overrides: Partial<ResolvedConfig<TMetadata>> & { plugins?: Plugin<TMetadata>[] } = {}
+): ResolvedConfig<TMetadata> {
+  const plugins = (overrides.plugins ?? []) as Plugin[];
+  const registry = new PluginRegistry();
+  for (const plugin of plugins) {
+    registry.register(plugin);
+  }
+
+  return {
+    root: '/test',
+    plugins: plugins as Plugin<TMetadata>[],
+    extractors: registry.getExtractors() as Extractor<TMetadata>[],
+    registry,
+    pathMappings: [],
+    scan: { include: [], exclude: [], root: '.' },
+    validationErrors: [],
+    ...overrides,
+    // Ensure registry is always built from the provided plugins
+  } as ResolvedConfig<TMetadata>;
+}
+
+/**
+ * Wrap an extractor in a minimal plugin for testing.
+ * Since the scanner now requires extractors to come via plugins,
+ * this helper creates a plugin wrapper around a standalone extractor.
+ */
+function wrapExtractorAsPlugin<TMetadata = Record<string, unknown>>(
+  extractor: Extractor<TMetadata>
+): Plugin<TMetadata> {
+  return {
+    name: `plugin-${extractor.name}`,
+    extractor,
+  };
+}
 
 /**
  * Create a mock extractor for testing
@@ -47,7 +89,8 @@ function createMockExtractorWithResult<TMetadata = Record<string, unknown>>(
 }
 
 /**
- * Create a mock example for testing
+ * Create a mock example for testing.
+ * Note: displayPath is computed by the scanner, not provided by extractors.
  */
 function createMockExample(
   id: string,
@@ -70,10 +113,9 @@ function createMockExample(
 describe('scanExamples', () => {
   describe('basic operation', () => {
     it('returns empty result when no extractors provided', async () => {
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [],
+      }));
 
       expect(result.examples).toEqual([]);
       expect(result.errors).toHaveLength(1);
@@ -96,10 +138,12 @@ describe('scanExamples', () => {
         new Set(['/test/b.ts'])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
+      }));
 
       // Extractors are called with candidates array and options
       expect(result.examples).toHaveLength(2);
@@ -113,13 +157,15 @@ describe('scanExamples', () => {
         errors: [{ path: '/test/bad.ts', message: 'Invalid syntax' }],
       });
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractor],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [wrapExtractorAsPlugin(extractor)],
+      }));
 
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toBe('Invalid syntax');
+      // Errors are now grouped by path and source
+      expect(result.errors[0].path).toBe('bad.ts');
+      expect(result.errors[0].message).toContain('[extractor-a]');
+      expect(result.errors[0].message).toContain('Invalid syntax');
     });
 
     it('handles extractor exceptions gracefully', async () => {
@@ -128,10 +174,9 @@ describe('scanExamples', () => {
         extract: vi.fn().mockRejectedValue(new Error('Extractor crashed')),
       };
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractor],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [wrapExtractorAsPlugin(extractor)],
+      }));
 
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].message).toContain(
@@ -159,10 +204,12 @@ describe('scanExamples', () => {
         new Set([sharedFile])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
+      }));
 
       expect(result.conflicts).toHaveLength(1);
       expect(result.conflicts[0].filePath).toBe(sharedFile);
@@ -190,10 +237,12 @@ describe('scanExamples', () => {
         new Set([sharedFile])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
+      }));
 
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].message).toContain(
@@ -218,10 +267,12 @@ describe('scanExamples', () => {
         new Set([sharedFile])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
+      }));
 
       // Both examples should be excluded due to unresolved conflict
       expect(result.examples).toHaveLength(0);
@@ -246,13 +297,15 @@ describe('scanExamples', () => {
         new Set([sharedFile])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
         pathMappings: [
           { pattern: '**/cli-forge/**', extractor: 'frontmatter' },
         ],
-      });
+      }));
 
       expect(result.conflicts).toHaveLength(1);
       expect(result.conflicts[0].resolution).toBe('path-mapping');
@@ -279,22 +332,28 @@ describe('scanExamples', () => {
         new Set([sharedFile])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
         pathMappings: [
           // This mapping specifies an extractor that didn't claim the file
           { pattern: '**/*.ts', extractor: 'non-existent' },
         ],
-      });
+      }));
 
       // Conflict remains unresolved
       expect(result.conflicts[0].resolution).toBe('error');
     });
   });
 
-  describe('include/exclude filtering', () => {
-    it('excludes examples matching exclude patterns', async () => {
+  describe('include/exclude patterns', () => {
+    // Note: include/exclude patterns only affect candidate resolution,
+    // not post-extraction filtering. These tests verify that examples
+    // returned by extractors are passed through without additional filtering.
+
+    it('passes all extracted examples through without post-extraction filtering', async () => {
       const example1 = createMockExample('ex1', 'extractor', [
         '/test/src/a.ts',
       ]);
@@ -310,40 +369,15 @@ describe('scanExamples', () => {
         new Set(['/test/src/a.ts', '/test/dist/b.ts'])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractor],
-        exclude: ['**/dist/**'],
-      });
+      // Even with exclude pattern, examples from extractor are not filtered
+      // (filtering happens at candidate resolution, not post-extraction)
+      const result = await scanExamples(buildConfig({
+        plugins: [wrapExtractorAsPlugin(extractor)],
+        scan: { include: [], exclude: ['**/dist/**'], root: '.' },
+      }));
 
-      expect(result.examples).toHaveLength(1);
-      expect(result.examples[0].id).toBe('ex1');
-    });
-
-    it('includes only examples matching include patterns', async () => {
-      const example1 = createMockExample('ex1', 'extractor', [
-        '/test/examples/a.ts',
-      ]);
-      const example2 = createMockExample('ex2', 'extractor', [
-        '/test/src/b.ts',
-      ]);
-      example1.rootPath = '/test/examples/a.ts';
-      example2.rootPath = '/test/src/b.ts';
-
-      const extractor = createMockExtractor(
-        'extractor',
-        [example1, example2],
-        new Set(['/test/examples/a.ts', '/test/src/b.ts'])
-      );
-
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractor],
-        include: ['**/examples/**'],
-      });
-
-      expect(result.examples).toHaveLength(1);
-      expect(result.examples[0].id).toBe('ex1');
+      // Both examples are returned because mock extractor bypasses candidate resolution
+      expect(result.examples).toHaveLength(2);
     });
   });
 
@@ -367,10 +401,12 @@ describe('scanExamples', () => {
         new Set(['/test/c.ts'])
       );
 
-      const result = await scanExamples({
-        root: '/test',
-        extractors: [extractorA, extractorB],
-      });
+      const result = await scanExamples(buildConfig({
+        plugins: [
+          wrapExtractorAsPlugin(extractorA),
+          wrapExtractorAsPlugin(extractorB),
+        ],
+      }));
 
       expect(result.stats.filesClaimed).toBe(3);
       expect(result.stats.examplesFound).toBe(2);
@@ -441,10 +477,10 @@ describe('scanExamples with plugins', () => {
       },
     };
 
-    const result = await scanExamples({
+    const result = await scanExamples(buildConfig({
       root: tempDir,
       plugins: [plugin],
-    });
+    }));
 
     expect(result.examples).toHaveLength(1);
     expect(result.examples[0].files[0].parsed).toBe('const x = 1;\n');
@@ -452,75 +488,29 @@ describe('scanExamples with plugins', () => {
     expect(parseHistory).toContain(filePath);
   });
 
-  it('should respect processFileContents: false', async () => {
-    const filePath = path.join(tempDir, 'test.ts');
-    await fs.writeFile(filePath, 'const x = 1;');
-
-    let parseCalled = false;
-
-    const plugin: Plugin = {
-      name: 'test-plugin',
-      extensions: ['.ts'],
-      extractor: {
-        name: 'test-extractor',
-        async extract(_candidates: Dirent[], options: ExtractorOptions) {
-          return {
-            examples: [
-              {
-                id: 'test',
-                title: 'Test',
-                rootPath: options.rootPath,
-                files: [{ absolutePath: filePath, relativePath: 'test.ts' }],
-                metadata: {},
-                extractorName: 'test-extractor',
-              },
-            ],
-            errors: [],
-            claimedFiles: new Set([filePath]),
-          };
-        },
-      },
-      fileContentsParser: {
-        name: 'test-parser',
-        parse(ctx) {
-          parseCalled = true;
-          return ctx;
-        },
-      },
-    };
-
-    await scanExamples({
-      root: tempDir,
-      plugins: [plugin],
-      processFileContents: false,
-    });
-
-    expect(parseCalled).toBe(false);
-  });
-
-  it('should combine plugins and standalone extractors for backward compatibility', async () => {
-    const filePath1 = path.join(tempDir, 'plugin-file.ts');
-    const filePath2 = path.join(tempDir, 'extractor-file.ts');
+  it('should combine multiple plugins with extractors', async () => {
+    const filePath1 = path.join(tempDir, 'plugin1-file.ts');
+    const filePath2 = path.join(tempDir, 'plugin2-file.ts');
     await fs.writeFile(filePath1, 'const a = 1;');
     await fs.writeFile(filePath2, 'const b = 2;');
 
-    const plugin: Plugin = {
-      name: 'test-plugin',
+    const plugin1: Plugin = {
+      name: 'test-plugin-1',
       extensions: ['.ts'],
       extractor: {
-        name: 'plugin-extractor',
+        name: 'plugin1-extractor',
         async extract(_candidates: Dirent[], options: ExtractorOptions) {
           return {
             examples: [
               {
-                id: 'plugin-example',
-                title: 'Plugin Example',
+                id: 'plugin1-example',
+                title: 'Plugin 1 Example',
                 rootPath: options.rootPath,
                 files: [
-                  { absolutePath: filePath1, relativePath: 'plugin-file.ts' },
+                  { absolutePath: filePath1, relativePath: 'plugin1-file.ts' },
                 ],
                 metadata: {},
-                extractorName: 'plugin-extractor',
+                extractorName: 'plugin1-extractor',
               },
             ],
             errors: [],
@@ -530,38 +520,41 @@ describe('scanExamples with plugins', () => {
       },
     };
 
-    const standaloneExtractor: Extractor = {
-      name: 'standalone-extractor',
-      async extract(_candidates: Dirent[], options: ExtractorOptions) {
-        return {
-          examples: [
-            {
-              id: 'standalone-example',
-              title: 'Standalone Example',
-              rootPath: options.rootPath,
-              files: [
-                { absolutePath: filePath2, relativePath: 'extractor-file.ts' },
-              ],
-              metadata: {},
-              extractorName: 'standalone-extractor',
-            },
-          ],
-          errors: [],
-          claimedFiles: new Set([filePath2]),
-        };
+    const plugin2: Plugin = {
+      name: 'test-plugin-2',
+      extensions: ['.ts'],
+      extractor: {
+        name: 'plugin2-extractor',
+        async extract(_candidates: Dirent[], options: ExtractorOptions) {
+          return {
+            examples: [
+              {
+                id: 'plugin2-example',
+                title: 'Plugin 2 Example',
+                rootPath: options.rootPath,
+                files: [
+                  { absolutePath: filePath2, relativePath: 'plugin2-file.ts' },
+                ],
+                metadata: {},
+                extractorName: 'plugin2-extractor',
+              },
+            ],
+            errors: [],
+            claimedFiles: new Set([filePath2]),
+          };
+        },
       },
     };
 
-    const result = await scanExamples({
+    const result = await scanExamples(buildConfig({
       root: tempDir,
-      plugins: [plugin],
-      extractors: [standaloneExtractor],
-    });
+      plugins: [plugin1, plugin2],
+    }));
 
     expect(result.examples).toHaveLength(2);
     expect(result.examples.map((e) => e.id).sort()).toEqual([
-      'plugin-example',
-      'standalone-example',
+      'plugin1-example',
+      'plugin2-example',
     ]);
   });
 });
@@ -604,7 +597,7 @@ describe('scanExamples with metadata validation', () => {
       },
     };
 
-    await scanExamples({ root: tempDir, plugins: [plugin] });
+    await scanExamples(buildConfig({ root: tempDir, plugins: [plugin] }));
 
     expect(validateFn).toHaveBeenCalledWith({ custom: 'value' });
   });
@@ -642,10 +635,11 @@ describe('scanExamples with metadata validation', () => {
       },
     };
 
-    const result = await scanExamples({ root: tempDir, plugins: [plugin] });
+    const result = await scanExamples(buildConfig({ root: tempDir, plugins: [plugin] }));
 
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0].path).toBe('example:missing-required');
+    // Plugin validation errors use example.displayPath (relative to scan root)
+    expect(result.errors[0].path).toBe('.');
     expect(result.errors[0].message).toContain('required');
     expect(result.errors[0].message).toContain('strict-validator');
   });
@@ -690,14 +684,18 @@ describe('scanExamples with metadata validation', () => {
       },
     };
 
-    const result = await scanExamples({
+    const result = await scanExamples(buildConfig({
       root: tempDir,
       plugins: [plugin1, plugin2],
-    });
+    }));
 
-    expect(result.errors).toHaveLength(2);
+    expect(result.errors).toHaveLength(1);
+    // Plugin validation errors use example.displayPath (relative to scan root)
+    expect(result.errors[0].path).toBe('.');
     expect(result.errors[0].message).toContain('validator-1');
-    expect(result.errors[1].message).toContain('validator-2');
+    expect(result.errors[0].message).toContain('error from validator 1');
+    expect(result.errors[0].message).toContain('validator-2');
+    expect(result.errors[0].message).toContain('error from validator 2');
   });
 
   it('should still return examples even with validation errors', async () => {
@@ -730,10 +728,19 @@ describe('scanExamples with metadata validation', () => {
       },
     };
 
-    const result = await scanExamples({ root: tempDir, plugins: [plugin] });
+    const result = await scanExamples(buildConfig({ root: tempDir, plugins: [plugin] }));
 
     // Examples are still returned - validation errors are advisory
     expect(result.examples).toHaveLength(1);
     expect(result.errors).toHaveLength(1);
+    expect(result.errors).toMatchInlineSnapshot(`
+      [
+        {
+          "message": "  [strict-validator]:
+          always fails",
+          "path": ".",
+        },
+      ]
+    `);
   });
 });

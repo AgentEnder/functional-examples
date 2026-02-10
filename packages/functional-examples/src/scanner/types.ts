@@ -3,13 +3,9 @@
  */
 
 import type {
-  Example,
-  Extractor,
   ExtractorError,
-  PathMapping,
-  Plugin,
+  ScannedExample,
 } from '../types/index.js';
-import type { JSONSchema } from '../schema/merger.js';
 
 // Re-export for backward compatibility
 export type { PathMapping } from '../types/index.js';
@@ -29,51 +25,11 @@ export interface FileConflict {
 }
 
 /**
- * Options for scanning examples
- */
-export interface ScanOptions<TMetadata = Record<string, unknown>> {
-  /** Root directory to scan */
-  root: string;
-
-  /**
-   * Plugins to use for scanning.
-   * Plugins are processed in registration order.
-   */
-  plugins?: Plugin<TMetadata>[];
-
-  /**
-   * @deprecated Use plugins instead. Standalone extractors for backward compatibility.
-   */
-  extractors?: Extractor<TMetadata>[];
-
-  /** Path mappings for conflict resolution */
-  pathMappings?: PathMapping[];
-  /** Include patterns (applied AFTER extraction) */
-  include?: string[];
-  /** Exclude patterns (applied AFTER extraction) */
-  exclude?: string[];
-  /** Abort signal for cancellation */
-  signal?: AbortSignal;
-
-  /**
-   * Whether to process file contents through parser pipelines.
-   * @default true
-   */
-  processFileContents?: boolean;
-
-  /**
-   * JSON Schema to validate example metadata against.
-   * Typically comes from config.metadata.
-   */
-  metadataSchema?: JSONSchema;
-}
-
-/**
  * Result of scanning for examples
  */
 export interface ScanResult<TMetadata = Record<string, unknown>> {
-  /** All discovered examples */
-  examples: Example<TMetadata>[];
+  /** All discovered examples (with computed fields like displayPath) */
+  examples: ScannedExample<TMetadata>[];
   /** Errors from all extractors */
   errors: ExtractorError[];
   /** File conflicts (including resolved ones) */

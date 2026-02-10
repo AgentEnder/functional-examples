@@ -3,9 +3,10 @@
  */
 
 export { scanExamples } from './scanner.js';
+export { scan } from './scan.js';
+export type { ScanOptions } from './scan.js';
 export type {
   FileConflict,
   PathMapping,
-  ScanOptions,
   ScanResult,
 } from './types.js';
