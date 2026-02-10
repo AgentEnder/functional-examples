@@ -30,6 +30,12 @@
     "test": {
       "cache": true,
       "inputs": ["default", "^production"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["default", "^default"],
+      "outputs": ["{projectRoot}/dist"]
     }
   },
   "plugins": [

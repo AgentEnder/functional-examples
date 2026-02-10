@@ -10,6 +10,7 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/vitest.config.ts',
+      '**/*.d.ts',
     ],
   },
   {

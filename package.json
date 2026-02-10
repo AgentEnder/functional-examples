@@ -5,22 +5,31 @@
   "scripts": {},
   "private": true,
   "devDependencies": {
+    "@functional-examples/devkit": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
+    "@functional-examples/test": "workspace:*",
+    "@functional-examples/documentation": "workspace:*",
     "@nx/eslint": "catalog:",
     "@nx/eslint-plugin": "catalog:",
     "@nx/js": "catalog:",
     "@nx/vitest": "catalog:",
     "@nx/workspace": "catalog:",
+    "@types/node": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
+    "functional-examples": "workspace:*",
     "nx": "catalog:",
     "prettier": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:",
-    "functional-examples": "workspace:"
+    "typescript": "catalog:"
   },
   "nx": {
     "includedScripts": []
   },
-  "packageManager": "pnpm@10.23.0"
+  "packageManager": "pnpm@10.23.0",
+  "dependencies": {
+    "@cli-forge/parser": "link:../cli-forge/packages/parser",
+    "cli-forge": "link:../cli-forge/packages/cli-forge"
+  }
 }
