@@ -1,13 +1,10 @@
-import { usePageContext } from 'vike-react/usePageContext';
+import { useData } from 'vike-react/useData';
 import { ExampleCard } from '../../components/ExampleCard';
 import { DimensionLine } from '../../components/DimensionLine';
-import type { SiteExample } from '../../server/utils/examples';
+import type { ExamplesData } from './+data.js';
 
 export default function ExamplesIndex() {
-  const pageContext = usePageContext();
-  const examples = Object.values(
-    ((pageContext as unknown as Record<string, unknown>).examples ?? {}) as Record<string, SiteExample>
-  );
+  const { examples } = useData<ExamplesData>();
 
   return (
     <div>

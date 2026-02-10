@@ -4,6 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "files": [],
+  "include": [],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "./tsconfig.lib.json" }
+  ]
 }

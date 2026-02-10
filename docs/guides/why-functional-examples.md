@@ -47,7 +47,7 @@ Because examples are real files, you can run them. The `@functional-examples/tes
 
 ### Single Source of Truth
 
-Instead of maintaining examples in both source code and documentation, you write them once. The documentation plugin can pull live code into guides using template references like `<%= example('basic-usage').file('scan.ts') %>`, so docs always reflect the actual code.
+Instead of maintaining examples in both source code and documentation, you write them once. The documentation plugin can pull live code into guides using template references like `<\%= example('basic-usage').file('scan.ts') \%>`, so docs always reflect the actual code.
 
 ## When to Use functional-examples
 

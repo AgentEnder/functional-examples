@@ -11,11 +11,11 @@
  * ```
  */
 
+import type { ExampleFile, ScannedExample } from '@functional-examples/devkit';
 import { Eta } from 'eta';
 import * as fs from 'node:fs/promises';
-import type { ExampleFile, ScannedExample } from '@functional-examples/devkit';
-import { fencedBlock } from './prose-helpers.js';
 import { templateHelpers } from './helpers.js';
+import { fencedBlock } from './prose-helpers.js';
 
 /**
  * A renderer that expands example references in guide markdown.
@@ -63,9 +63,7 @@ export interface ExampleAccessor {
  * const html = await renderer.renderFile('docs/guides/getting-started.md');
  * ```
  */
-export function createGuideRenderer(
-  examples: ScannedExample[]
-): GuideRenderer {
+export function createGuideRenderer(examples: ScannedExample[]): GuideRenderer {
   // Build lookup map: example ID → ScannedExample
   const examplesById = new Map(examples.map((ex) => [ex.id, ex]));
 
@@ -122,11 +120,13 @@ export function createGuideRenderer(
   });
 
   function render(markdown: string): string {
-    return guideEta.renderString(markdown, {
-      example: exampleAccessor,
-      examples,
-      helpers: templateHelpers,
-    });
+    return guideEta
+      .renderString(markdown, {
+        example: exampleAccessor,
+        examples,
+        helpers: templateHelpers,
+      })
+      .replaceAll('\\%', '%');
   }
 
   async function renderFile(filePath: string): Promise<string> {

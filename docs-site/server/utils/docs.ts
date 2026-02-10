@@ -1,8 +1,9 @@
-import { readdir, readFile } from 'node:fs/promises';
-import { join, basename, extname } from 'node:path';
-import matter from 'gray-matter';
-import { createGuideRenderer } from '@functional-examples/documentation';
 import type { ScannedExample } from '@functional-examples/devkit';
+import { createGuideRenderer } from '@functional-examples/documentation';
+import matter from 'gray-matter';
+import { existsSync } from 'node:fs';
+import { readdir, readFile } from 'node:fs/promises';
+import { basename, dirname, extname, join } from 'node:path';
 import { renderMarkdown } from './markdown';
 
 /** Parsed doc page from docs/*.md */
@@ -39,12 +40,13 @@ export interface NavigationItem {
  * ---
  */
 export async function scanDocs(): Promise<DocPage[]> {
-  const docsDir = new URL('../../../docs', import.meta.url).pathname;
+  const docsDir = join(workspaceRoot(), 'docs');
+  console.log('Looking in', docsDir);
   const pages: DocPage[] = [];
 
   let entries: string[];
   try {
-    entries = await readdir(docsDir, { recursive: true }) as string[];
+    entries = (await readdir(docsDir, { recursive: true })) as string[];
   } catch {
     console.warn('[docs-site] No docs/ directory found');
     return [];
@@ -142,12 +144,23 @@ export function buildDocsNavigation(docs: DocPage[]): NavigationItem[] {
 
   // Sort children within each section
   for (const section of sections.values()) {
-    section.children?.sort(
-      (a, b) => (a.order ?? 999) - (b.order ?? 999)
-    );
+    section.children?.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
   }
 
   return Array.from(sections.values()).sort(
     (a, b) => (a.order ?? 999) - (b.order ?? 999)
+  );
+}
+
+function workspaceRoot() {
+  let dir = import.meta.dirname;
+  while (dir !== '.' && dir) {
+    if (existsSync(join(dir, 'nx.json'))) {
+      return dir;
+    }
+    dir = dirname(dir);
+  }
+  throw new Error(
+    'Unable to locate workspace root from ' + import.meta.dirname
   );
 }

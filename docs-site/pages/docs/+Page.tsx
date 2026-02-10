@@ -1,16 +1,13 @@
-import { usePageContext } from 'vike-react/usePageContext';
+import { useData } from 'vike-react/useData';
 import { DimensionLine } from '../../components/DimensionLine';
 import { Link } from '../../components/Link';
-import type { DocPage } from '../../server/utils/docs';
+import type { DocsData } from './+data.js';
 
 export default function DocsPage() {
-  const pageContext = usePageContext();
-  const docsMap = ((pageContext as unknown as Record<string, unknown>).docs ??
-    {}) as Record<string, DocPage>;
+  const { docs } = useData<DocsData>();
 
   // Group docs by section, sorted by order
-  const docs = Object.values(docsMap).sort((a, b) => a.order - b.order);
-  const sections = new Map<string, DocPage[]>();
+  const sections = new Map<string, typeof docs>();
   for (const doc of docs) {
     const list = sections.get(doc.section) ?? [];
     list.push(doc);

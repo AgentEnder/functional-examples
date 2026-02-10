@@ -6,6 +6,6 @@ export default {
   description:
     'A toolkit for managing, scanning, and validating code examples',
   prerender: true,
-  passToClient: ['navigation', 'examples', 'docs'],
+  passToClient: ['navigation'],
   extends: [vikeReact],
 } satisfies Config;

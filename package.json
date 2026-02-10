@@ -6,9 +6,9 @@
   "private": true,
   "devDependencies": {
     "@functional-examples/devkit": "workspace:*",
+    "@functional-examples/documentation": "workspace:*",
     "@functional-examples/javascript": "workspace:*",
     "@functional-examples/test": "workspace:*",
-    "@functional-examples/documentation": "workspace:*",
     "@nx/eslint": "catalog:",
     "@nx/eslint-plugin": "catalog:",
     "@nx/js": "catalog:",
@@ -20,12 +20,21 @@
     "eslint": "catalog:",
     "functional-examples": "workspace:*",
     "nx": "catalog:",
+    "nx-github-pages": "^1.2.0",
     "prettier": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
   "nx": {
-    "includedScripts": []
+    "includedScripts": [],
+    "targets": {
+      "deploy": {
+        "executor": "nx-github-pages:deploy",
+        "options": {
+          "directory": "./docs-site/dist/client"
+        }
+      }
+    }
   },
   "packageManager": "pnpm@10.23.0",
   "dependencies": {

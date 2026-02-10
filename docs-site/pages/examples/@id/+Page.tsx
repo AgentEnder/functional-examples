@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePageContext } from 'vike-react/usePageContext';
+import { useData } from 'vike-react/useData';
 import {
   parseLineHash,
   slugifyFilename,
@@ -8,7 +8,7 @@ import {
 import { FileExplorer } from '../../../components/FileExplorer';
 import { Link } from '../../../components/Link';
 import { ProseRenderer } from '../../../components/ProseRenderer';
-import type { SiteExample } from '../../../server/utils/examples';
+import type { ExampleDetailData } from './+data.js';
 
 const EXPLORER_PREFIX = 'explorer-';
 
@@ -36,11 +36,7 @@ function resolveExplorerHash(
 }
 
 export default function ExampleDetail() {
-  const pageContext = usePageContext();
-  const { id } = pageContext.routeParams as { id: string };
-  const examples = ((pageContext as unknown as Record<string, unknown>)
-    .examples ?? {}) as Record<string, SiteExample>;
-  const example = examples[id];
+  const { example } = useData<ExampleDetailData>();
 
   const files = example?.files ?? [];
 
@@ -117,7 +113,7 @@ export default function ExampleDetail() {
           EXAMPLE NOT FOUND
         </h1>
         <p className="text-bp-line-dim">
-          No example with id &ldquo;{id}&rdquo; was found.
+          No example was found.
         </p>
         <Link
           href="/examples"

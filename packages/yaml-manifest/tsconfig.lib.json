@@ -5,8 +5,12 @@
     "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
+    "composite": true,
     "tsBuildInfoFile": "../../dist/tsc/yaml-manifest.lib.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
+  "references": [
+    { "path": "../devkit/tsconfig.lib.json" }
+  ]
 }

@@ -1,12 +1,12 @@
 import type { GlobalContextServer } from 'vike/types';
-import { loadExamples, type SiteExample } from '../server/utils/examples';
 import {
-  scanDocs,
   buildDocsNavigation,
   hydrateGuides,
-  type NavigationItem,
+  scanDocs,
   type DocPage,
+  type NavigationItem,
 } from '../server/utils/docs';
+import { loadExamples, type SiteExample } from '../server/utils/examples';
 
 function sortNavigationItems(items: NavigationItem[]): NavigationItem[] {
   for (const item of items) {
@@ -70,8 +70,6 @@ declare global {
       navigation: NavigationItem[];
     }
     interface GlobalContextClient {
-      examples: Record<string, SiteExample>;
-      docs: Record<string, DocPage>;
       navigation: NavigationItem[];
     }
   }

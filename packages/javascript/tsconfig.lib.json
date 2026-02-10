@@ -4,8 +4,12 @@
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
+    "composite": true,
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "node_modules", "dist"]
+  "exclude": ["src/**/*.spec.ts", "node_modules", "dist"],
+  "references": [
+    { "path": "../devkit/tsconfig.lib.json" }
+  ]
 }

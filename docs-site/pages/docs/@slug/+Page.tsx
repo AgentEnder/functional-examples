@@ -1,14 +1,10 @@
-import { usePageContext } from 'vike-react/usePageContext';
+import { useData } from 'vike-react/useData';
 import { Link } from '../../../components/Link';
 import { DimensionLine } from '../../../components/DimensionLine';
-import type { DocPage } from '../../../server/utils/docs';
+import type { DocDetailData } from './+data.js';
 
 export default function DocDetail() {
-  const pageContext = usePageContext();
-  const slug = (pageContext.routeParams as Record<string, string>)['*'] ?? '';
-  const docs = ((pageContext as unknown as Record<string, unknown>).docs ??
-    {}) as Record<string, DocPage>;
-  const doc = docs[slug];
+  const { doc } = useData<DocDetailData>();
 
   if (!doc) {
     return (
@@ -17,7 +13,7 @@ export default function DocDetail() {
           PAGE NOT FOUND
         </h1>
         <p className="text-bp-line-dim">
-          No documentation page found for &ldquo;{slug}&rdquo;.
+          No documentation page found.
         </p>
         <Link
           href="/docs"

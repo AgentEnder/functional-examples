@@ -43,6 +43,12 @@
         "dependsOn": [
           "^build"
         ]
+      },
+      "deploy": {
+        "executor": "nx-github-pages:deploy",
+        "options": {
+          "directory": "{projectRoot}/dist/client"
+        }
       }
     },
     "implicitDependencies": [
