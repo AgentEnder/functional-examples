@@ -1,6 +1,182 @@
 import { TypeGuard } from './guards.js';
 
-// Splice state and result types
+// Shared done sentinel to reduce allocations
+const DONE: IteratorResult<never> = { done: true, value: undefined as never };
+
+// --- Sync iterator classes ---
+// Classes give V8 stable hidden classes and monomorphic inline caches on next(),
+// which outperforms plain object factories on chained operations.
+
+class MapIterator<T, U> implements Iterator<U> {
+  private r: IteratorResult<U> = { done: false, value: undefined as U };
+  constructor(
+    private source: Iterator<T>,
+    private fn: (val: T) => U
+  ) {}
+  next(): IteratorResult<U> {
+    const result = this.source.next();
+    if (result.done) return DONE;
+    this.r.value = this.fn(result.value);
+    return this.r;
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+class FilterIterator<T> implements Iterator<T> {
+  private r: IteratorResult<T> = { done: false, value: undefined as T };
+  constructor(
+    private source: Iterator<T>,
+    private fn: (val: T) => boolean
+  ) {}
+  next(): IteratorResult<T> {
+    while (true) {
+      const result = this.source.next();
+      if (result.done) return DONE;
+      if (this.fn(result.value)) {
+        this.r.value = result.value;
+        return this.r;
+      }
+    }
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+class TakeIterator<T> implements Iterator<T> {
+  private r: IteratorResult<T> = { done: false, value: undefined as T };
+  private count = 0;
+  constructor(
+    private source: Iterator<T>,
+    private n: number
+  ) {}
+  next(): IteratorResult<T> {
+    if (this.count >= this.n) return DONE;
+    const result = this.source.next();
+    if (result.done) return DONE;
+    this.count++;
+    this.r.value = result.value;
+    return this.r;
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+class FlatIterator<T> implements Iterator<T> {
+  private r: IteratorResult<T> = { done: false, value: undefined as T };
+  private inner: Iterator<T> | null = null;
+  constructor(private source: Iterator<unknown>) {}
+  next(): IteratorResult<T> {
+    while (true) {
+      if (this.inner) {
+        const result = this.inner.next();
+        if (!result.done) {
+          this.r.value = result.value;
+          return this.r;
+        }
+        this.inner = null;
+      }
+
+      const result = this.source.next();
+      if (result.done) return DONE;
+
+      const value = result.value;
+      if (
+        value != null &&
+        typeof value !== 'string' &&
+        typeof (value as Iterable<T>)[Symbol.iterator] === 'function'
+      ) {
+        this.inner = (value as Iterable<T>)[Symbol.iterator]();
+      } else {
+        this.r.value = value as T;
+        return this.r;
+      }
+    }
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+class PrefixIterator<T> implements Iterator<T> {
+  private prefixIt: Iterator<T> | null;
+  constructor(
+    prefix: Iterable<T>,
+    private source: Iterator<T>
+  ) {
+    this.prefixIt = prefix[Symbol.iterator]();
+  }
+  next(): IteratorResult<T> {
+    if (this.prefixIt) {
+      const result = this.prefixIt.next();
+      if (!result.done) return result;
+      this.prefixIt = null;
+    }
+    return this.source.next();
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+// --- Async iterator classes ---
+
+class AsyncMapIterator<T, U> implements AsyncIterator<U> {
+  constructor(
+    private source: AsyncIterator<T>,
+    private fn: (val: T) => U | Promise<U>
+  ) {}
+  async next(): Promise<IteratorResult<U>> {
+    const result = await this.source.next();
+    if (result.done) return DONE;
+    return { done: false, value: await this.fn(result.value) };
+  }
+  [Symbol.asyncIterator]() {
+    return this;
+  }
+}
+
+class AsyncFilterIterator<T> implements AsyncIterator<T> {
+  constructor(
+    private source: AsyncIterator<T>,
+    private fn: (val: T) => boolean | Promise<boolean>
+  ) {}
+  async next(): Promise<IteratorResult<T>> {
+    while (true) {
+      const result = await this.source.next();
+      if (result.done) return DONE;
+      if (await this.fn(result.value))
+        return { done: false, value: result.value };
+    }
+  }
+  [Symbol.asyncIterator]() {
+    return this;
+  }
+}
+
+class AsyncTakeIterator<T> implements AsyncIterator<T> {
+  private count = 0;
+  constructor(
+    private source: AsyncIterator<T>,
+    private n: number
+  ) {}
+  async next(): Promise<IteratorResult<T>> {
+    if (this.count >= this.n) return DONE;
+    const result = await this.source.next();
+    if (result.done) return DONE;
+    this.count++;
+    return result;
+  }
+  [Symbol.asyncIterator]() {
+    return this;
+  }
+}
+
+// --- Splice support ---
+
 interface SpliceState<T> {
   phase: 'seeking' | 'deleting' | 'inserting' | 'done';
   deletedCache: T[];
@@ -33,67 +209,6 @@ interface AsyncSpliceResult<T> {
   deleted: AsyncIterable<T>;
 }
 
-type PipelineOp =
-  | { type: 'map'; fn: (val: any) => any }
-  | { type: 'filter'; fn: (val: any) => boolean }
-  | { type: 'take'; n: number };
-
-class PipelineIterator<T> implements Iterator<T>, Iterable<T> {
-  private takeCounts: Map<number, number> = new Map();
-
-  constructor(private source: Iterator<any>, private ops: PipelineOp[]) {
-    // Initialize take counts
-    this.ops.forEach((op, index) => {
-      if (op.type === 'take') {
-        this.takeCounts.set(index, 0);
-      }
-    });
-  }
-
-  next(): IteratorResult<T> {
-    while (true) {
-      let { done, value } = this.source.next();
-      if (done) return { done: true, value: undefined };
-
-      let dropped = false;
-      for (let i = 0; i < this.ops.length; i++) {
-        const op = this.ops[i];
-        if (op.type === 'map') {
-          value = op.fn(value);
-        } else if (op.type === 'filter') {
-          if (!op.fn(value)) {
-            dropped = true;
-            break;
-          }
-        } else if (op.type === 'take') {
-          const count = this.takeCounts.get(i)!;
-          if (count >= op.n) {
-            dropped = true;
-            // Ideally we'd signal done here, but for now we just drop
-            // Optimization: If the *first* op is take and it's done, we can stop source
-            // But if take is later in chain, we effectively just filter out the rest
-            // To properly stop, we'd need to return done: true
-            return { done: true, value: undefined };
-          }
-          this.takeCounts.set(i, count + 1);
-        }
-      }
-
-      if (!dropped) {
-        return { done: false, value };
-      }
-    }
-  }
-
-  [Symbol.iterator](): Iterator<T> {
-    return this;
-  }
-}
-
-/**
- * Creates a splice operation state and generators for sync iterables.
- * Returns both sliced (modified) and deleted element generators.
- */
 function createSpliceGenerators<T>(
   source: Iterable<T>,
   matcher: (val: T) => boolean,
@@ -113,12 +228,10 @@ function createSpliceGenerators<T>(
 
   function* slicedGenerator(): Generator<T> {
     while (true) {
-      // Yield from cache if available
       while (state.slicedPtr < state.slicedCache.length) {
         yield state.slicedCache[state.slicedPtr++];
       }
 
-      // Process more elements from source
       if (state.phase === 'seeking') {
         const next = state.sourceIterator.next();
         if (next.done) {
@@ -162,9 +275,7 @@ function createSpliceGenerators<T>(
         }
       } else if (state.phase === 'done') {
         const next = state.sourceIterator.next();
-        if (next.done) {
-          return;
-        }
+        if (next.done) return;
         state.slicedCache.push(next.value);
         state.slicedPtr++;
         yield next.value;
@@ -174,26 +285,22 @@ function createSpliceGenerators<T>(
 
   function* deletedGenerator(): Generator<T> {
     while (true) {
-      // Yield from cache if available
       while (state.deletedPtr < state.deletedCache.length) {
         yield state.deletedCache[state.deletedPtr++];
       }
 
-      // Need to advance sliced to fill deleted cache
       if (state.phase === 'seeking' || state.phase === 'deleting') {
-        // Advance sliced generator to trigger processing
         const slicedIter = slicedGenerator();
         let result = slicedIter.next();
-        while (!result.done && state.phase !== 'done') {
+        // slicedGenerator mutates state.phase as it iterates, so re-read
+        // through the full type to avoid TS narrowing from the outer `if`.
+        while (!result.done && (state as SpliceState<T>).phase !== 'done') {
           result = slicedIter.next();
         }
       }
 
-      // Check if we have more deleted items after processing
       if (state.deletedPtr >= state.deletedCache.length) {
-        if (state.phase === 'done' || state.phase === 'inserting') {
-          return;
-        }
+        if (state.phase === 'done' || state.phase === 'inserting') return;
       }
     }
   }
@@ -204,10 +311,6 @@ function createSpliceGenerators<T>(
   };
 }
 
-/**
- * Creates a splice operation state and generators for async iterables.
- * Returns both sliced (modified) and deleted element generators.
- */
 async function createAsyncSpliceGenerators<T>(
   source: AsyncIterable<T>,
   matcher: (val: T) => boolean | Promise<boolean>,
@@ -227,12 +330,10 @@ async function createAsyncSpliceGenerators<T>(
 
   async function* slicedGenerator(): AsyncGenerator<T> {
     while (true) {
-      // Yield from cache if available
       while (state.slicedPtr < state.slicedCache.length) {
         yield state.slicedCache[state.slicedPtr++];
       }
 
-      // Process more elements from source
       if (state.phase === 'seeking') {
         const next = await state.sourceIterator.next();
         if (next.done) {
@@ -276,9 +377,7 @@ async function createAsyncSpliceGenerators<T>(
         }
       } else if (state.phase === 'done') {
         const next = await state.sourceIterator.next();
-        if (next.done) {
-          return;
-        }
+        if (next.done) return;
         state.slicedCache.push(next.value);
         state.slicedPtr++;
         yield next.value;
@@ -288,26 +387,25 @@ async function createAsyncSpliceGenerators<T>(
 
   async function* deletedGenerator(): AsyncGenerator<T> {
     while (true) {
-      // Yield from cache if available
       while (state.deletedPtr < state.deletedCache.length) {
         yield state.deletedCache[state.deletedPtr++];
       }
 
-      // Need to advance sliced to fill deleted cache
       if (state.phase === 'seeking' || state.phase === 'deleting') {
-        // Advance sliced generator to trigger processing
         const slicedIter = slicedGenerator();
         let result = await slicedIter.next();
-        while (!result.done && state.phase !== 'done') {
+        // slicedGenerator mutates state.phase as it iterates, so re-read
+        // through the full type to avoid TS narrowing from the outer `if`.
+        while (
+          !result.done &&
+          (state as AsyncSpliceState<T>).phase !== 'done'
+        ) {
           result = await slicedIter.next();
         }
       }
 
-      // Check if we have more deleted items after processing
       if (state.deletedPtr >= state.deletedCache.length) {
-        if (state.phase === 'done' || state.phase === 'inserting') {
-          return;
-        }
+        if (state.phase === 'done' || state.phase === 'inserting') return;
       }
     }
   }
@@ -318,9 +416,16 @@ async function createAsyncSpliceGenerators<T>(
   };
 }
 
+function asyncIterableFrom<T>(
+  factory: () => AsyncIterator<T>
+): AsyncIterable<T> {
+  return { [Symbol.asyncIterator]: factory };
+}
+
 /**
  * A wrapper around Iterable that provides chainable transformation methods.
- * Allows lazy evaluation of operations without converting to arrays.
+ * Each method returns a new ExtendedIterable wrapping the source,
+ * mirroring how Array methods work but with lazy evaluation.
  *
  * @example
  * ```typescript
@@ -334,45 +439,32 @@ async function createAsyncSpliceGenerators<T>(
  * ```
  */
 export class ExtendedIterable<T> implements Iterable<T> {
-  constructor(
-    private iterable: Iterable<any>,
-    private ops: PipelineOp[] = []
-  ) {}
+  private _iterFn: () => Iterator<T>;
+
+  constructor(iterable: Iterable<T>) {
+    // Store a factory so we can create fresh iterators on each iteration.
+    // For iterables that are already single-use (generators), this preserves
+    // the existing behavior — iterating twice just yields nothing the second time.
+    this._iterFn = () => iterable[Symbol.iterator]();
+  }
+
+  // Internal: create from a factory directly, skipping the iterable wrapper
+  private static _from<T>(factory: () => Iterator<T>): ExtendedIterable<T> {
+    const inst = Object.create(ExtendedIterable.prototype) as ExtendedIterable<T>;
+    inst._iterFn = factory;
+    return inst;
+  }
 
   /**
-     * Flattens one level of nesting by yielding elements from nested iterables.
-
+   * Flattens one level of nesting by yielding elements from nested iterables.
    * Non-iterable values are yielded as-is. Strings are not split into characters.
-   *
-   * @example
-   * ```typescript
-   * const nested = new ExtendedIterable([[1, 2], [3, 4]]);
-   * const flat = nested.flat().collect(); // [1, 2, 3, 4]
-   *
-   * // Only flattens one level
-   * const deep = new ExtendedIterable([[[1, 2]], [3]]);
-   * deep.flat().collect(); // [[1, 2], 3]
-   * ```
    */
   flat(): ExtendedIterable<T extends Iterable<infer U> ? U : T> {
-    const source = this.iterable;
-    function* flatGenerator(): Generator<T extends Iterable<infer U> ? U : T> {
-      for (const value of source) {
-        // Check if value is iterable (but not a string)
-        if (
-          value != null &&
-          // Intentional design decision to not spread strings => characters
-          // matching array.flat
-          typeof value !== 'string' &&
-          typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function'
-        ) {
-          yield* value as Iterable<T extends Iterable<infer U> ? U : T>;
-        } else {
-          yield value as T extends Iterable<infer U> ? U : T;
-        }
-      }
-    }
-    return new ExtendedIterable(flatGenerator());
+    type Out = T extends Iterable<infer U> ? U : T;
+    const parentIter = this._iterFn;
+    return ExtendedIterable._from<Out>(
+      () => new FlatIterator<Out>(parentIter() as Iterator<unknown>)
+    );
   }
 
   /**
@@ -380,10 +472,8 @@ export class ExtendedIterable<T> implements Iterable<T> {
    * Evaluation is lazy - the function is called only when iterating.
    */
   map<T2>(fn: (val: T) => T2): ExtendedIterable<T2> {
-    return new ExtendedIterable(this.iterable, [
-      ...this.ops,
-      { type: 'map', fn },
-    ]);
+    const parentIter = this._iterFn;
+    return ExtendedIterable._from<T2>(() => new MapIterator(parentIter(), fn));
   }
 
   filter(predicate: (val: T) => boolean): ExtendedIterable<T>;
@@ -392,23 +482,22 @@ export class ExtendedIterable<T> implements Iterable<T> {
    * Filters elements using a predicate function.
    * Supports type guards for narrowing.
    */
-  filter<T2>(
+  filter<T2 = unknown>(
     predicate: (val: T) => boolean | TypeGuard<T2>
   ): ExtendedIterable<T> | ExtendedIterable<T2> {
-    return new ExtendedIterable(this.iterable, [
-      ...this.ops,
-      { type: 'filter', fn: predicate as (val: any) => boolean },
-    ]);
+    const parentIter = this._iterFn;
+    return ExtendedIterable._from<T>(
+      () =>
+        new FilterIterator(parentIter(), predicate as (val: T) => boolean)
+    ) as ExtendedIterable<T> | ExtendedIterable<T2>;
   }
 
   /**
    * Takes the first n elements.
    */
   take(n: number): ExtendedIterable<T> {
-    return new ExtendedIterable(this.iterable, [
-      ...this.ops,
-      { type: 'take', n },
-    ]);
+    const parentIter = this._iterFn;
+    return ExtendedIterable._from<T>(() => new TakeIterator(parentIter(), n));
   }
 
   /**
@@ -477,12 +566,49 @@ export class ExtendedIterable<T> implements Iterable<T> {
   }
 
   /**
+   * Reduces the iterable to a single value by applying a function against
+   * an accumulator and each element.
+   *
+   * Without an initial value, the first element is used as the accumulator
+   * and reduction starts from the second element. Throws TypeError on empty iterables.
+   *
+   * @example
+   * ```typescript
+   * iter([1, 2, 3]).reduce((sum, n) => sum + n);        // 6
+   * iter([1, 2, 3]).reduce((sum, n) => sum + n, 10);    // 16
+   * ```
+   */
+  reduce(fn: (acc: T, val: T) => T): T;
+  reduce<U>(fn: (acc: U, val: T) => U, initialValue: U): U;
+  reduce<U>(
+    fn: (acc: T | U, val: T) => T | U,
+    ...rest: [] | [U]
+  ): T | U {
+    const it = this[Symbol.iterator]();
+    let acc: T | U;
+    if (rest.length > 0) {
+      acc = rest[0];
+    } else {
+      const first = it.next();
+      if (first.done) {
+        throw new TypeError('Reduce of empty iterable with no initial value');
+      }
+      acc = first.value;
+    }
+    for (let r = it.next(); !r.done; r = it.next()) {
+      acc = fn(acc, r.value);
+    }
+    return acc;
+  }
+
+  /**
    * Collects all elements into an array.
    */
   collect(): T[] {
     const arr: T[] = [];
-    for (const val of this) {
-      arr.push(val);
+    const it = this[Symbol.iterator]();
+    for (let r = it.next(); !r.done; r = it.next()) {
+      arr.push(r.value);
     }
     return arr;
   }
@@ -492,52 +618,24 @@ export class ExtendedIterable<T> implements Iterable<T> {
    * Elements are converted to strings using toString().
    */
   join(separator: string): string {
-    let str = '';
-    const iterator = this[Symbol.iterator]();
-    let next = iterator.next();
-    while (!next.done) {
-      str += String(next.value);
-      next = iterator.next();
-      if (!next.done) {
-        str += separator;
-      }
+    const it = this[Symbol.iterator]();
+    let r = it.next();
+    if (r.done) return '';
+    let str = String(r.value);
+    for (r = it.next(); !r.done; r = it.next()) {
+      str += separator + String(r.value);
     }
     return str;
   }
 
   /**
-   * Flattens one level of nesting by yielding elements from nested iterables.
-   * Non-iterable values are yielded as-is. Strings are not split into characters.
-   *
-   * @example
-   * ```typescript
-   * const nested = new ExtendedIterable([[1, 2], [3, 4]]);
-   * const flat = nested.flat().collect(); // [1, 2, 3, 4]
-   *
-   * // Only flattens one level
-   * const deep = new ExtendedIterable([[[1, 2]], [3]]);
-   * deep.flat().collect(); // [[1, 2], 3]
-   * ```
+   * Prepends an iterable to the start of this iterable.
    */
-  flat(): ExtendedIterable<T extends Iterable<infer U> ? U : T> {
-    const source = this;
-    function* flatGenerator(): Generator<T extends Iterable<infer U> ? U : T> {
-      for (const value of source) {
-        // Check if value is iterable (but not a string)
-        if (
-          value != null &&
-          // Intentional design decision to not spread strings => characters
-          // matching array.flat
-          typeof value !== 'string' &&
-          typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function'
-        ) {
-          yield* value as Iterable<T extends Iterable<infer U> ? U : T>;
-        } else {
-          yield value as T extends Iterable<infer U> ? U : T;
-        }
-      }
-    }
-    return new ExtendedIterable(flatGenerator());
+  prefix<U>(prefix: Iterable<U>): ExtendedIterable<T | U> {
+    const parentIter = this._iterFn;
+    return ExtendedIterable._from<T | U>(
+      () => new PrefixIterator<T | U>(prefix, parentIter() as Iterator<T | U>)
+    );
   }
 
   /**
@@ -558,14 +656,13 @@ export class ExtendedIterable<T> implements Iterable<T> {
    * deleted.collect(); // [3, 4]
    * ```
    */
-
   splice(
     matcher: (val: T) => boolean,
     deleteCount: number,
     insertIterable: Iterable<T>
   ): { deleted: ExtendedIterable<T>; sliced: ExtendedIterable<T> } {
     const { sliced, deleted } = createSpliceGenerators(
-      this.iterable,
+      this,
       matcher,
       deleteCount,
       insertIterable
@@ -578,10 +675,7 @@ export class ExtendedIterable<T> implements Iterable<T> {
   }
 
   [Symbol.iterator](): Iterator<T> {
-    if (this.ops.length > 0) {
-      return new PipelineIterator(this.iterable[Symbol.iterator](), this.ops);
-    }
-    return this.iterable[Symbol.iterator]();
+    return this._iterFn();
   }
 }
 
@@ -589,7 +683,6 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   private asyncIterable: AsyncIterable<T>;
 
   constructor(iterable: AsyncIterable<T> | Iterable<T>) {
-    // Convert sync iterables to async
     if (Symbol.asyncIterator in iterable) {
       this.asyncIterable = iterable as AsyncIterable<T>;
     } else {
@@ -611,14 +704,11 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
    */
   map<T2>(fn: (val: T) => T2 | Promise<T2>): AsyncExtendedIterable<T2> {
     const source = this.asyncIterable;
-    const asyncGen: AsyncIterable<T2> = {
-      async *[Symbol.asyncIterator]() {
-        for await (const val of source) {
-          yield await fn(val);
-        }
-      },
-    };
-    return new AsyncExtendedIterable(asyncGen);
+    return new AsyncExtendedIterable<T2>(
+      asyncIterableFrom(() =>
+        new AsyncMapIterator(source[Symbol.asyncIterator](), fn)
+      )
+    );
   }
 
   filter(
@@ -635,16 +725,45 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
     predicate: (val: T) => boolean | Promise<boolean> | TypeGuard<T2>
   ): AsyncExtendedIterable<T> | AsyncExtendedIterable<T2> {
     const source = this.asyncIterable;
-    const asyncGen: AsyncIterable<T> = {
-      async *[Symbol.asyncIterator]() {
-        for await (const val of source) {
-          if (await predicate(val)) {
-            yield val;
-          }
-        }
-      },
-    };
-    return new AsyncExtendedIterable(asyncGen);
+    return new AsyncExtendedIterable<T>(
+      asyncIterableFrom(() =>
+        new AsyncFilterIterator(
+          source[Symbol.asyncIterator](),
+          predicate as (val: T) => boolean
+        )
+      )
+    ) as AsyncExtendedIterable<T> | AsyncExtendedIterable<T2>;
+  }
+
+  /**
+   * Reduces the async iterable to a single value.
+   * Without an initial value, the first element is used as the accumulator.
+   * Throws TypeError on empty iterables when no initial value is provided.
+   */
+  async reduce(fn: (acc: T, val: T) => T | Promise<T>): Promise<T>;
+  async reduce<U>(
+    fn: (acc: U, val: T) => U | Promise<U>,
+    initialValue: U
+  ): Promise<U>;
+  async reduce<U>(
+    fn: (acc: T | U, val: T) => T | U | Promise<T | U>,
+    ...rest: [] | [U]
+  ): Promise<T | U> {
+    const it = this[Symbol.asyncIterator]();
+    let acc: T | U;
+    if (rest.length > 0) {
+      acc = rest[0];
+    } else {
+      const first = await it.next();
+      if (first.done) {
+        throw new TypeError('Reduce of empty iterable with no initial value');
+      }
+      acc = first.value;
+    }
+    for (let r = await it.next(); !r.done; r = await it.next()) {
+      acc = await fn(acc, r.value);
+    }
+    return acc;
   }
 
   /**
@@ -652,7 +771,7 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
    */
   async collect(): Promise<T[]> {
     const arr: T[] = [];
-    for await (const val of this.asyncIterable) {
+    for await (const val of this) {
       arr.push(val);
     }
     return arr;
@@ -672,17 +791,11 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
    */
   take(n: number): AsyncExtendedIterable<T> {
     const source = this.asyncIterable;
-    const asyncGen: AsyncIterable<T> = {
-      async *[Symbol.asyncIterator]() {
-        let count = 0;
-        for await (const val of source) {
-          if (count >= n) break;
-          yield val;
-          count++;
-        }
-      },
-    };
-    return new AsyncExtendedIterable(asyncGen);
+    return new AsyncExtendedIterable<T>(
+      asyncIterableFrom(() =>
+        new AsyncTakeIterator(source[Symbol.asyncIterator](), n)
+      )
+    );
   }
 
   /**
@@ -692,7 +805,7 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   async some(
     predicate: (val: T) => boolean | Promise<boolean>
   ): Promise<boolean> {
-    for await (const val of this.asyncIterable) {
+    for await (const val of this) {
       if (await predicate(val)) {
         return true;
       }
@@ -707,7 +820,7 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   async find(
     predicate: (val: T) => boolean | Promise<boolean>
   ): Promise<T | undefined> {
-    for await (const val of this.asyncIterable) {
+    for await (const val of this) {
       if (await predicate(val)) {
         return val;
       }
@@ -719,11 +832,6 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
    * Removes elements from the async iterable and optionally inserts new elements.
    * Returns both the modified iterable and the deleted elements.
    * Both iterables share state - iterating either will cache results for the other.
-   *
-   * @param matcher - Predicate to find the splice position (can be async)
-   * @param deleteCount - Number of elements to remove after the match
-   * @param insertIterable - Elements to insert after removing
-   * @returns Object with `sliced` (modified iterable) and `deleted` (removed elements)
    */
   async splice(
     matcher: (val: T) => boolean | Promise<boolean>,
@@ -733,7 +841,6 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
     deleted: AsyncExtendedIterable<T>;
     sliced: AsyncExtendedIterable<T>;
   }> {
-    // Convert insert iterable to async if needed
     const asyncInsert: AsyncIterable<T> =
       Symbol.asyncIterator in insertIterable
         ? (insertIterable as AsyncIterable<T>)
@@ -746,7 +853,7 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
           };
 
     const { sliced, deleted } = await createAsyncSpliceGenerators(
-      this.asyncIterable,
+      this,
       matcher,
       deleteCount,
       asyncInsert
@@ -808,9 +915,6 @@ export function asSettled<T>(
   return new AsyncExtendedIterable(asSettledGen(promises));
 }
 
-/**
- * Internal generator for asSettled.
- */
 async function* asSettledGen<T>(
   promises: Iterable<Promise<T>>
 ): AsyncGenerator<PromiseSettledResult<T>> {
@@ -818,7 +922,6 @@ async function* asSettledGen<T>(
   let notifyReady: (() => void) | null = null;
   let remaining = 0;
 
-  // Wire up each promise to push to queue when it settles
   for (const p of promises) {
     remaining++;
     Promise.resolve(p).then(
@@ -833,17 +936,14 @@ async function* asSettledGen<T>(
     );
   }
 
-  // Yield results as they arrive
   while (remaining > 0) {
     if (queue.length === 0) {
-      // Wait for something to settle
       await new Promise<void>((resolve) => {
         notifyReady = resolve;
       });
       notifyReady = null;
     }
 
-    // Drain everything currently in queue
     while (queue.length > 0 && remaining > 0) {
       yield queue.shift();
       remaining--;
