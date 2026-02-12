@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": ["functional-examples.config.ts"],
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "outDir": "dist/root-project"
+  },
+  "include": ["functional-examples.config.ts", "scripts/**/*.mts"],
   "references": []
 }

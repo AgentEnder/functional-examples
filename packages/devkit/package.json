@@ -26,7 +26,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "extract-docs": "typedoc --options typedoc.json"
   },
   "dependencies": {
     "cli-forge": "catalog:"

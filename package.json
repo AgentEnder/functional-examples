@@ -37,6 +37,7 @@
     "nx-github-pages": "^1.2.0",
     "prettier": "catalog:",
     "tsx": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:"
   },
   "nx": {
@@ -47,6 +48,10 @@
         "options": {
           "directory": "./docs-site/dist/client"
         }
+      },
+      "hydrate-readmes": {
+        "command": "tsx scripts/hydrate-readmes.ts",
+        "dependsOn": ["^build"]
       }
     }
   },

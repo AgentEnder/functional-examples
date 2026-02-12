@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "tsconfig": "./tsconfig.json",
+  "json": "../../.typedoc/yaml-manifest.json",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "readme": "none"
+}

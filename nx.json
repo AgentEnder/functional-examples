@@ -12,7 +12,7 @@
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
   "release": {
-    "projects": ["packages/*"],
+    "projects": ["packages/*", "!rehype-typedoc", "!vike-plugin-typedoc"],
     "version": {
       "preVersionCommand": "npx nx run-many -t build && pnpm sync-metadata",
       "conventionalCommits": true
@@ -36,6 +36,12 @@
       "cache": true,
       "inputs": ["default", "^default"],
       "outputs": ["{projectRoot}/dist"]
+    },
+    "extract-docs": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "inputs": ["production"],
+      "outputs": ["{workspaceRoot}/.typedoc/{projectName}.json"]
     }
   },
   "plugins": [

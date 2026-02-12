@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "extract-docs": "typedoc --options typedoc.json"
   },
   "peerDependencies": {
     "functional-examples": "0.0.0-alpha.1"

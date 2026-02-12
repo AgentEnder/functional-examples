@@ -24,7 +24,8 @@
     "build": "tsc -p tsconfig.lib.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "extract-docs": "typedoc --options typedoc.json"
   },
   "dependencies": {
     "@functional-examples/devkit": "workspace:*",
