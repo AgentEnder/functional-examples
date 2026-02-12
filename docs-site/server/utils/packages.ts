@@ -1,3 +1,4 @@
+import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from '@schemastore/package';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { renderMarkdown } from './markdown';
@@ -48,7 +49,7 @@ export async function scanPackages(): Promise<PackageInfo[]> {
     if (!entry.isDirectory()) continue;
 
     const pkgDir = join(packagesDir, entry.name);
-    let pkgJson: Record<string, unknown>;
+    let pkgJson: PackageJson;
 
     try {
       const raw = await readFile(join(pkgDir, 'package.json'), 'utf-8');
@@ -58,9 +59,14 @@ export async function scanPackages(): Promise<PackageInfo[]> {
       continue;
     }
 
-    const npmName = (pkgJson.name as string) ?? entry.name;
-    const description = (pkgJson.description as string) ?? '';
-    const version = (pkgJson.version as string) ?? '0.0.0';
+    // Skips packages that are not published to npm.
+    if (pkgJson.publishConfig && pkgJson.publishConfig.access !== 'public') {
+      continue;
+    }
+
+    const npmName = pkgJson.name ?? entry.name;
+    const description = pkgJson.description ?? '';
+    const version = pkgJson.version ?? '0.0.0';
 
     let readmeContent = '';
     try {

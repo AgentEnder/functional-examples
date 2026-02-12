@@ -141,6 +141,7 @@ export async function parseProseToBlocks(
       highlightedHtml = highlighter.codeToHtml(trimmedContent, {
         lang: block.language,
         theme: 'blueprint',
+        transformers: [{ name: 'add-language-class', code(node) { this.addClassToHast(node, `language-${block.language}`); return node; } }],
       });
       highlightedHtml = linkifyCodeHtml(highlightedHtml);
     } catch {

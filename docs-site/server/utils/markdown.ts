@@ -51,7 +51,8 @@ export async function renderMarkdown(md: string): Promise<string> {
   }
 
   // Syntax highlighting via @shikijs/rehype (replaces post-processing regex approach)
-  processor.use(rehypeShiki, { theme: blueprintTheme });
+  // addLanguageClass preserves language info so rehypeTypedocCodeBlocks can skip non-TS blocks
+  processor.use(rehypeShiki, { theme: blueprintTheme, addLanguageClass: true });
 
   // Add code block symbol linking after shiki highlighting
   if (_rehypeOptions) {

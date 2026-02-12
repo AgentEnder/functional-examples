@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ApiExportKind, ApiPackage } from 'vike-plugin-typedoc';
+import { Link } from './Link.js';
 
 export interface ApiPackageLandingProps {
   apiPackage: ApiPackage;
@@ -61,7 +62,7 @@ export function ApiPackageLanding({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {exports.map((exp) => (
-                    <a
+                    <Link
                       key={exp.slug}
                       href={exp.path}
                       className="block p-3 border border-bp-line-dim/15 rounded hover:bg-bp-surface/20 hover:border-bp-line-dim/30 transition-colors no-underline"
@@ -79,7 +80,7 @@ export function ApiPackageLanding({
                           {exp.description}
                         </p>
                       )}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>

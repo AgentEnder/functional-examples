@@ -1,12 +1,12 @@
-import { useData } from 'vike-react/useData';
 import { useApiPackage } from 'vike-plugin-typedoc/client';
+import { useData } from 'vike-react/useData';
 import { ApiPackageLanding } from '../../../components/ApiPackageLanding';
 import { DimensionLine } from '../../../components/DimensionLine';
 import { Link } from '../../../components/Link';
-import type { PackageDetailData } from './+data.js';
+import type { PageData } from './+data.server.js';
 
 export default function PackageDetail() {
-  const { pkg } = useData<PackageDetailData>();
+  const { pkg } = useData<PageData>();
   const { apiPackage } = useApiPackage();
 
   if (!pkg) {

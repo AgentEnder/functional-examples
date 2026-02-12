@@ -106,6 +106,7 @@ async function transformFile(
     highlightedHtml = highlighter.codeToHtml(content, {
       lang: language,
       theme: 'blueprint',
+      transformers: [{ name: 'add-language-class', code(node) { this.addClassToHast(node, `language-${language}`); return node; } }],
     });
     highlightedHtml = linkifyCodeHtml(highlightedHtml);
   } catch {

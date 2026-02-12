@@ -6,3 +6,5 @@ export function data(pageContext: PageContextServer) {
   const pkg = pageContext.globalContext.packages[dirName] ?? null;
   return { pkg, ...withApiPackage(pageContext, dirName) };
 }
+
+export type PageData = ReturnType<typeof data>;
