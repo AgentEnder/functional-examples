@@ -31,6 +31,20 @@ export interface TypedocContextOptions {
   basePath?: string;
 
   /**
+   * Deployment base URL to prepend to rendered HTML links.
+   *
+   * When set, `buildLink` (used by rehype-typedoc for inline type links and
+   * rendered markdown) prepends this base to every route-relative path.
+   * Stored paths (`exp.path`, `navItem.path`) and prerender URLs are
+   * **not** affected — they remain route-relative.
+   *
+   * Typically read from `globalContext.baseServer` in the Vike hook.
+   *
+   * @default '/'
+   */
+  baseUrl?: string;
+
+  /**
    * Additional remark plugins to include in the markdown pipeline.
    * These run after the baked-in plugins (remark-gfm, remark-code-props)
    * and before remark-rehype.
@@ -55,17 +69,42 @@ export interface TypedocContext {
   navigation: NavigationItem[];
   /** Pre-built options to pass to rehype-typedoc */
   rehypeOptions: RehypeTypedocOptions;
+  /** The resolved base URL (from options.baseUrl, normalized) */
+  baseUrl: string;
+  /** Prepend the deployment base URL to a route-relative path */
+  applyBaseUrl(path: string): string;
   /** Get a linked export by package + symbol slug */
   getLinkedExport(packageSlug: string, symbolSlug: string): LinkedApiExport | null;
   /** Get package info */
   getPackage(packageSlug: string): ApiPackage | null;
   /** Get all export URLs (for pre-rendering) */
   getExportUrls(): string[];
+  /** Get all package-level URLs (for pre-rendering) */
+  getPackageUrls(): string[];
+  /** Get all prerender URLs (packages + exports) */
+  getAllPrerenderUrls(): string[];
 }
 
 function createDefaultBuildUrl(basePath: string) {
   return (packageSlug: string, symbolSlug?: string): string =>
     symbolSlug ? `${basePath}/${packageSlug}/${symbolSlug}` : `${basePath}/${packageSlug}`;
+}
+
+/**
+ * Build an `applyBaseUrl` function from a raw base URL string.
+ *
+ * Returns the identity function when the base is falsy, `/`, `./`, or `.`
+ * (i.e., no deployment prefix). Otherwise normalizes and prepends the base.
+ */
+function createApplyBaseUrl(raw: string | undefined): (path: string) => string {
+  if (!raw || raw === '/' || raw === './' || raw === '.') {
+    return (path) => path;
+  }
+  const normalizedBase = raw.endsWith('/') ? raw : raw + '/';
+  return (path) => {
+    const normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+    return normalizedBase + normalizedPath;
+  };
 }
 
 /**
@@ -90,6 +129,8 @@ export async function createTypedocContext(
   options: TypedocContextOptions = {}
 ): Promise<TypedocContext> {
   const buildUrl = options.buildUrl ?? createDefaultBuildUrl(options.basePath ?? '/api');
+  const applyBaseUrl = createApplyBaseUrl(options.baseUrl);
+  const baseUrl = options.baseUrl ?? '/';
 
   // Apply buildUrl to every export path
   for (const pkg of packages) {
@@ -118,7 +159,7 @@ export async function createTypedocContext(
   }
 
   const buildLink = (symbol: { path?: string }) =>
-    symbol.path ?? undefined;
+    symbol.path ? applyBaseUrl(symbol.path) : undefined;
 
   const rehypeOptions: RehypeTypedocOptions = {
     symbols: symbolsMap,
@@ -154,6 +195,8 @@ export async function createTypedocContext(
     symbolsMap,
     navigation,
     rehypeOptions,
+    baseUrl,
+    applyBaseUrl,
 
     getLinkedExport(packageSlug: string, symbolSlug: string): LinkedApiExport | null {
       const apiPackage = apiDocs.packages[packageSlug];
@@ -186,6 +229,17 @@ export async function createTypedocContext(
 
     getExportUrls(): string[] {
       return apiDocs.allExports.map((exp) => exp.path);
+    },
+
+    getPackageUrls(): string[] {
+      return Object.values(apiDocs.packages).map((pkg) => buildUrl(pkg.slug));
+    },
+
+    getAllPrerenderUrls(): string[] {
+      return [
+        ...Object.values(apiDocs.packages).map((pkg) => buildUrl(pkg.slug)),
+        ...apiDocs.allExports.map((exp) => exp.path),
+      ];
     },
   };
 }

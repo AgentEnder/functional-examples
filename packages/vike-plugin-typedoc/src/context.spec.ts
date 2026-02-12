@@ -133,7 +133,7 @@ describe('createTypedocContext', () => {
 
     const pkg = ctx.getPackage('devkit');
     expect(pkg).not.toBeNull();
-    expect(pkg!.name).toBe('@functional-examples/devkit');
+    expect(pkg?.name).toBe('@functional-examples/devkit');
   });
 
   it('getPackage returns null for unknown slug', async () => {
@@ -148,10 +148,10 @@ describe('createTypedocContext', () => {
 
     const linked = ctx.getLinkedExport('devkit', 'create-matcher');
     expect(linked).not.toBeNull();
-    expect(linked!.name).toBe('createMatcher');
-    expect(linked!.parameters).toBeDefined();
+    expect(linked?.name).toBe('createMatcher');
+    expect(linked?.parameters).toBeDefined();
     // The parameter type is 'string' — an intrinsic, so typeHtml equals 'string'
-    expect(linked!.parameters![0].typeHtml).toBe('string');
+    expect(linked?.parameters?.[0].typeHtml).toBe('string');
   });
 
   it('getLinkedExport returns null for missing package', async () => {
@@ -173,6 +173,38 @@ describe('createTypedocContext', () => {
     expect(urls).toHaveLength(2);
   });
 
+  it('getPackageUrls returns all package paths', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    const urls = ctx.getPackageUrls();
+
+    expect(urls).toContain('/api/devkit');
+    expect(urls).toContain('/api/core');
+    expect(urls).toHaveLength(2);
+  });
+
+  it('getAllPrerenderUrls returns both package and export URLs', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    const urls = ctx.getAllPrerenderUrls();
+
+    // Package URLs
+    expect(urls).toContain('/api/devkit');
+    expect(urls).toContain('/api/core');
+    // Export URLs
+    expect(urls).toContain('/api/devkit/create-matcher');
+    expect(urls).toContain('/api/core/config');
+    expect(urls).toHaveLength(4);
+  });
+
+  it('getPackageUrls respects custom buildUrl', async () => {
+    const ctx = await createTypedocContext(makeTestPackages(), {
+      buildUrl: (pkg, sym) => (sym ? `/docs/${pkg}/${sym}` : `/docs/${pkg}`),
+    });
+    const urls = ctx.getPackageUrls();
+
+    expect(urls).toContain('/docs/devkit');
+    expect(urls).toContain('/docs/core');
+  });
+
   it('navigation contains package entries', async () => {
     const ctx = await createTypedocContext(makeTestPackages());
 
@@ -190,7 +222,7 @@ describe('createTypedocContext', () => {
 
     // buildLink should return the path from the symbol
     const link = ctx.rehypeOptions.buildLink(
-      Array.isArray(symbol) ? symbol[0] : symbol!
+      Array.isArray(symbol) ? symbol[0] : symbol
     );
     expect(link).toBe('/api/devkit/create-matcher');
   });
@@ -201,7 +233,85 @@ describe('createTypedocContext', () => {
     // Config interface has a comment.summary = "A test interface"
     const linked = ctx.getLinkedExport('core', 'config');
     expect(linked).not.toBeNull();
-    expect(linked!.descriptionHtml).toBeDefined();
-    expect(linked!.descriptionHtml).toContain('A test interface');
+    expect(linked?.descriptionHtml).toBeDefined();
+    expect(linked?.descriptionHtml).toContain('A test interface');
+  });
+
+  describe('baseUrl option', () => {
+    it('applyBaseUrl prepends base to route-relative paths', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/functional-examples/',
+      });
+
+      expect(ctx.applyBaseUrl('/api/devkit')).toBe(
+        '/functional-examples/api/devkit'
+      );
+      expect(ctx.applyBaseUrl('/api/devkit/create-matcher')).toBe(
+        '/functional-examples/api/devkit/create-matcher'
+      );
+    });
+
+    it('applyBaseUrl is a no-op when baseUrl is /', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/',
+      });
+
+      expect(ctx.applyBaseUrl('/api/devkit')).toBe('/api/devkit');
+    });
+
+    it('applyBaseUrl is a no-op when baseUrl is omitted', async () => {
+      const ctx = await createTypedocContext(makeTestPackages());
+
+      expect(ctx.applyBaseUrl('/api/devkit')).toBe('/api/devkit');
+    });
+
+    it('exp.path remains route-relative even when baseUrl is set', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/functional-examples/',
+      });
+
+      const exp = ctx.apiDocs.packages['devkit'].exports[0];
+      expect(exp.path).toBe('/api/devkit/create-matcher');
+    });
+
+    it('rehypeOptions.buildLink returns base-prefixed URL when baseUrl is set', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/functional-examples/',
+      });
+
+      const symbol = ctx.symbolsMap.get('createMatcher');
+      expect(symbol).toBeDefined();
+
+      const link = ctx.rehypeOptions.buildLink(
+        Array.isArray(symbol) ? symbol[0] : symbol
+      );
+      expect(link).toBe('/functional-examples/api/devkit/create-matcher');
+    });
+
+    it('prerender URLs remain route-relative when baseUrl is set', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/functional-examples/',
+      });
+
+      const urls = ctx.getAllPrerenderUrls();
+      // All URLs should be route-relative (no base prefix)
+      expect(urls).toContain('/api/devkit');
+      expect(urls).toContain('/api/devkit/create-matcher');
+      expect(urls.every((u) => !u.startsWith('/functional-examples/'))).toBe(
+        true
+      );
+    });
+
+    it('exposes baseUrl on context', async () => {
+      const ctx = await createTypedocContext(makeTestPackages(), {
+        baseUrl: '/functional-examples/',
+      });
+      expect(ctx.baseUrl).toBe('/functional-examples/');
+    });
+
+    it('defaults baseUrl to / when not provided', async () => {
+      const ctx = await createTypedocContext(makeTestPackages());
+      expect(ctx.baseUrl).toBe('/');
+    });
   });
 });

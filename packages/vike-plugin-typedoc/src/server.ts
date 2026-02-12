@@ -13,6 +13,9 @@ import type { ApiPackage } from './types.js';
 const GLOBAL_KEY = '$$VIKE_PLUGIN_TYPEDOC$$';
 const DATA_KEY = '$$VIKE_PLUGIN_TYPEDOC$$';
 
+/** Module-level inflight promise to prevent concurrent loads */
+let _inflight: Promise<TypedocContext> | undefined;
+
 export interface LoadTypedocContextOptions extends TypedocContextOptions {
   /** Directory with *.json TypeDoc output files */
   typedocDir: string;
@@ -108,17 +111,34 @@ export async function loadTypedocContextInternal(
  * @returns The created TypedocContext (also stored on `context`)
  */
 export async function loadTypedocContext(
-  context: GlobalContextServer,
+  context: Partial<GlobalContextServer>,
   options: LoadTypedocContextOptions = context.config.typedoc
 ): Promise<TypedocContext> {
+  // Fast path: already resolved and stored on global context
   const alreadyLoaded = context[GLOBAL_KEY];
   if (alreadyLoaded) {
     return alreadyLoaded;
   }
-  // TODO: Figure out why this is looking in wrong spot.
-  const ctx = await loadTypedocContextInternal(options);
-  context[GLOBAL_KEY] = ctx;
-  return ctx;
+  // Deduplicate concurrent callers: if a load is already inflight, await it
+  if (_inflight) {
+    const ctx = await _inflight;
+    context[GLOBAL_KEY] = ctx;
+    return ctx;
+  }
+  // Automatically inject baseServer from Vike when baseUrl isn't explicitly set
+  const optionsWithBase: LoadTypedocContextOptions =
+    options.baseUrl != null
+      ? options
+      : { ...options, baseUrl: context.baseServer ?? '/' };
+  // Store the promise immediately so concurrent callers find it
+  _inflight = loadTypedocContextInternal(optionsWithBase);
+  try {
+    const ctx = await _inflight;
+    context[GLOBAL_KEY] = ctx;
+    return ctx;
+  } finally {
+    _inflight = undefined;
+  }
 }
 
 /**
@@ -141,28 +161,6 @@ export function getTypedocContext(
     );
   }
   return ctx;
-}
-
-/**
- * Create an `onBeforePrerenderStart` hook that loads TypeDoc data and
- * returns all export URLs for pre-rendering.
- *
- * Usage in `+onBeforePrerenderStart.ts`:
- * ```ts
- * import { createOnBeforePrerenderStart } from 'vike-plugin-typedoc/server';
- * export default createOnBeforePrerenderStart({
- *   typedocDir: '.typedoc',
- *   packagesDir: 'packages',
- * });
- * ```
- */
-export function createOnBeforePrerenderStart(
-  options: LoadTypedocContextOptions
-): () => Promise<string[]> {
-  return async () => {
-    const ctx = await loadTypedocContextInternal(options);
-    return ctx.getExportUrls();
-  };
 }
 
 /** Data shape for package detail pages */

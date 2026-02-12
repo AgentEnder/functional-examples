@@ -22,12 +22,17 @@ export default {
   },
   onCreateGlobalContext:
     'import:vike-plugin-typedoc/__internal/hooks/onCreateGlobalContext:onCreateGlobalContext',
+  onBeforePrerenderStart:
+    'import:vike-plugin-typedoc/__internal/hooks/onBeforePrerenderStart:onBeforePrerenderStart',
   meta: {
     typedoc: {
       env: { server: true },
       global: true,
     },
     onCreateGlobalContext: {
+      env: { server: true },
+    },
+    onBeforePrerenderStart: {
       env: { server: true },
     },
   },

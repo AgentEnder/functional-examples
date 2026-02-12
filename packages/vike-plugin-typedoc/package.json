@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
   "exports": {
     ".": {
@@ -38,6 +38,11 @@
       "types": "./dist/hooks/onCreateGlobalContext.d.ts",
       "import": "./dist/hooks/onCreateGlobalContext.js",
       "default": "./dist/hooks/onCreateGlobalContext.js"
+    },
+    "./__internal/hooks/onBeforePrerenderStart": {
+      "types": "./dist/hooks/onBeforePrerenderStart.d.ts",
+      "import": "./dist/hooks/onBeforePrerenderStart.js",
+      "default": "./dist/hooks/onBeforePrerenderStart.js"
     }
   },
   "files": [
