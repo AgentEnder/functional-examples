@@ -9,7 +9,9 @@
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_resize",
       "Bash(fi)",
-      "mcp__plugin_playwright_playwright__browser_click"
+      "mcp__plugin_playwright_playwright__browser_click",
+      "Bash(for pkg in devkit functional-examples javascript yaml-manifest test documentation rehype-typedoc vike-plugin-typedoc)",
+      "Bash(do)"
     ]
   }
 }
