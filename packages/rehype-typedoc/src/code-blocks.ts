@@ -7,6 +7,11 @@ import { lookupSymbol, resolveSymbol } from './plugin.js';
 /** Identifier regex: word chars starting with a letter, underscore, or $ */
 const IDENTIFIER_RE = /^(\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*)$/;
 
+/** Languages where TypeDoc symbol linking makes sense */
+const LINKABLE_LANGUAGES = new Set([
+  'typescript', 'ts', 'tsx', 'javascript', 'js', 'jsx', 'mts', 'cts', 'mjs', 'cjs',
+]);
+
 /** Intrinsic types and keywords that should never be linked */
 const SKIP_TOKENS = new Set([
   'string', 'number', 'boolean', 'void', 'undefined', 'null',
@@ -126,6 +131,22 @@ const rehypeTypedocCodeBlocks: Plugin<[RehypeTypedocOptions], Root> = (options) 
         (c): c is Element => c.type === 'element' && c.tagName === 'code'
       );
       if (!code) return;
+
+      // Skip non-TS/JS code blocks when language info is available.
+      // Language classes (e.g. "language-bash") are added by remark-rehype
+      // and optionally preserved by Shiki via addLanguageClass: true.
+      // When no language class is present, we process the block (backward-compatible
+      // for API docs where all code blocks are TypeScript).
+      const classes = code.properties?.className;
+      if (Array.isArray(classes)) {
+        const langClass = classes.find(
+          (c): c is string => typeof c === 'string' && c.startsWith('language-')
+        );
+        if (langClass) {
+          const lang = langClass.slice('language-'.length);
+          if (!LINKABLE_LANGUAGES.has(lang)) return;
+        }
+      }
 
       // Collect all replacements, then apply in reverse order
       // so that splice indices remain valid

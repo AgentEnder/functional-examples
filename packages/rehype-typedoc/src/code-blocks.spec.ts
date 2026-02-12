@@ -161,4 +161,48 @@ describe('rehypeTypedocCodeBlocks', () => {
     expect(result).toContain('style="color:#a8d0f0"');
     expect(result).toContain('class="typedoc-link"');
   });
+
+  describe('language filtering', () => {
+    it('links symbols in typescript code blocks', () => {
+      const input = '<pre><code class="language-typescript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+    });
+
+    it('links symbols in ts code blocks', () => {
+      const input = '<pre><code class="language-ts"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+    });
+
+    it('links symbols in javascript code blocks', () => {
+      const input = '<pre><code class="language-javascript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+    });
+
+    it('skips bash code blocks', () => {
+      const input = '<pre><code class="language-bash"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('skips yaml code blocks', () => {
+      const input = '<pre><code class="language-yaml"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('skips json code blocks', () => {
+      const input = '<pre><code class="language-json"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('still links when no language class is present (backward-compatible)', () => {
+      const input = '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+    });
+  });
 });
