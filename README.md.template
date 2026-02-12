@@ -1,0 +1,48 @@
+<p align="center">
+  <img src="docs-site/public/logo.svg" alt="functional-examples" width="96" />
+</p>
+
+# functional-examples
+
+A language-agnostic library for treating code examples as first-class citizens.
+
+This monorepo contains the core `functional-examples` library and related tooling.
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`functional-examples`](./packages/functional-examples) | Core scanner, config, CLI, and type generation |
+| [`@functional-examples/devkit`](./packages/devkit) | Plugin development kit — shared types and utilities |
+| [`@functional-examples/javascript`](./packages/javascript) | JavaScript/TypeScript extractor plugin |
+| [`@functional-examples/yaml-manifest`](./packages/yaml-manifest) | YAML manifest extractor plugin |
+| [`@functional-examples/test`](./packages/test) | Test runner plugin for examples |
+| [`@functional-examples/documentation`](./packages/documentation) | Documentation generation plugin |
+
+## Quick Start
+
+```bash
+npm install functional-examples
+```
+
+<%= example('basic-usage').file('scan.ts') %>
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm nx run-many -t build
+
+# Run tests
+pnpm nx run-many -t test
+
+# Lint
+pnpm nx run-many -t lint
+```
+
+## License
+
+MIT
