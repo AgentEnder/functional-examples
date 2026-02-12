@@ -4,8 +4,20 @@ import vike from 'vike/plugin';
 import { defineConfig } from 'vite';
 import { watchDocs, watchExamples } from './plugins';
 
+const traceServerImport = () => ({
+  name: 'trace-server-import',
+  enforce: 'pre' as const,
+  moduleParsed(info: { id: string; importedIds: string[]; dynamicallyImportedIds: string[] }) {
+    for (const imp of [...info.importedIds, ...info.dynamicallyImportedIds]) {
+      if (imp.includes('typedoc') && imp.includes('server')) {
+        console.log(`>>> ${info.id}\n    -> ${imp}`);
+      }
+    }
+  }
+});
+
 export default defineConfig({
-  plugins: [vike(), react(), tailwindcss(), watchDocs(), watchExamples()],
+  plugins: [traceServerImport(), vike(), react(), tailwindcss(), watchDocs(), watchExamples()],
   build: {
     rollupOptions: {
       external: ['/pagefind/pagefind.js'],

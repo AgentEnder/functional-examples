@@ -376,6 +376,22 @@ code, pre {
   color: var(--color-bp-line-dim);
 }
 
+/* ─── Typedoc Symbol Links ───
+   Links injected by rehype-typedoc into code blocks and inline code.
+   Styled globally so they work in file explorer, prose, and API pages.
+─── */
+a.typedoc-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--color-bp-accent-dim);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 0.15s ease;
+}
+a.typedoc-link:hover {
+  text-decoration-color: var(--color-bp-accent);
+}
+
 /* ─── Highlighted Lines ───
    Subtle highlight for region lines in code blocks.
 ─── */

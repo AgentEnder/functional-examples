@@ -9,7 +9,7 @@ import {
 import { readFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { getHighlighter } from './highlighter';
-import { renderMarkdown } from './markdown';
+import { linkifyCodeHtml, renderMarkdown } from './markdown';
 import { parseProseToBlocks } from './prose-parser';
 
 /** Hunk/region metadata for a file */
@@ -107,6 +107,7 @@ async function transformFile(
       lang: language,
       theme: 'blueprint',
     });
+    highlightedHtml = linkifyCodeHtml(highlightedHtml);
   } catch {
     // Fallback: wrap in pre/code
     highlightedHtml = `<pre><code>${escapeHtml(content)}</code></pre>`;

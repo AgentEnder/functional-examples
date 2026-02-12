@@ -1,3 +1,4 @@
+import { loadTypedocContext } from 'vike-plugin-typedoc/server';
 import type { GlobalContextServer } from 'vike/types';
 import {
   buildDocsNavigation,
@@ -7,6 +8,8 @@ import {
   type NavigationItem,
 } from '../server/utils/docs';
 import { loadExamples, type SiteExample } from '../server/utils/examples';
+import { configureRehypeTypedoc } from '../server/utils/markdown.js';
+import { scanPackages, type PackageInfo } from '../server/utils/packages';
 
 function sortNavigationItems(items: NavigationItem[]): NavigationItem[] {
   for (const item of items) {
@@ -25,13 +28,25 @@ function sortNavigationItems(items: NavigationItem[]): NavigationItem[] {
 export async function onCreateGlobalContext(
   context: Partial<GlobalContextServer>
 ): Promise<void> {
-  const [{ siteExamples: examples, scannedExamples }, rawDocs] =
-    await Promise.all([loadExamples(), scanDocs()]);
+  // Phase 1: Read TypeDoc context (loaded by the vike-plugin-typedoc extension)
+  // and configure rehype-typedoc so inline code auto-linking works.
+  const typedoc = await loadTypedocContext(context);
+  configureRehypeTypedoc(typedoc.rehypeOptions);
+
+  // Phase 2: Load all content in parallel.
+  // renderMarkdown calls within these loaders will now
+  // automatically apply typedoc symbol links.
+  const [{ siteExamples: examples, scannedExamples }, rawDocs, packageList] =
+    await Promise.all([loadExamples(), scanDocs(), scanPackages()]);
 
   // Hydrate guide pages: expand Eta example references and render to HTML
   const docs = await hydrateGuides(rawDocs, scannedExamples);
 
   const docsNavigation = buildDocsNavigation(docs);
+
+  const packages = Object.fromEntries(
+    packageList.map((pkg) => [pkg.dirName, pkg])
+  );
 
   const navigation: NavigationItem[] = [
     ...docsNavigation,
@@ -48,6 +63,19 @@ export async function onCreateGlobalContext(
       title: 'API',
       path: '/api',
       order: 100,
+      children: [
+        ...packageList.map((pkg) => {
+          // Merge TypeDoc nav items into package nav
+          const apiNav = typedoc.navigation.find(
+            (item) => item.path === `/api/${pkg.dirName}`
+          );
+          return {
+            title: pkg.npmName,
+            path: `/api/${pkg.dirName}`,
+            children: apiNav?.children,
+          };
+        }),
+      ],
     },
   ];
 
@@ -57,6 +85,7 @@ export async function onCreateGlobalContext(
   (context as Record<string, unknown>).docs = Object.fromEntries(
     docs.map((d) => [d.slug, d])
   );
+  (context as Record<string, unknown>).packages = packages;
   (context as Record<string, unknown>).navigation =
     sortNavigationItems(navigation);
 }
@@ -67,6 +96,7 @@ declare global {
     interface GlobalContextServer {
       examples: Record<string, SiteExample>;
       docs: Record<string, DocPage>;
+      packages: Record<string, PackageInfo>;
       navigation: NavigationItem[];
     }
     interface GlobalContextClient {

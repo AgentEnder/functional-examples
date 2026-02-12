@@ -1,10 +1,10 @@
 import type { ScannedExample } from '@functional-examples/devkit';
 import { createGuideRenderer } from '@functional-examples/documentation';
 import matter from 'gray-matter';
-import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
-import { basename, dirname, extname, join } from 'node:path';
+import { basename, extname, join } from 'node:path';
 import { renderMarkdown } from './markdown';
+import { workspaceRoot } from './workspace.js';
 
 /** Parsed doc page from docs/*.md */
 export interface DocPage {
@@ -152,15 +152,3 @@ export function buildDocsNavigation(docs: DocPage[]): NavigationItem[] {
   );
 }
 
-function workspaceRoot() {
-  let dir = import.meta.dirname;
-  while (dir !== '.' && dir) {
-    if (existsSync(join(dir, 'nx.json'))) {
-      return dir;
-    }
-    dir = dirname(dir);
-  }
-  throw new Error(
-    'Unable to locate workspace root from ' + import.meta.dirname
-  );
-}

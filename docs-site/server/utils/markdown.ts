@@ -1,74 +1,85 @@
+import rehypeParse from 'rehype-parse';
+import rehypeShiki from '@shikijs/rehype';
 import { rehypeGithubAlerts } from 'rehype-github-alerts';
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
+import type { RehypeTypedocOptions } from 'rehype-typedoc';
+import { rehypeTypedoc, rehypeTypedocCodeBlocks, remarkCodeProps } from 'rehype-typedoc';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { getHighlighter } from './highlighter';
+import { blueprintTheme } from './highlighter.js';
+
+// Module-level rehype-typedoc options — configured once, used by all renderMarkdown calls
+let _rehypeOptions: RehypeTypedocOptions | undefined;
 
 /**
- * Regex matching fenced code blocks produced by rehype-stringify.
- * Captures the language (from class="language-xxx") and the text content.
+ * Configure rehype-typedoc options for auto-linking inline code to API docs.
+ * Call this once at startup (before rendering markdown) so that all
+ * subsequent `renderMarkdown` calls automatically apply typedoc links.
  */
-const CODE_BLOCK_RE =
-  /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
-
-/** Decode HTML entities that rehype-stringify encodes inside code blocks. */
-function decodeHtmlEntities(html: string): string {
-  return html
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x3C;/gi, '<')
-    .replace(/&#x3E;/gi, '>')
-    .replace(/&#60;/g, '<')
-    .replace(/&#62;/g, '>');
+export function configureRehypeTypedoc(
+  options: RehypeTypedocOptions
+): void {
+  _rehypeOptions = options;
 }
 
 /**
  * Convert a Markdown string to syntax-highlighted HTML.
  *
- * 1. Parses markdown via remark (with GFM tables/strikethrough).
- * 2. Converts to HTML via rehype, allowing raw HTML pass-through.
- * 3. Post-processes fenced code blocks through Shiki so they use the
- *    blueprint syntax theme consistent with the rest of the site.
+ * The unified pipeline:
+ *   remarkParse → remarkGfm → remarkCodeProps
+ *     → remarkRehype (with raw HTML pass-through) → rehypeRaw → rehypeGithubAlerts
+ *     → rehypeTypedoc (inline code linking, if configured)
+ *     → @shikijs/rehype (syntax highlighting)
+ *     → rehypeTypedocCodeBlocks (code block symbol linking, if configured)
+ *     → rehypeStringify
  */
 export async function renderMarkdown(md: string): Promise<string> {
-  const file = await unified()
+  const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkCodeProps)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
-    .use(rehypeGithubAlerts, {})
+    .use(rehypeGithubAlerts, {});
+
+  // Add rehype-typedoc for inline code linking if options have been configured
+  if (_rehypeOptions) {
+    processor.use(rehypeTypedoc, _rehypeOptions);
+  }
+
+  // Syntax highlighting via @shikijs/rehype (replaces post-processing regex approach)
+  processor.use(rehypeShiki, { theme: blueprintTheme });
+
+  // Add code block symbol linking after shiki highlighting
+  if (_rehypeOptions) {
+    processor.use(rehypeTypedocCodeBlocks, _rehypeOptions);
+  }
+
+  processor.use(rehypeStringify);
+
+  const file = await processor.process(md);
+  return String(file);
+}
+
+/**
+ * Post-process Shiki-highlighted HTML to add symbol links.
+ *
+ * Use this for code blocks produced by `highlighter.codeToHtml()` outside
+ * the unified markdown pipeline (e.g. file explorer, prose code blocks).
+ * Parses the HTML into HAST, runs rehypeTypedocCodeBlocks, then serializes.
+ *
+ * Returns the input unchanged if rehype-typedoc is not configured.
+ */
+export function linkifyCodeHtml(html: string): string {
+  if (!_rehypeOptions) return html;
+
+  return unified()
+    .use(rehypeParse, { fragment: true })
+    .use(rehypeTypedocCodeBlocks, _rehypeOptions)
     .use(rehypeStringify)
-    .process(md);
-
-  let html = String(file);
-
-  // Replace fenced code blocks with Shiki-highlighted versions
-  const highlighter = await getHighlighter();
-  const replacements: Array<{ match: string; replacement: string }> = [];
-
-  for (const m of html.matchAll(CODE_BLOCK_RE)) {
-    const lang = m[1];
-    const code = decodeHtmlEntities(m[2]);
-    try {
-      const highlighted = highlighter.codeToHtml(code, {
-        lang,
-        theme: 'blueprint',
-      });
-      replacements.push({ match: m[0], replacement: highlighted });
-    } catch {
-      // Language not loaded in Shiki — leave as-is
-    }
-  }
-
-  for (const { match, replacement } of replacements) {
-    html = html.replace(match, replacement);
-  }
-
-  return html;
+    .processSync(html)
+    .toString();
 }

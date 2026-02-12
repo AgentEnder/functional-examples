@@ -5,7 +5,7 @@ import { createHighlighter } from 'shiki';
  * White/cream tones on blue — like chalk marks on blueprint paper.
  * No neon, no glow. Soft, readable, architectural.
  */
-const blueprintTheme = {
+export const blueprintTheme = {
   name: 'blueprint',
   type: 'dark' as const,
   colors: {

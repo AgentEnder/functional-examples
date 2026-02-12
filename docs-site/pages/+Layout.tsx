@@ -1,3 +1,5 @@
+import { SiGithub, SiNpm } from '@icons-pack/react-simple-icons';
+import { ChevronDown, Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePageContext } from 'vike-react/usePageContext';
 import { BlueprintBackground } from '../components/BlueprintBackground';
@@ -68,6 +70,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <HeaderLink href="/api" active={isActive('/api')}>
               API
             </HeaderLink>
+
+            {/* Divider + external links */}
+            <span className="h-4 border-l border-bp-line-dim/30" />
+            <a
+              href="https://github.com/AgentEnder/functional-examples"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-bp-line-dim hover:text-bp-line transition-colors"
+              aria-label="GitHub"
+            >
+              <SiGithub className="w-5 h-5" />
+            </a>
+            <a
+              href="https://www.npmjs.com/package/functional-examples"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-bp-line-dim hover:text-bp-line transition-colors"
+              aria-label="NPM"
+            >
+              <SiNpm className="w-5 h-5" />
+            </a>
           </nav>
 
           {/* Search + mobile menu */}
@@ -81,19 +104,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className="p-2 rounded hover:bg-bp-surface/30 transition-colors"
                 aria-label="Toggle menu"
               >
-                <svg
-                  className="w-5 h-5 text-bp-line"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
+                <Menu className="w-5 h-5 text-bp-line" strokeWidth={1.5} />
               </button>
             )}
           </div>
@@ -217,21 +228,12 @@ function NavContent({
                   onClick={() => toggle(section.title)}
                   className="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"
                 >
-                  <svg
+                  <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${
                       isCollapsed ? '-rotate-90' : ''
                     }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                    strokeWidth={2}
+                  />
                 </button>
               )}
             </div>
@@ -264,6 +266,28 @@ function NavContent({
           </div>
         );
       })}
+
+      {/* External links */}
+      <div className="border-t border-bp-line-dim/20 pt-4 mt-4 flex items-center gap-4">
+        <a
+          href="https://github.com/AgentEnder/functional-examples"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"
+        >
+          <SiGithub className="w-4 h-4" />
+          GitHub
+        </a>
+        <a
+          href="https://www.npmjs.com/package/functional-examples"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"
+        >
+          <SiNpm className="w-4 h-4" />
+          NPM
+        </a>
+      </div>
     </nav>
   );
 }

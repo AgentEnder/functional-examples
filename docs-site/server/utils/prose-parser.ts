@@ -2,7 +2,7 @@ import { templateHelpers } from '@functional-examples/documentation';
 import type { ExampleFile } from 'functional-examples';
 import type { ProseBlock } from './examples';
 import { getHighlighter } from './highlighter';
-import { renderMarkdown } from './markdown';
+import { linkifyCodeHtml, renderMarkdown } from './markdown';
 
 /**
  * Index entry mapping trimmed code content to its source file/region.
@@ -89,8 +89,8 @@ function parseFencedBlocks(markdown: string): FencedBlock[] {
     blocks.push({
       language: m[1] || 'text',
       content: m[2],
-      start: m.index!,
-      end: m.index! + m[0].length,
+      start: m.index ?? 0,
+      end: (m.index ?? 0) + m[0].length,
     });
   }
   return blocks;
@@ -142,6 +142,7 @@ export async function parseProseToBlocks(
         lang: block.language,
         theme: 'blueprint',
       });
+      highlightedHtml = linkifyCodeHtml(highlightedHtml);
     } catch {
       highlightedHtml = `<pre><code>${escapeHtml(trimmedContent)}</code></pre>`;
     }

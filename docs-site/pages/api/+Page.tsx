@@ -1,61 +1,46 @@
+import { useData } from 'vike-react/useData';
 import { DimensionLine } from '../../components/DimensionLine';
+import { Link } from '../../components/Link';
 import { SpecPanel } from '../../components/SpecPanel';
-
-const packages = [
-  {
-    name: 'functional-examples',
-    description: 'Core scanner, configuration, plugin system, and type generation',
-    exports: ['scanExamples', 'loadConfig', 'resolveConfig', 'findConfigFile', 'mergeConfigs', 'validateConfig', 'parseRegions', 'extractRegion', 'readExampleFile', 'readExampleFiles', 'PluginRegistry', 'generateMetadataTypes'],
-  },
-  {
-    name: '@functional-examples/devkit',
-    description: 'Shared types and utility sub-entries (json, glob, yaml)',
-    exports: ['Extractor', 'Plugin', 'Config', 'Example', 'ScannedExample', 'ExampleFile', 'ExtractorResult', 'parseJson (devkit/json)', 'glob (devkit/glob)', 'parseYaml (devkit/yaml)'],
-  },
-  {
-    name: '@functional-examples/javascript',
-    description: 'JavaScript/TypeScript extractor with frontmatter and region support',
-    exports: ['createJavaScriptPlugin'],
-  },
-  {
-    name: '@functional-examples/yaml-manifest',
-    description: 'YAML manifest extractor for directory-based examples',
-    exports: ['createYamlManifestPlugin'],
-  },
-  {
-    name: '@functional-examples/test',
-    description: 'Test runner plugin with TAP and pretty reporters',
-    exports: ['createTestPlugin'],
-  },
-];
+import type { ApiData } from './+data.js';
 
 export default function ApiPage() {
+  const { packages } = useData<ApiData>();
+
   return (
     <div>
       <DimensionLine label="API REFERENCE" length={250} className="mb-4" />
-      <h1 className="text-3xl font-heading text-bp-line-bright mb-3">API REFERENCE</h1>
+      <h1 className="text-3xl font-heading text-bp-line-bright mb-3">
+        API REFERENCE
+      </h1>
       <p className="text-bp-line-dim mb-8 max-w-2xl">
-        Public exports from each package in the functional-examples monorepo.
+        Browse the packages that make up the functional-examples toolkit. Each
+        can be installed independently.
       </p>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {packages.map((pkg) => (
-          <SpecPanel
-            key={pkg.name}
-            label="PACKAGE"
-            revision="1.0"
-            footer={[{ key: 'EXPORTS', value: String(pkg.exports.length) }]}
+          <Link
+            key={pkg.dirName}
+            href={`/api/${pkg.dirName}`}
+            className="block no-underline"
           >
-            <h3 className="text-base font-code text-bp-accent mb-2">{pkg.name}</h3>
-            <p className="text-sm text-bp-line-dim mb-3">{pkg.description}</p>
-            <div className="flex flex-wrap gap-2">
-              {pkg.exports.map((exp) => (
-                <code key={exp} className="text-xs px-2 py-0.5 bg-bp-paper/60 border border-bp-line-dim/15 rounded text-bp-line">
-                  {exp}
-                </code>
-              ))}
-            </div>
-          </SpecPanel>
+            <SpecPanel
+              label="PACKAGE"
+              revision={`v${pkg.version}`}
+              footer={[{ key: 'NPM', value: pkg.npmName }]}
+              className="h-full hover:bg-bp-surface/30 transition-colors"
+            >
+              <h3 className="text-base text-bp-line mb-2 normal-case tracking-normal font-mono">
+                {pkg.npmName}
+              </h3>
+              {pkg.description && (
+                <p className="text-sm text-bp-line-dim leading-relaxed">
+                  {pkg.description}
+                </p>
+              )}
+            </SpecPanel>
+          </Link>
         ))}
       </div>
     </div>
