@@ -118,4 +118,4 @@ Configuration lives in a `functional-examples.config.ts` (or `.json`) file at yo
 - **pathMappings** — route specific file patterns to specific extractors
 - **metadata** — JSON Schema for validating example metadata
 
-See the [Configuration guide](./configuration) for the full reference.
+See the [Configuration guide](../configuration) for the full reference.

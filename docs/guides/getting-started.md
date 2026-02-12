@@ -105,7 +105,7 @@ For tighter integration, use the `scan()` convenience function. Here's how the *
 
 ## What Comes Next
 
-- **[Core Concepts](./core-concepts)** — understand examples, extractors, and the plugin model
-- **[Plugins](./plugins)** — explore built-in plugins and when to use each one
-- **[Configuration](./configuration)** — deep dive into config options, scan patterns, and metadata schemas
-- **[Testing Examples](./testing-examples)** — verify that your examples actually run
+- **[Core Concepts](../core-concepts)** — understand examples, extractors, and the plugin model
+- **[Plugins](../plugins)** — explore built-in plugins and when to use each one
+- **[Configuration](../configuration)** — deep dive into config options, scan patterns, and metadata schemas
+- **[Testing Examples](../testing-examples)** — verify that your examples actually run

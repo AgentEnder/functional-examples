@@ -134,14 +134,18 @@ async function extractBlockCommentFrontmatter(
  *
  * Supports two formats:
  * 1. Line comment style:
+ *    ```javascript
  *    // ---
  *    // title: Example
  *    // ---
+ *    ```
  *
  * 2. Block comment wrapped style:
+ *    ```javascript
  *    /* ---
  *    title: Example
  *    --- *\/
+ *    ```
  *
  * Frontmatter must be at the very start of the file (line 1).
  * Extracted metadata is merged into context.metadata.
