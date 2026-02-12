@@ -5,20 +5,20 @@
  * `findConfigFile` → `loadConfig` → `resolveConfig` → `scanExamples`
  */
 
-import type { ResolvedConfig } from '../types/index.js';
 import { findConfigFile, loadConfig } from '../config/loader.js';
 import { resolveConfig } from '../config/resolver.js';
+import type { ResolvedConfig } from '../types/index.js';
 import { scanExamples } from './scanner.js';
 import type { ScanResult } from './types.js';
 
 /**
  * Options for the convenience `scan()` function.
  */
-export interface ScanOptions {
+export interface ScanOptions<T = Record<string, unknown>> {
   /** Working directory to search for config. Defaults to process.cwd() */
   root?: string;
   /** Pre-built config — skips file discovery + loading */
-  config?: ResolvedConfig;
+  config?: ResolvedConfig<T>;
 }
 
 /**
@@ -42,9 +42,11 @@ export interface ScanOptions {
  * const result = await scan({ config: myResolvedConfig });
  * ```
  */
-export async function scan(options?: ScanOptions): Promise<ScanResult> {
+export async function scan<TMetadata = Record<string, unknown>>(
+  options?: ScanOptions<TMetadata>
+): Promise<ScanResult<TMetadata>> {
   if (options?.config) {
-    return scanExamples(options.config);
+    return scanExamples<TMetadata>(options.config);
   }
 
   const root = options?.root ?? process.cwd();
@@ -56,7 +58,7 @@ export async function scan(options?: ScanOptions): Promise<ScanResult> {
     );
   }
 
-  const rawConfig = await loadConfig(configPath);
-  const resolved = await resolveConfig(rawConfig);
-  return scanExamples(resolved);
+  const rawConfig = await loadConfig<TMetadata>(configPath);
+  const resolved = await resolveConfig<TMetadata>(rawConfig);
+  return scanExamples<TMetadata>(resolved);
 }
