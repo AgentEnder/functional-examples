@@ -1,0 +1,94 @@
+{
+  "name": "vike-plugin-typedoc",
+  "version": "0.0.0-alpha.1",
+  "description": "Headless TypeDoc integration for Vike docs sites — parser, navigation, and context API",
+  "author": {
+    "name": "Craigory Coppola",
+    "url": "https://craigory.dev"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "default": "./dist/server.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "default": "./dist/client.js"
+    },
+    "./config": {
+      "types": "./dist/+config.d.ts",
+      "import": "./dist/+config.js",
+      "default": "./dist/+config.js"
+    },
+    "./__internal/hooks/onCreateGlobalContext": {
+      "types": "./dist/hooks/onCreateGlobalContext.d.ts",
+      "import": "./dist/hooks/onCreateGlobalContext.js",
+      "default": "./dist/hooks/onCreateGlobalContext.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "extract-docs": "typedoc --options typedoc.json"
+  },
+  "dependencies": {
+    "rehype-typedoc": "workspace:*",
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-rehype": "^11.1.2",
+    "rehype-stringify": "^10.0.1"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "vike": ">=0.4.250",
+    "vike-react": ">=0.5"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vike": {
+      "optional": true
+    },
+    "vike-react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "^19.2.9",
+    "react": "^19.2.3",
+    "typescript": "catalog:",
+    "vike": "^0.4.252",
+    "vike-react": "^0.6.19",
+    "vitest": "catalog:"
+  },
+  "homepage": "https://craigory.dev/functional-examples",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentEnder/functional-examples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentEnder/functional-examples/issues"
+  }
+}

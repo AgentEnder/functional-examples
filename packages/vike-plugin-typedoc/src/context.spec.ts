@@ -1,0 +1,207 @@
+import { describe, expect, it } from 'vitest';
+import { createTypedocContext } from './context.js';
+import { parseTypedocJson } from './parser.js';
+
+/** Minimal TypeDoc JSON for a function */
+function makeFunctionJson(name: string, returnType = 'void') {
+  return {
+    schemaVersion: '0.0.1',
+    id: 0,
+    name: 'test-package',
+    variant: 'project',
+    kind: 1,
+    flags: {},
+    children: [
+      {
+        id: 1,
+        name,
+        variant: 'declaration',
+        kind: 64,
+        flags: {},
+        signatures: [
+          {
+            id: 2,
+            name,
+            variant: 'signature',
+            kind: 4096,
+            flags: {},
+            parameters: [
+              {
+                id: 3,
+                name: 'input',
+                variant: 'param',
+                kind: 32768,
+                flags: {},
+                type: { type: 'intrinsic', name: 'string' },
+              },
+            ],
+            type: { type: 'intrinsic', name: returnType },
+          },
+        ],
+        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0 }],
+      },
+    ],
+  };
+}
+
+/** Minimal TypeDoc JSON for an interface */
+function makeInterfaceJson(name: string) {
+  return {
+    schemaVersion: '0.0.1',
+    id: 0,
+    name: 'test-package',
+    variant: 'project',
+    kind: 1,
+    flags: {},
+    children: [
+      {
+        id: 1,
+        name,
+        variant: 'declaration',
+        kind: 256,
+        flags: {},
+        children: [
+          {
+            id: 2,
+            name: 'value',
+            variant: 'declaration',
+            kind: 1024,
+            flags: { isOptional: true },
+            type: { type: 'intrinsic', name: 'string' },
+            comment: {
+              summary: [{ kind: 'text', text: 'The value property' }],
+            },
+          },
+        ],
+        comment: {
+          summary: [{ kind: 'text', text: 'A test interface' }],
+        },
+        sources: [{ fileName: 'src/types/index.ts', line: 1, character: 0 }],
+      },
+    ],
+  };
+}
+
+function makeTestPackages() {
+  const pkg1 = parseTypedocJson(
+    makeFunctionJson('createMatcher', 'boolean'),
+    'devkit',
+    '@functional-examples/devkit'
+  );
+  const pkg2 = parseTypedocJson(
+    makeInterfaceJson('Config'),
+    'core',
+    '@functional-examples/core'
+  );
+  return [pkg1, pkg2];
+}
+
+describe('createTypedocContext', () => {
+  it('returns correct structure', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    expect(ctx.apiDocs).toBeDefined();
+    expect(ctx.symbolsMap).toBeInstanceOf(Map);
+    expect(ctx.navigation).toBeInstanceOf(Array);
+    expect(ctx.rehypeOptions).toBeDefined();
+    expect(ctx.rehypeOptions.symbols).toBe(ctx.symbolsMap);
+    expect(typeof ctx.rehypeOptions.buildLink).toBe('function');
+    expect(typeof ctx.getLinkedExport).toBe('function');
+    expect(typeof ctx.getPackage).toBe('function');
+    expect(typeof ctx.getExportUrls).toBe('function');
+  });
+
+  it('applies default buildUrl to export paths', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    const exp = ctx.apiDocs.packages['devkit'].exports[0];
+    expect(exp.path).toBe('/api/devkit/create-matcher');
+  });
+
+  it('applies custom buildUrl to export paths', async () => {
+    const ctx = await createTypedocContext(makeTestPackages(), {
+      buildUrl: (pkg, sym) =>
+        sym ? `/docs/api/${pkg}/${sym}` : `/docs/api/${pkg}`,
+    });
+
+    const exp = ctx.apiDocs.packages['devkit'].exports[0];
+    expect(exp.path).toBe('/docs/api/devkit/create-matcher');
+  });
+
+  it('getPackage returns package by slug', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    const pkg = ctx.getPackage('devkit');
+    expect(pkg).not.toBeNull();
+    expect(pkg!.name).toBe('@functional-examples/devkit');
+  });
+
+  it('getPackage returns null for unknown slug', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    expect(ctx.getPackage('nonexistent')).toBeNull();
+  });
+
+  it('getLinkedExport returns linked data with type HTML', async () => {
+    // Create a function whose parameter type references an interface
+    const pkgs = makeTestPackages();
+    const ctx = await createTypedocContext(pkgs);
+
+    const linked = ctx.getLinkedExport('devkit', 'create-matcher');
+    expect(linked).not.toBeNull();
+    expect(linked!.name).toBe('createMatcher');
+    expect(linked!.parameters).toBeDefined();
+    // The parameter type is 'string' — an intrinsic, so typeHtml equals 'string'
+    expect(linked!.parameters![0].typeHtml).toBe('string');
+  });
+
+  it('getLinkedExport returns null for missing package', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    expect(ctx.getLinkedExport('nonexistent', 'foo')).toBeNull();
+  });
+
+  it('getLinkedExport returns null for missing symbol', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    expect(ctx.getLinkedExport('devkit', 'nonexistent')).toBeNull();
+  });
+
+  it('getExportUrls returns all paths', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+    const urls = ctx.getExportUrls();
+
+    expect(urls).toContain('/api/devkit/create-matcher');
+    expect(urls).toContain('/api/core/config');
+    expect(urls).toHaveLength(2);
+  });
+
+  it('navigation contains package entries', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    expect(ctx.navigation.length).toBe(2);
+    const names = ctx.navigation.map((n) => n.title);
+    expect(names).toContain('@functional-examples/core');
+    expect(names).toContain('@functional-examples/devkit');
+  });
+
+  it('rehypeOptions.buildLink resolves symbol paths', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    const symbol = ctx.symbolsMap.get('createMatcher');
+    expect(symbol).toBeDefined();
+
+    // buildLink should return the path from the symbol
+    const link = ctx.rehypeOptions.buildLink(
+      Array.isArray(symbol) ? symbol[0] : symbol!
+    );
+    expect(link).toBe('/api/devkit/create-matcher');
+  });
+
+  it('getLinkedExport includes pre-rendered descriptionHtml', async () => {
+    const ctx = await createTypedocContext(makeTestPackages());
+
+    // Config interface has a comment.summary = "A test interface"
+    const linked = ctx.getLinkedExport('core', 'config');
+    expect(linked).not.toBeNull();
+    expect(linked!.descriptionHtml).toBeDefined();
+    expect(linked!.descriptionHtml).toContain('A test interface');
+  });
+});
