@@ -23,6 +23,7 @@
     "@functional-examples/documentation": "workspace:*",
     "@functional-examples/javascript": "workspace:*",
     "@functional-examples/test": "workspace:*",
+    "@functional-examples/yaml-manifest": "workspace:*",
     "@nx/eslint": "catalog:",
     "@nx/eslint-plugin": "catalog:",
     "@nx/js": "catalog:",

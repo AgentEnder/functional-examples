@@ -1,15 +1,12 @@
 /**
- * Basic example: Scanning for examples in a directory
+ * Basic example: Scanning for examples programmatically
  */
-import { resolveConfig, scanExamples } from 'functional-examples';
+import { scan } from 'functional-examples';
 
-// #region scan
+// #_region scan
 async function main() {
-  // Resolve config (auto-detects installed plugins)
-  const config = await resolveConfig({ root: './examples' });
-
-  // Scan for examples
-  const result = await scanExamples(config);
+  // scan() auto-discovers config and plugins
+  const result = await scan();
 
   console.log(`Found ${result.examples.length} examples:`);
   for (const example of result.examples) {
@@ -23,6 +20,6 @@ async function main() {
     }
   }
 }
-// #endregion scan
+// #_endregion scan
 
 main().catch(console.error);

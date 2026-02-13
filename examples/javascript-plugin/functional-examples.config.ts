@@ -15,7 +15,7 @@ import type { Config } from 'functional-examples';
 const config: Config = {
   plugins: [createJavaScriptPlugin()],
   scan: {
-    include: ['**/*'],
+    include: ['src/**/*'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
 };

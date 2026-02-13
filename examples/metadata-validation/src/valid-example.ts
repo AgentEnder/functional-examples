@@ -1,4 +1,3 @@
-// #region frontmatter
 // ---
 // id: valid-example
 // title: Valid Example
@@ -6,7 +5,6 @@
 // category: tutorials
 // difficulty: beginner
 // ---
-// #endregion frontmatter
 
 /**
  * This example passes validation because it includes

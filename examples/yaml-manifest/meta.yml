@@ -1,0 +1,22 @@
+id: yaml-manifest
+title: YAML Manifest Plugin
+description: |
+  Demonstrates using the yaml-manifest plugin to manage
+  multi-file examples with meta.yml metadata files.
+  Each example is a directory containing a meta.yml and source files.
+tags:
+  - plugin
+  - yaml
+  - manifest
+include:
+  - "*.json"
+  - "*.sh"
+  - "examples/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: CLI scan works
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0

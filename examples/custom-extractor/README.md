@@ -6,10 +6,7 @@ This example demonstrates how to create your own custom extractor for file forma
 
 ```bash
 # Scan using the custom TOML extractor
-pnpm scan
-
-# Output as JSON
-pnpm scan:json
+npx tsx scan.ts
 ```
 
 ## The Extractor

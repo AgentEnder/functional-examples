@@ -1,27 +1,34 @@
-# Basic Usage Example
+# Getting Started
 
-This example demonstrates the most basic use case: scanning for examples in a directory.
+This example demonstrates the most basic use case: scanning for examples using the CLI and programmatic API.
 
-## Usage
+## CLI Usage
 
 ```bash
-# From the repo root
-npx functional-examples scan examples/basic-usage
+# Scan for examples
+functional-examples scan .
+
+# Output as JSON
+functional-examples scan . -f json
 ```
 
-## What it Shows
+## Programmatic Usage
 
-The `scan.ts` file demonstrates importing `scanExamples`, scanning a directory, and iterating over found examples:
+The `scan.ts` file demonstrates the simplest programmatic entry point:
 
 <%= region('scan') %>
 
-The scan function returns an object with:
+The `scan()` function auto-discovers your config file and installed plugins, then returns:
 - `examples` — Array of extracted examples
 - `errors` — Array of any errors encountered during scanning
 - `stats` — Timing and count information
 
 ## Key Concepts
 
-### scanExamples
+### JSON Configuration
 
-The main entry point for programmatic usage. Pass a resolved config with a `root` directory and the scanner will discover all examples using the configured plugins.
+This example uses a JSON config (`functional-examples.config.json`) which is the simplest way to configure scanning. Plugins are auto-detected from your `package.json` dependencies.
+
+### `scan()`
+
+The convenience function wraps config discovery, loading, resolution, and scanning in a single call. For most use cases, this is all you need.

@@ -1,0 +1,17 @@
+{
+  "$schema": "./.functional-examples/schema.json",
+  "scan": {
+    "include": ["src/**/*", "tutorials/*"],
+    "exclude": ["**/node_modules/**"]
+  },
+  "pathMappings": [
+    {
+      "pattern": "src/**",
+      "extractor": "javascript-extractor"
+    },
+    {
+      "pattern": "tutorials/**",
+      "extractor": "meta-yml"
+    }
+  ]
+}

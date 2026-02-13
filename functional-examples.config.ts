@@ -1,23 +1,93 @@
 import { createDocumentationPlugin } from '@functional-examples/documentation';
 import { createJavaScriptPlugin } from '@functional-examples/javascript';
 import { createTestPlugin } from '@functional-examples/test';
-import type { Config } from 'functional-examples';
+import { createYamlManifestPlugin } from '@functional-examples/yaml-manifest';
+import type {
+  Config,
+  FileParseContext,
+  ParsedRegion,
+  Plugin,
+} from 'functional-examples';
+
+/**
+ * Inline bash region parser plugin.
+ *
+ * Handles `# #_region name` / `# #_endregion name` markers in .sh/.bash files,
+ * mirroring the JavaScript parser algorithm but with `#` comment prefix.
+ */
+const bashPlugin: Plugin = {
+  name: 'bash',
+  extensions: ['.sh', '.bash'],
+  fileContentsParsers: [{
+    name: 'bash-parser',
+    parse(context: FileParseContext): FileParseContext {
+      const startRe = /^[ \t]*#\s*#_region\s+(\S+)\s*$/;
+      const endRe = /^[ \t]*#\s*#_endregion(?:\s+(\S+))?\s*$/;
+
+      const lines = context.parsed.split('\n');
+      const hunks: ParsedRegion[] = [];
+      const outputLines: string[] = [];
+      const regionStack: { id: string; startLine: number; lines: string[] }[] =
+        [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const lineNum = i + 1;
+
+        const startMatch = line.match(startRe);
+        if (startMatch) {
+          regionStack.push({ id: startMatch[1], startLine: lineNum, lines: [] });
+          continue;
+        }
+
+        const endMatch = line.match(endRe);
+        if (endMatch) {
+          const current = regionStack.pop();
+          if (current) {
+            hunks.push({
+              id: current.id,
+              content: current.lines.join('\n'),
+              startLine: current.startLine,
+              endLine: lineNum,
+            });
+          }
+          continue;
+        }
+
+        outputLines.push(line);
+        for (const region of regionStack) {
+          region.lines.push(line);
+        }
+      }
+
+      return { ...context, parsed: outputLines.join('\n'), hunks };
+    },
+  }],
+};
 
 /**
  * Root configuration for indexing all example projects.
  *
  * This dogfoods the functional-examples package by using it to
- * catalog each showcase project as a single example. Each project
- * has its own package.json with functional-examples metadata.
+ * catalog each showcase project as a single example.
+ *
+ * - yaml-manifest handles file discovery via meta.yml + include globs
+ * - javascript plugin contributes only parsing (frontmatter + custom regions)
+ * - bash plugin handles region markers in shell scripts
+ * - custom region tags (#_region) let standard #region comments stay visible in docs
  */
 const config: Config = {
   plugins: [
-    createJavaScriptPlugin(),
+    createJavaScriptPlugin({
+      skipExtraction: true,
+      regionTag: { start: '#_region', end: '#_endregion' },
+    }),
+    bashPlugin,
+    createYamlManifestPlugin(),
     createTestPlugin(),
     createDocumentationPlugin(),
   ],
   scan: {
-    // Root auto-infers to 'examples/' directory, so include defaults to '*'
     exclude: ['**/node_modules/**', '**/dist/**'],
     root: 'examples',
   },

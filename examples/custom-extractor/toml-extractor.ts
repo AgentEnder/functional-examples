@@ -32,7 +32,7 @@ export interface TomlMetadata {
  * Extractors implement a candidate-based pattern: they're called with
  * pre-filtered candidates (files and directories) and decide which to handle.
  */
-// #region createExtractor
+// #_region createExtractor
 export function createTomlExtractor(): Extractor<TomlMetadata> {
   return {
     name: 'toml-extractor',
@@ -106,7 +106,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
     },
   };
 }
-// #endregion createExtractor
+// #_endregion createExtractor
 
 /**
  * Simplified TOML parser for demonstration.

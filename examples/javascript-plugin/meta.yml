@@ -1,9 +1,23 @@
 id: javascript-plugin
 title: JavaScript Plugin
-description: Demonstrates using frontmatter comments in TypeScript/JavaScript files to define example metadata, including region markers for code snippets.
+description: |
+  Demonstrates using frontmatter comments in TypeScript/JavaScript files
+  to define example metadata, including region markers for code snippets.
 entryPoint: functional-examples.config.ts
 tags:
   - plugin
   - frontmatter
   - typescript
   - regions
+include:
+  - "*.ts"
+  - "*.sh"
+  - "src/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: CLI scan works
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0

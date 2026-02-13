@@ -1,7 +1,8 @@
 /**
  * Scan script using the custom TOML extractor.
  */
-import { resolveConfig, scanExamples } from 'functional-examples';
+import { scan } from 'functional-examples';
+import { resolveConfig } from 'functional-examples';
 import { createTomlExtractor } from './toml-extractor.js';
 
 async function main() {
@@ -21,7 +22,7 @@ async function main() {
     },
   });
 
-  const result = await scanExamples(config);
+  const result = await scan({ config });
 
   if (jsonOutput) {
     console.log(

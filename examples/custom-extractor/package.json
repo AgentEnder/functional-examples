@@ -5,13 +5,8 @@
   "type": "module",
   "description": "Demonstrates creating a custom Extractor implementation to support alternative metadata formats like TOML",
   "main": "./scan.ts",
-  "scripts": {
-    "scan": "tsx scan.ts",
-    "scan:json": "tsx scan.ts --json"
-  },
   "dependencies": {
-    "functional-examples": "workspace:*",
-    "fast-glob": "^3.3.2"
+    "functional-examples": "workspace:*"
   },
   "devDependencies": {
     "tsx": "catalog:"

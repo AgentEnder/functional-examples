@@ -6,17 +6,17 @@ This example demonstrates enforcing metadata requirements using JSON Schema vali
 
 ```bash
 # Scan and display examples (will show validation errors)
-pnpm scan
+npx functional-examples scan .
 
 # Output as JSON to see error details
-pnpm scan:json
+npx functional-examples scan . -f json
 ```
 
 ## Configuration Schema
 
 The config's `metadata` field defines a JSON Schema that all examples must satisfy:
 
-<%= region('schema') %>
+<%= file('functional-examples.config.json') %>
 
 ## Valid Metadata
 

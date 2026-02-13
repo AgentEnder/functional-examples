@@ -2,10 +2,14 @@
   "name": "@examples/basic-usage",
   "private": true,
   "type": "module",
-  "description": "Basic example demonstrating how to scan for examples in a directory",
+  "description": "Getting started with functional-examples — CLI and programmatic scanning",
   "main": "./scan.ts",
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/yaml-manifest": "workspace:*"
+  },
   "functional-examples": {
-    "title": "Basic Usage",
-    "tags": ["beginner", "scanning"]
+    "title": "Getting Started",
+    "tags": ["beginner", "scanning", "getting-started"]
   }
 }

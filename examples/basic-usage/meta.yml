@@ -1,0 +1,23 @@
+id: basic-usage
+title: Getting Started
+description: |
+  Minimal setup demonstrating CLI usage and simple programmatic scanning.
+  This is the first example new users should explore.
+entryPoint: scan.ts
+tags:
+  - beginner
+  - scanning
+  - getting-started
+include:
+  - "*.json"
+  - "*.ts"
+  - "*.sh"
+  - "examples/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: CLI scan works
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0

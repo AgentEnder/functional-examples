@@ -1,8 +1,23 @@
 id: mixed-plugins
 title: Mixed Plugins
-description: Demonstrates using multiple plugins together with path-based conflict resolution via pathMappings configuration.
-entryPoint: functional-examples.config.ts
+description: |
+  Demonstrates using multiple plugins together with path-based
+  conflict resolution via pathMappings configuration.
+  src/ files use JavaScript plugin, tutorials/ use YAML manifest.
 tags:
   - plugin
   - pathMappings
   - conflict-resolution
+include:
+  - "*.json"
+  - "*.sh"
+  - "src/**/*"
+  - "tutorials/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: CLI scan works
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0

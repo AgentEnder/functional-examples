@@ -6,10 +6,10 @@ This example demonstrates using multiple plugins together with conflict resoluti
 
 ```bash
 # Scan and display examples
-pnpm scan
+npx functional-examples scan .
 
 # Output as JSON
-pnpm scan:json
+npx functional-examples scan . -f json
 ```
 
 ## The Problem
@@ -25,7 +25,7 @@ If a TypeScript file is inside a directory with `meta.yml`, both plugins want it
 
 Use `pathMappings` in your config to specify which extractor wins for each path pattern:
 
-<%= region('pathMappings') %>
+<%= file('functional-examples.config.json') %>
 
 ## Project Structure
 

@@ -6,10 +6,10 @@ This example demonstrates the `@functional-examples/yaml-manifest` plugin, which
 
 ```bash
 # Scan and display examples
-pnpm scan
+npx functional-examples scan .
 
 # Output as JSON
-pnpm scan:json
+npx functional-examples scan . -f json
 ```
 
 ## Directory Structure
@@ -29,7 +29,7 @@ examples/
 
 The config file sets up the YAML manifest plugin:
 
-<%= file('functional-examples.config.ts') %>
+<%= file('functional-examples.config.json') %>
 
 ## meta.yml Format
 

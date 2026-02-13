@@ -1,8 +1,23 @@
 id: metadata-validation
 title: Metadata Validation
-description: Demonstrates enforcing metadata requirements using JSON Schema validation to ensure examples have required fields like category and difficulty.
-entryPoint: functional-examples.config.ts
+description: |
+  Demonstrates enforcing metadata requirements using JSON Schema validation
+  to ensure examples have required fields like category and difficulty.
 tags:
   - validation
   - json-schema
   - quality
+include:
+  - "*.json"
+  - "*.sh"
+  - "src/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: scan reports validation errors
+    options:
+      command: npx functional-examples scan . -f json
+    assertions:
+      exitCode: 1
+      stdout:
+        contains: missing-fields

@@ -1,0 +1,22 @@
+{
+  "$schema": "./.functional-examples/schema.json",
+  "scan": {
+    "include": ["src/**/*"],
+    "exclude": ["**/node_modules/**", "**/dist/**"]
+  },
+  "metadata": {
+    "type": "object",
+    "properties": {
+      "category": {
+        "type": "string",
+        "description": "Category for organizing examples"
+      },
+      "difficulty": {
+        "type": "string",
+        "enum": ["beginner", "intermediate", "advanced"],
+        "description": "Difficulty level"
+      }
+    },
+    "required": ["category", "difficulty"]
+  }
+}

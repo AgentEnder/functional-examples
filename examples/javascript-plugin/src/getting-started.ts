@@ -1,4 +1,3 @@
-// #region frontmatter
 // ---
 // id: getting-started
 // title: Getting Started
@@ -7,7 +6,6 @@
 //   - beginner
 //   - tutorial
 // ---
-// #endregion frontmatter
 
 /**
  * A simple greeting function.
@@ -19,8 +17,8 @@ export function greet(name: string): string {
   return `Hello, ${name}!`;
 }
 
-// #region usage
+// #_region usage
 // Example usage of the greet function
 const message = greet('World');
 console.log(message); // Output: Hello, World!
-// #endregion usage
+// #_endregion usage

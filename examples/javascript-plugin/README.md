@@ -6,10 +6,10 @@ This example demonstrates the `@functional-examples/javascript` plugin, which ex
 
 ```bash
 # Scan and display examples
-pnpm scan
+npx functional-examples scan .
 
 # Output as JSON
-pnpm scan:json
+npx functional-examples scan . -f json
 ```
 
 ## Frontmatter Format
