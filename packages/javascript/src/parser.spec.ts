@@ -125,4 +125,80 @@ const x = 1;
       expect(result.hunks[0].content).toBe('const x = 1;');
     });
   });
+
+  describe('custom region tags', () => {
+    it('should use custom start/end tags', () => {
+      const customParser = createJavaScriptParser({
+        start: '#_region',
+        end: '#_endregion',
+      });
+
+      const content = `// #_region setup
+const db = connect();
+// #_endregion setup`;
+
+      const result = customParser.parse(
+        makeContext(content)
+      ) as FileParseContext;
+
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('setup');
+      expect(result.hunks[0].content).toBe('const db = connect();');
+    });
+
+    it('should not match default tags when custom tags are configured', () => {
+      const customParser = createJavaScriptParser({
+        start: '#_region',
+        end: '#_endregion',
+      });
+
+      const content = `// #region default-tag
+const x = 1;
+// #endregion default-tag`;
+
+      const result = customParser.parse(
+        makeContext(content)
+      ) as FileParseContext;
+
+      // Default #region tags should NOT be matched — they stay in output
+      expect(result.hunks).toHaveLength(0);
+      expect(result.parsed).toContain('// #region default-tag');
+    });
+
+    it('should handle custom tags in block comments', () => {
+      const customParser = createJavaScriptParser({
+        start: '#_region',
+        end: '#_endregion',
+      });
+
+      const content = `/* #_region main */
+console.log('hello');
+/* #_endregion main */`;
+
+      const result = customParser.parse(
+        makeContext(content)
+      ) as FileParseContext;
+
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('main');
+    });
+
+    it('should handle custom tags with special regex characters', () => {
+      const customParser = createJavaScriptParser({
+        start: '#[region]',
+        end: '#[/region]',
+      });
+
+      const content = `// #[region] test
+const x = 1;
+// #[/region] test`;
+
+      const result = customParser.parse(
+        makeContext(content)
+      ) as FileParseContext;
+
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('test');
+    });
+  });
 });

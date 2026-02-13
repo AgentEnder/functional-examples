@@ -4,11 +4,38 @@ import type {
   ParsedRegion,
 } from '@functional-examples/devkit';
 
-const LINE_COMMENT_REGION = /^[ \t]*\/\/\s*#region\s+(\S+)\s*$/;
-const LINE_COMMENT_ENDREGION = /^[ \t]*\/\/\s*#endregion(?:\s+(\S+))?\s*$/;
-const BLOCK_COMMENT_REGION = /^[ \t]*\/\*\s*#region\s+(\S+)\s*\*\/\s*$/;
-const BLOCK_COMMENT_ENDREGION =
-  /^[ \t]*\/\*\s*#endregion(?:\s+(\S+))?\s*\*\/\s*$/;
+/**
+ * Configuration for custom region tag markers.
+ */
+export interface RegionTagConfig {
+  /** The start marker (default: '#region') */
+  start: string;
+  /** The end marker (default: '#endregion') */
+  end: string;
+}
+
+const DEFAULT_REGION_TAG: RegionTagConfig = {
+  start: '#region',
+  end: '#endregion',
+};
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildRegionRegexes(tag: RegionTagConfig) {
+  const start = escapeRegex(tag.start);
+  const end = escapeRegex(tag.end);
+
+  return {
+    lineStart: new RegExp(`^[ \\t]*\\/\\/\\s*${start}\\s+(\\S+)\\s*$`),
+    lineEnd: new RegExp(`^[ \\t]*\\/\\/\\s*${end}(?:\\s+(\\S+))?\\s*$`),
+    blockStart: new RegExp(`^[ \\t]*\\/\\*\\s*${start}\\s+(\\S+)\\s*\\*\\/\\s*$`),
+    blockEnd: new RegExp(
+      `^[ \\t]*\\/\\*\\s*${end}(?:\\s+(\\S+))?\\s*\\*\\/\\s*$`
+    ),
+  };
+}
 
 interface RegionState {
   id: string;
@@ -19,8 +46,15 @@ interface RegionState {
 /**
  * Create a FileContentsParser for JavaScript/TypeScript files.
  * Handles region extraction and marker stripping.
+ *
+ * @param regionTag - Optional custom region tag markers
  */
-export function createJavaScriptParser(): FileContentsParser {
+export function createJavaScriptParser(
+  regionTag?: RegionTagConfig
+): FileContentsParser {
+  const tag = regionTag ?? DEFAULT_REGION_TAG;
+  const regex = buildRegionRegexes(tag);
+
   return {
     name: 'javascript-parser',
 
@@ -36,7 +70,7 @@ export function createJavaScriptParser(): FileContentsParser {
 
         // Check for region start
         const startMatch =
-          line.match(LINE_COMMENT_REGION) || line.match(BLOCK_COMMENT_REGION);
+          line.match(regex.lineStart) || line.match(regex.blockStart);
 
         if (startMatch) {
           regionStack.push({
@@ -49,8 +83,7 @@ export function createJavaScriptParser(): FileContentsParser {
 
         // Check for region end
         const endMatch =
-          line.match(LINE_COMMENT_ENDREGION) ||
-          line.match(BLOCK_COMMENT_ENDREGION);
+          line.match(regex.lineEnd) || line.match(regex.blockEnd);
 
         if (endMatch) {
           const current = regionStack.pop();

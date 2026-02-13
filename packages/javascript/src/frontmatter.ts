@@ -1,6 +1,7 @@
 import {
   type FileContentsParser,
   type FileParseContext,
+  type ParsedRegion,
   parseYaml,
 } from '@functional-examples/devkit';
 
@@ -21,6 +22,8 @@ interface FrontmatterResult {
   metadata: Record<string, unknown>;
   /** Number of lines consumed by frontmatter (including delimiters) */
   linesConsumed: number;
+  /** Raw frontmatter block (including delimiters) for hunk output */
+  rawBlock: string;
 }
 
 /**
@@ -73,9 +76,12 @@ async function extractLineCommentFrontmatter(
     ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
+  const rawBlock = lines.slice(0, endIndex + 1).join('\n');
+
   return {
     metadata,
     linesConsumed: endIndex + 1,
+    rawBlock,
   };
 }
 
@@ -123,9 +129,12 @@ async function extractBlockCommentFrontmatter(
     ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
+  const rawBlock = lines.slice(0, endIndex + 1).join('\n');
+
   return {
     metadata,
     linesConsumed: endIndex + 1,
+    rawBlock,
   };
 }
 
@@ -178,10 +187,21 @@ export function createFrontmatterParser(): FileContentsParser {
         ...result.metadata,
       };
 
+      // Emit a "frontmatter" hunk so docs can reference it via region('frontmatter')
+      const frontmatterHunk: ParsedRegion = {
+        id: 'frontmatter',
+        content: result.rawBlock,
+        startLine: 1,
+        endLine: result.linesConsumed,
+      };
+
+      const hunks = [frontmatterHunk];
+
       return {
         ...context,
         parsed,
         metadata,
+        hunks,
       };
     },
   };

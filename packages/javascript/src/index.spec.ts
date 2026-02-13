@@ -6,7 +6,10 @@ import {
   createJavaScriptExtractor,
   JAVASCRIPT_EXTENSIONS,
 } from './index.js';
-import type { FileParseContext } from '@functional-examples/devkit';
+import type {
+  FileContentsParser,
+  FileParseContext,
+} from '@functional-examples/devkit';
 
 describe('createJavaScriptPlugin', () => {
   function makeContext(
@@ -20,6 +23,35 @@ describe('createJavaScriptPlugin', () => {
       metadata: {},
       filePath,
     };
+  }
+
+  /**
+   * Simulate runParsePipeline: run parsers in order with hunk accumulation.
+   * This mirrors what the core's runParsePipeline does.
+   */
+  async function runParsers(
+    context: FileParseContext,
+    parsers: FileContentsParser[]
+  ): Promise<FileParseContext> {
+    let result = context;
+    for (const parser of parsers) {
+      const accumulatedHunks = result.hunks ?? [];
+      result = await parser.parse({ ...result, hunks: [] });
+      result = {
+        ...result,
+        hunks: [...accumulatedHunks, ...(result.hunks ?? [])],
+      };
+    }
+    return result;
+  }
+
+  function getParsers(
+    options?: Parameters<typeof createJavaScriptPlugin>[0]
+  ): FileContentsParser[] {
+    const plugin = createJavaScriptPlugin(options);
+    const parsers = plugin.fileContentsParsers;
+    if (!parsers?.length) throw new Error('Expected fileContentsParsers');
+    return parsers;
   }
 
   describe('plugin structure', () => {
@@ -43,26 +75,27 @@ describe('createJavaScriptPlugin', () => {
       expect(plugin.extensions).toContain('.cts');
     });
 
-    it('should include extractor', () => {
+    it('should include extractor by default', () => {
       const plugin = createJavaScriptPlugin();
 
       expect(plugin.extractor).toBeDefined();
       expect(plugin.extractor?.name).toBe('javascript-extractor');
     });
 
-    it('should include file contents parser', () => {
+    it('should expose frontmatter and region parsers', () => {
       const plugin = createJavaScriptPlugin();
 
-      expect(plugin.fileContentsParser).toBeDefined();
-      expect(plugin.fileContentsParser?.name).toBe('javascript-combined-parser');
+      expect(plugin.fileContentsParsers).toHaveLength(2);
+      expect(plugin.fileContentsParsers![0].name).toBe(
+        'javascript-frontmatter-parser'
+      );
+      expect(plugin.fileContentsParsers![1].name).toBe('javascript-parser');
     });
   });
 
-  describe('combined parser behavior', () => {
+  describe('parser pipeline behavior', () => {
     it('should run frontmatter parsing first, then region parsing', async () => {
-      const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers();
 
       // Content with frontmatter that contains a region marker inside
       // If region ran first, it would incorrectly process the frontmatter content
@@ -76,7 +109,7 @@ const inside = 2;
 // #endregion main
 const after = 3;`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       // Frontmatter should be extracted
       expect(result.metadata).toEqual({
@@ -89,9 +122,10 @@ const after = 3;`;
       expect(result.parsed).not.toContain('title: Example');
 
       // Regions should be extracted after frontmatter is stripped
-      expect(result.hunks).toHaveLength(1);
-      expect(result.hunks[0].id).toBe('main');
-      expect(result.hunks[0].content).toBe('const inside = 2;');
+      expect(result.hunks).toHaveLength(2);
+      expect(result.hunks[0].id).toBe('frontmatter');
+      expect(result.hunks[1].id).toBe('main');
+      expect(result.hunks[1].content).toBe('const inside = 2;');
 
       // Region markers should be stripped from final parsed content
       expect(result.parsed).not.toContain('#region');
@@ -104,32 +138,30 @@ const after = 3;`;
     });
 
     it('should handle content with only frontmatter', async () => {
-      const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers();
 
       const content = `// ---
 // title: Frontmatter Only
 // ---
 const x = 1;`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       expect(result.metadata).toEqual({ title: 'Frontmatter Only' });
       expect(result.parsed).toBe('const x = 1;');
-      expect(result.hunks).toHaveLength(0);
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('frontmatter');
+      expect(result.hunks[0].content).toContain('title: Frontmatter Only');
     });
 
     it('should handle content with only regions', async () => {
-      const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers();
 
       const content = `// #region example
 const x = 1;
 // #endregion example`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       expect(result.metadata).toEqual({});
       expect(result.hunks).toHaveLength(1);
@@ -138,14 +170,12 @@ const x = 1;
     });
 
     it('should handle content with neither frontmatter nor regions', async () => {
-      const plugin = createJavaScriptPlugin();
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers();
 
       const content = `const x = 1;
 const y = 2;`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       expect(result.metadata).toEqual({});
       expect(result.hunks).toHaveLength(0);
@@ -155,16 +185,14 @@ const y = 2;`;
 
   describe('skipFrontmatter option', () => {
     it('should skip frontmatter parsing when skipFrontmatter is true', async () => {
-      const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers({ skipFrontmatter: true });
 
       const content = `// ---
 // title: Should Not Extract
 // ---
 const x = 1;`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       // Frontmatter should NOT be extracted
       expect(result.metadata).toEqual({});
@@ -175,15 +203,13 @@ const x = 1;`;
     });
 
     it('should still parse regions when skipFrontmatter is true', async () => {
-      const plugin = createJavaScriptPlugin({ skipFrontmatter: true });
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers({ skipFrontmatter: true });
 
       const content = `// #region example
 const x = 1;
 // #endregion example`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       expect(result.hunks).toHaveLength(1);
       expect(result.hunks[0].id).toBe('example');
@@ -192,15 +218,13 @@ const x = 1;
 
   describe('skipRegions option', () => {
     it('should skip region parsing when skipRegions is true', async () => {
-      const plugin = createJavaScriptPlugin({ skipRegions: true });
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers({ skipRegions: true });
 
       const content = `// #region example
 const x = 1;
 // #endregion example`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       // Regions should NOT be extracted
       expect(result.hunks).toHaveLength(0);
@@ -211,19 +235,19 @@ const x = 1;
     });
 
     it('should still parse frontmatter when skipRegions is true', async () => {
-      const plugin = createJavaScriptPlugin({ skipRegions: true });
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
+      const parsers = getParsers({ skipRegions: true });
 
       const content = `// ---
 // title: Should Extract
 // ---
 const x = 1;`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(makeContext(content), parsers);
 
       expect(result.metadata).toEqual({ title: 'Should Extract' });
       expect(result.parsed).toBe('const x = 1;');
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('frontmatter');
     });
   });
 
@@ -233,8 +257,6 @@ const x = 1;`;
         skipFrontmatter: true,
         skipRegions: true,
       });
-      const parser = plugin.fileContentsParser;
-      if (!parser) throw new Error('Expected fileContentsParser');
 
       const content = `// ---
 // title: Should Not Extract
@@ -243,7 +265,10 @@ const x = 1;`;
 const x = 1;
 // #endregion example`;
 
-      const result = (await parser.parse(makeContext(content))) as FileParseContext;
+      const result = await runParsers(
+        makeContext(content),
+        plugin.fileContentsParsers ?? []
+      );
 
       // Neither should be extracted
       expect(result.metadata).toEqual({});
@@ -251,6 +276,74 @@ const x = 1;
 
       // Content should be unchanged
       expect(result.parsed).toBe(content);
+    });
+  });
+
+  describe('skipExtraction option', () => {
+    it('should omit extractor when skipExtraction is true', () => {
+      const plugin = createJavaScriptPlugin({ skipExtraction: true });
+
+      expect(plugin.extractor).toBeUndefined();
+    });
+
+    it('should still include parsers when skipExtraction is true', () => {
+      const plugin = createJavaScriptPlugin({ skipExtraction: true });
+
+      expect(plugin.fileContentsParsers).toBeDefined();
+      expect(plugin.fileContentsParsers!.length).toBeGreaterThan(0);
+    });
+
+    it('should include extractor when skipExtraction is false', () => {
+      const plugin = createJavaScriptPlugin({ skipExtraction: false });
+
+      expect(plugin.extractor).toBeDefined();
+      expect(plugin.extractor?.name).toBe('javascript-extractor');
+    });
+  });
+
+  describe('regionTag option', () => {
+    it('should use custom region tags', async () => {
+      const parsers = getParsers({
+        regionTag: { start: '#_region', end: '#_endregion' },
+      });
+
+      const content = `// #_region setup
+const db = connect();
+// #_endregion setup
+// #region visible
+const x = 1;
+// #endregion visible`;
+
+      const result = await runParsers(makeContext(content), parsers);
+
+      // Custom tags should be extracted
+      expect(result.hunks).toHaveLength(1);
+      expect(result.hunks[0].id).toBe('setup');
+
+      // Default #region tags should remain visible in output
+      expect(result.parsed).toContain('// #region visible');
+      expect(result.parsed).toContain('// #endregion visible');
+    });
+
+    it('should combine custom region tags with frontmatter parsing', async () => {
+      const parsers = getParsers({
+        regionTag: { start: '#_region', end: '#_endregion' },
+      });
+
+      const content = `// ---
+// title: Custom Tags
+// ---
+// #_region main
+const x = 1;
+// #_endregion main`;
+
+      const result = await runParsers(makeContext(content), parsers);
+
+      expect(result.metadata).toEqual({ title: 'Custom Tags' });
+      expect(result.hunks).toHaveLength(2);
+      expect(result.hunks[0].id).toBe('frontmatter');
+      expect(result.hunks[1].id).toBe('main');
+      expect(result.parsed).toBe('const x = 1;');
     });
   });
 });
