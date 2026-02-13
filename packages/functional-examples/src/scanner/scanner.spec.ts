@@ -27,13 +27,15 @@ function buildConfig<TMetadata = Record<string, unknown>>(
     registry.register(plugin);
   }
 
+  const root = (overrides.root as string) ?? '/test';
+
   return {
-    root: '/test',
+    root,
     plugins: plugins as Plugin<TMetadata>[],
     extractors: registry.getExtractors() as Extractor<TMetadata>[],
     registry,
     pathMappings: [],
-    scan: { include: [], exclude: [], root: '.' },
+    scan: { include: [], exclude: [], root },
     validationErrors: [],
     ...overrides,
     // Ensure registry is always built from the provided plugins
@@ -460,7 +462,7 @@ describe('scanExamples with plugins', () => {
           };
         },
       },
-      fileContentsParser: {
+      fileContentsParsers: [{
         name: 'test-parser',
         parse(ctx) {
           parseHistory.push(ctx.filePath);
@@ -474,7 +476,7 @@ describe('scanExamples with plugins', () => {
             ],
           };
         },
-      },
+      }],
     };
 
     const result = await scanExamples(buildConfig({

@@ -64,4 +64,61 @@ describe('runParsePipeline', () => {
 
     expect(result).toEqual(initial);
   });
+
+  it('should accumulate hunks across parsers', async () => {
+    const parser1: FileContentsParser = {
+      name: 'hunk-parser-1',
+      parse: (ctx) => ({
+        ...ctx,
+        hunks: [{ id: 'a', content: 'hunk-a', startLine: 1, endLine: 2 }],
+      }),
+    };
+
+    const parser2: FileContentsParser = {
+      name: 'hunk-parser-2',
+      parse: (ctx) => ({
+        ...ctx,
+        hunks: [{ id: 'b', content: 'hunk-b', startLine: 3, endLine: 4 }],
+      }),
+    };
+
+    const initial = createInitialContext('/test.ts', 'code');
+    const result = await runParsePipeline(initial, [parser1, parser2]);
+
+    expect(result.hunks).toHaveLength(2);
+    expect(result.hunks[0].id).toBe('a');
+    expect(result.hunks[1].id).toBe('b');
+  });
+
+  it('should give each parser an empty hunks slate', async () => {
+    const receivedHunks: number[] = [];
+
+    const parser1: FileContentsParser = {
+      name: 'hunk-parser-1',
+      parse: (ctx) => {
+        receivedHunks.push(ctx.hunks.length);
+        return {
+          ...ctx,
+          hunks: [{ id: 'a', content: 'hunk-a', startLine: 1, endLine: 2 }],
+        };
+      },
+    };
+
+    const parser2: FileContentsParser = {
+      name: 'hunk-parser-2',
+      parse: (ctx) => {
+        receivedHunks.push(ctx.hunks.length);
+        return {
+          ...ctx,
+          hunks: [{ id: 'b', content: 'hunk-b', startLine: 3, endLine: 4 }],
+        };
+      },
+    };
+
+    const initial = createInitialContext('/test.ts', 'code');
+    await runParsePipeline(initial, [parser1, parser2]);
+
+    // Both parsers should receive empty hunks
+    expect(receivedHunks).toEqual([0, 0]);
+  });
 });

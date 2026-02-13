@@ -56,7 +56,6 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
   } = config;
   const { include, exclude, root: scanRoot } = config.scan;
   const root = scanRoot ?? configRoot;
-  console.log({ root, scanRoot, configRoot });
 
   // Resolve candidates from include/exclude patterns
   // Default to '*' if no include patterns specified (match direct children)
@@ -66,7 +65,6 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
     exclude
   );
 
-  // Collect all extractors from the registry
   const allExtractors = registry.getExtractors();
 
   if (allExtractors.length === 0) {
@@ -104,7 +102,7 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
 
   // Step 3: Detect and resolve conflicts
   const { conflicts, resolvedConflicts, unresolvedConflicts } =
-    resolveConflicts(fileClaimMap, pathMappings);
+    resolveConflicts(fileClaimMap, pathMappings, root);
 
   // Step 4: Filter examples based on conflict resolution
   const allExamples = extractorResults.flatMap((r) => r.examples);
@@ -314,7 +312,8 @@ function buildFileClaimMap<TMetadata>(
  */
 function resolveConflicts(
   fileClaimMap: Map<string, string[]>,
-  pathMappings: PathMapping[]
+  pathMappings: PathMapping[],
+  root: string
 ): {
   conflicts: FileConflict[];
   resolvedConflicts: FileConflict[];
@@ -328,10 +327,12 @@ function resolveConflicts(
     if (claimants.length <= 1) continue;
 
     // This is a conflict - try to resolve via path mappings
+    // Use relative path for matching since pathMapping patterns are relative to root
+    const relativePath = path.relative(root, filePath);
     let resolved = false;
 
     for (const mapping of pathMappings) {
-      if (minimatch(filePath, mapping.pattern)) {
+      if (minimatch(relativePath, mapping.pattern)) {
         if (claimants.includes(mapping.extractor)) {
           const conflict: FileConflict = {
             filePath,

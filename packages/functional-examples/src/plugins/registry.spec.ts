@@ -82,11 +82,11 @@ describe('PluginRegistry', () => {
 
   describe('getParsersForExtension', () => {
     it('should return parsers for plugins matching extension in registration order', () => {
-      const parser1: Plugin['fileContentsParser'] = {
+      const parser1 = {
         name: 'parser1',
         parse: (ctx: FileParseContext) => ctx,
       };
-      const parser2: Plugin['fileContentsParser'] = {
+      const parser2 = {
         name: 'parser2',
         parse: (ctx: FileParseContext) => ctx,
       };
@@ -94,12 +94,32 @@ describe('PluginRegistry', () => {
       registry.register({
         name: 'plugin1',
         extensions: ['.ts'],
-        fileContentsParser: parser1,
+        fileContentsParsers: [parser1],
       });
       registry.register({
         name: 'plugin2',
         extensions: ['.ts'],
-        fileContentsParser: parser2,
+        fileContentsParsers: [parser2],
+      });
+
+      const parsers = registry.getParsersForExtension('.ts');
+      expect(parsers).toEqual([parser1, parser2]);
+    });
+
+    it('should flatten multiple parsers from a single plugin', () => {
+      const parser1 = {
+        name: 'parser1',
+        parse: (ctx: FileParseContext) => ctx,
+      };
+      const parser2 = {
+        name: 'parser2',
+        parse: (ctx: FileParseContext) => ctx,
+      };
+
+      registry.register({
+        name: 'plugin1',
+        extensions: ['.ts'],
+        fileContentsParsers: [parser1, parser2],
       });
 
       const parsers = registry.getParsersForExtension('.ts');
@@ -107,7 +127,7 @@ describe('PluginRegistry', () => {
     });
 
     it('should return empty array for unregistered extension', () => {
-      const parser: Plugin['fileContentsParser'] = {
+      const parser = {
         name: 'parser1',
         parse: (ctx: FileParseContext) => ctx,
       };
@@ -115,14 +135,14 @@ describe('PluginRegistry', () => {
       registry.register({
         name: 'plugin1',
         extensions: ['.ts'],
-        fileContentsParser: parser,
+        fileContentsParsers: [parser],
       });
 
       expect(registry.getParsersForExtension('.py')).toEqual([]);
     });
 
     it('should skip plugins without parsers', () => {
-      const parser: Plugin['fileContentsParser'] = {
+      const parser = {
         name: 'parser1',
         parse: (ctx: FileParseContext) => ctx,
       };
@@ -130,12 +150,12 @@ describe('PluginRegistry', () => {
       registry.register({
         name: 'plugin1',
         extensions: ['.ts'],
-        fileContentsParser: parser,
+        fileContentsParsers: [parser],
       });
       registry.register({
         name: 'plugin2',
         extensions: ['.ts'],
-        // no parser
+        // no parsers
       });
 
       const parsers = registry.getParsersForExtension('.ts');

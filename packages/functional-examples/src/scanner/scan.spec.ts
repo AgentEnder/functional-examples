@@ -88,15 +88,35 @@ describe('scan()', () => {
   });
 
   it('should discover config from root directory', async () => {
-    // With no plugins configured, scanner returns "No extractors provided" error
-    // but the important thing is that it doesn't throw (config was found)
+    // Config is discovered and plugins are auto-detected from installed packages.
+    // Empty temp dir means no examples found, but scan succeeds without errors.
     const result = await scan({ root: tmpDir });
 
     expect(result).toBeDefined();
-    expect(result.errors).toBeDefined();
-    // No extractors → error, but scan didn't throw
-    expect(result.errors.some((e) => e.message.includes('No extractors'))).toBe(
-      true
-    );
+    expect(result.examples).toBeDefined();
+    expect(result.stats).toBeDefined();
+  });
+
+  it('should error when no extractors are available', async () => {
+    // When a resolved config has no plugins/extractors (e.g. none could be
+    // auto-detected), the scanner should report a "No extractors provided" error
+    // so the user knows nothing can be found.
+    const registry = new PluginRegistry();
+    const config: ResolvedConfig = {
+      root: tmpDir,
+      plugins: [],
+      extractors: [],
+      registry,
+      pathMappings: [],
+      scan: { include: ['*'], exclude: [], root: tmpDir },
+      validationErrors: [],
+    };
+
+    const result = await scan({ config });
+
+    expect(result.examples).toHaveLength(0);
+    expect(
+      result.errors.some((e) => e.message.includes('No extractors'))
+    ).toBe(true);
   });
 });

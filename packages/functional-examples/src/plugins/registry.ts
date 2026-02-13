@@ -77,14 +77,12 @@ export class PluginRegistry {
 
   /**
    * Get parsers for files with given extension, in registration order.
+   * Parsers from each plugin are flattened into a single ordered list.
    */
   getParsersForExtension(extension: string): FileContentsParser[] {
-    return this.getPluginsForExtension(extension)
-      .filter(
-        (p): p is Plugin & { fileContentsParser: FileContentsParser } =>
-          p.fileContentsParser !== undefined
-      )
-      .map((p) => p.fileContentsParser);
+    return this.getPluginsForExtension(extension).flatMap(
+      (p) => p.fileContentsParsers ?? []
+    );
   }
 
   /**

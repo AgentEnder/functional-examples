@@ -178,7 +178,7 @@ describe('resolveConfig', () => {
       expect(result.scan).toEqual({
         include: ['*'],  // Default when no examples/ directory exists
         exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
-        root: '.',
+        root: '/virtual',
       });
     });
 

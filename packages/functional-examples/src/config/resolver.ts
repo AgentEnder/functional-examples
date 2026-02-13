@@ -1,5 +1,5 @@
 /**
- * Configuration resolver - converts config references to actual extractors
+ * Configuration resolver - converts config references to actual plugins/extractors
  */
 
 import { resolve } from 'node:path';
@@ -10,6 +10,7 @@ import type {
   ConfigValidationError,
   Extractor,
   Plugin,
+  PluginReference,
   ResolvedConfig,
   ScanConfig,
 } from '../types/index.js';
@@ -19,10 +20,11 @@ import type { ConfigWithRoot } from './types.js';
 export type { ConfigValidationError, ResolvedConfig } from '../types/index.js';
 
 /**
- * Known extractor packages that can be auto-detected
+ * Known plugin packages that can be auto-detected when no plugins are specified.
+ * Each entry maps to a package that exports a `createXxxPlugin()` factory function.
  */
-const KNOWN_EXTRACTORS = [
-  '@functional-examples/extractor-frontmatter',
+const KNOWN_PLUGINS = [
+  '@functional-examples/javascript',
   '@functional-examples/yaml-manifest',
 ] as const;
 
@@ -35,23 +37,23 @@ const DEFAULT_SCAN: Omit<Required<ScanConfig>, 'include'> = {
 };
 
 /**
- * Resolve a configuration to actual extractor instances.
+ * Resolve a configuration to actual plugin and extractor instances.
  *
- * If no extractors are specified, attempts to auto-detect installed extractors.
+ * Plugin resolution follows this priority:
+ * 1. If `config.plugins` contains Plugin instances (from TS configs), use directly
+ * 2. If `config.plugins` contains string/tuple references (from JSON configs),
+ *    resolve them by dynamically importing the package and calling its factory
+ * 3. If no plugins specified at all, auto-detect installed plugin packages
  *
  * @example
  * ```typescript
  * import { resolveConfig } from 'functional-examples';
  *
- * // Auto-detect extractors
- * const config = await resolveConfig({});
+ * // Auto-detect plugins from installed packages
+ * const config = await resolveConfig({ root: './examples' });
  *
  * // Use with scanExamples
- * const result = await scanExamples({
- *   root: './examples',
- *   extractors: config.extractors,
- *   pathMappings: config.pathMappings,
- * });
+ * const result = await scanExamples(config);
  * ```
  */
 export async function resolveConfig<TMetadata = Record<string, unknown>>(
@@ -59,19 +61,28 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
 ): Promise<ResolvedConfig<TMetadata>> {
   const validationErrors: ConfigValidationError[] = [];
 
-  // Build plugin registry from config plugins
+  // Step 1: Resolve plugins (from config entries or auto-detection)
   const registry = new PluginRegistry();
-  const plugins = (config.plugins ?? []) as Plugin<TMetadata>[];
+  let plugins: Plugin<TMetadata>[];
 
+  const configPlugins = config.plugins ?? [];
+
+  if (configPlugins.length > 0) {
+    // Resolve any string/tuple references to actual Plugin instances
+    plugins = await resolvePluginEntries<TMetadata>(configPlugins);
+  } else {
+    // Auto-detect installed plugin packages
+    plugins = await autoDetectPlugins<TMetadata>();
+  }
+
+  // Register all resolved plugins in the registry
   for (const plugin of plugins) {
-    // Cast to base Plugin type for registry (generics are erased at runtime)
     registry.register(plugin as Plugin);
   }
 
-  // Run options validation for plugins that have validators and _options
+  // Step 2: Run options validation for plugins that have validators
   const optionsValidators = registry.getOptionsValidators();
   if (optionsValidators.length > 0) {
-    // Build plugin options map from plugins that expose _options
     const pluginOptions = new Map<string, unknown>();
     for (const plugin of plugins) {
       if ('_options' in plugin && plugin._options !== undefined) {
@@ -94,28 +105,18 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
     }
   }
 
-  // Resolve extractors (legacy path)
-  let extractors: Extractor<TMetadata>[];
+  // Step 3: Extract extractors from the registry
+  const extractors = registry.getExtractors() as Extractor<TMetadata>[];
 
-  // Get extractors from plugins
-  const pluginExtractors = registry.getExtractors() as Extractor<TMetadata>[];
-
-  if (pluginExtractors.length > 0) {
-    // Prefer plugin extractors
-    extractors = pluginExtractors;
-  } else {
-    // Auto-detect installed extractors
-    extractors = await autoDetectExtractors<TMetadata>();
-  }
-
-  if (config.scan?.root) {
-    config.scan.root = resolve(config.root, config.scan.root);
-  }
+  // Resolve scan root to an absolute path (defaults to config root)
+  const scanRoot = config.scan?.root
+    ? resolve(config.root, config.scan.root)
+    : config.root;
 
   // Determine effective include pattern (smart default detection)
   const effectiveInclude = config.scan?.include?.length
     ? config.scan.include
-    : await getDefaultIncludePattern(config.scan?.root ?? config.root);
+    : await getDefaultIncludePattern(scanRoot);
 
   return {
     ...config,
@@ -126,6 +127,7 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
     scan: {
       ...DEFAULT_SCAN,
       ...config.scan,
+      root: scanRoot,
       include: effectiveInclude,
     },
     validationErrors,
@@ -133,53 +135,104 @@ export async function resolveConfig<TMetadata = Record<string, unknown>>(
 }
 
 /**
- * Auto-detect installed extractor packages
+ * Resolve an array of plugin entries (instances, strings, or tuples)
+ * into actual Plugin instances.
  */
-async function autoDetectExtractors<
-  TMetadata = Record<string, unknown>
->(): Promise<Extractor<TMetadata>[]> {
-  const extractors: Extractor<TMetadata>[] = [];
+async function resolvePluginEntries<TMetadata = Record<string, unknown>>(
+  entries: (Plugin<TMetadata> | PluginReference)[]
+): Promise<Plugin<TMetadata>[]> {
+  const plugins: Plugin<TMetadata>[] = [];
 
-  for (const packageName of KNOWN_EXTRACTORS) {
+  for (const entry of entries) {
+    if (isPluginInstance(entry)) {
+      // Already a Plugin instance (from TS config)
+      plugins.push(entry as Plugin<TMetadata>);
+    } else if (typeof entry === 'string') {
+      // String reference: "@functional-examples/yaml-manifest"
+      const plugin = await loadPluginFromPackage(entry);
+      if (plugin) {
+        plugins.push(plugin as Plugin<TMetadata>);
+      }
+    } else if (Array.isArray(entry) && entry.length >= 1) {
+      // Tuple reference: ["@functional-examples/javascript", { regionTag: "#_" }]
+      const [packageName, options] = entry as [string, Record<string, unknown>?];
+      const plugin = await loadPluginFromPackage(packageName, options);
+      if (plugin) {
+        plugins.push(plugin as Plugin<TMetadata>);
+      }
+    }
+  }
+
+  return plugins;
+}
+
+/**
+ * Auto-detect installed plugin packages.
+ * Tries to import each known plugin package and call its factory function.
+ */
+async function autoDetectPlugins<
+  TMetadata = Record<string, unknown>
+>(): Promise<Plugin<TMetadata>[]> {
+  const plugins: Plugin<TMetadata>[] = [];
+
+  for (const packageName of KNOWN_PLUGINS) {
     try {
-      const extractor = await loadExtractorFromPackage<TMetadata>(packageName);
-      if (extractor) {
-        extractors.push(extractor);
+      const plugin = await loadPluginFromPackage(packageName);
+      if (plugin) {
+        plugins.push(plugin as Plugin<TMetadata>);
       }
     } catch {
       // Package not installed, skip silently
     }
   }
 
-  return extractors;
+  return plugins;
 }
 
 /**
- * Load extractor from package name
+ * Load a plugin from a package by dynamically importing it and calling
+ * its factory function. Looks for common export patterns:
+ *
+ * - `createXxxPlugin(options)` — preferred factory pattern
+ * - `module.default` — default export as Plugin instance
+ *
+ * Falls back to loading just an extractor if no plugin factory is found,
+ * wrapping it in a minimal Plugin for backward compatibility.
  */
-async function loadExtractorFromPackage<TMetadata = Record<string, unknown>>(
+async function loadPluginFromPackage(
   packageName: string,
   options?: Record<string, unknown>
-): Promise<Extractor<TMetadata> | null> {
+): Promise<Plugin | null> {
   try {
     const module = await import(packageName);
 
-    // Try common export patterns
-    const factory =
-      module.createFrontmatterExtractor ??
-      module.createYamlManifestExtractor ??
-      module.createMetaYmlExtractor ??
-      module.createExtractor ??
-      module.default?.createExtractor ??
-      module.default;
-
-    if (typeof factory === 'function') {
-      return factory(options) as Extractor<TMetadata>;
+    // Look for createXxxPlugin factory functions first
+    const pluginFactory = findPluginFactory(module);
+    if (pluginFactory) {
+      return pluginFactory(options);
     }
 
-    // Module might export extractor directly
+    // Check if default export is already a Plugin instance
+    if (isPluginInstance(module.default)) {
+      return module.default as Plugin;
+    }
+
+    // Fall back to extractor-only patterns (backward compatibility)
+    const extractorFactory = findExtractorFactory(module);
+    if (extractorFactory) {
+      const extractor = extractorFactory(options);
+      return {
+        name: extractor.name,
+        extractor,
+      };
+    }
+
     if (isExtractorInstance(module.default)) {
-      return module.default as Extractor<TMetadata>;
+      const extractor = module.default as Extractor;
+      return {
+        name: extractor.name,
+        extractor,
+      };
     }
 
     return null;
@@ -189,11 +242,74 @@ async function loadExtractorFromPackage<TMetadata = Record<string, unknown>>(
 }
 
 /**
- * Load extractor from config object
+ * Find a plugin factory function in a module's exports.
+ * Matches the pattern `createXxxPlugin`.
  */
+function findPluginFactory(
+  module: Record<string, unknown>
+): ((options?: Record<string, unknown>) => Plugin) | null {
+  // Check named exports for createXxxPlugin pattern
+  for (const key of Object.keys(module)) {
+    if (key.endsWith('Plugin') && key.startsWith('create')) {
+      const value = module[key];
+      if (typeof value === 'function') {
+        return value as (options?: Record<string, unknown>) => Plugin;
+      }
+    }
+  }
+
+  // Check default export
+  if (module.default && typeof module.default === 'object') {
+    const defaultObj = module.default as Record<string, unknown>;
+    for (const key of Object.keys(defaultObj)) {
+      if (key.endsWith('Plugin') && key.startsWith('create')) {
+        const value = defaultObj[key];
+        if (typeof value === 'function') {
+          return value as (options?: Record<string, unknown>) => Plugin;
+        }
+      }
+    }
+  }
+
+  return null;
+}
 
 /**
- * Check if value is an extractor instance
+ * Find an extractor factory function in a module's exports.
+ * For backward compatibility with packages that only export extractors.
+ */
+function findExtractorFactory(
+  module: Record<string, unknown>
+): ((options?: Record<string, unknown>) => Extractor) | null {
+  for (const key of Object.keys(module)) {
+    if (key.startsWith('create') && key.endsWith('Extractor')) {
+      const value = module[key];
+      if (typeof value === 'function') {
+        return value as (options?: Record<string, unknown>) => Extractor;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Check if a value is a Plugin instance (has name: string).
+ */
+function isPluginInstance<TMetadata>(
+  value: unknown
+): value is Plugin<TMetadata> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    typeof (value as Plugin).name === 'string' &&
+    !Array.isArray(value)
+  );
+}
+
+/**
+ * Check if value is an Extractor instance
  */
 function isExtractorInstance<TMetadata>(
   value: unknown

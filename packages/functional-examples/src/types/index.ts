@@ -35,6 +35,7 @@ export type {
 
   // Plugin
   Plugin,
+  PluginReference,
   PluginCommands,
   PluginSchemas,
   PluginValidators,

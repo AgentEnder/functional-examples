@@ -16,6 +16,7 @@ export type {
   JSONSchemaObject,
   PathMapping,
   Plugin,
+  PluginReference,
   ScanConfig,
 } from '@functional-examples/devkit';
 
