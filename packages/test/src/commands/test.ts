@@ -1,6 +1,5 @@
 import { cli } from 'cli-forge';
 import type { Example, ResolvedConfig } from '@functional-examples/devkit';
-import { scanExamples } from 'functional-examples';
 import { normalizeTests, runTest } from '../runner.js';
 import type { TestCase } from '../schema.js';
 import { TestMetadata, testMetadataSchema } from '../schema.js';
@@ -85,6 +84,7 @@ export function createTestCommand(
       const reporter = reporterFactory();
 
       // Scan for examples
+      const { scanExamples } = await import('functional-examples');
       const { examples, errors } = await scanExamples<TestMetadata>(config);
 
       if (errors.length) {

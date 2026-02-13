@@ -14,19 +14,19 @@
       "outputs": []
     },
     "scan": {
-      "command": "functional-examples scan examples",
+      "command": "npx functional-examples scan examples",
       "options": {
         "cwd": "{workspaceRoot}"
       }
     },
     "scan:json": {
-      "command": "functional-examples scan examples -f json",
+      "command": "npx functional-examples scan examples -f json",
       "options": {
         "cwd": "{workspaceRoot}"
       }
     },
     "test": {
-      "command": "functional-examples test examples",
+      "command": "npx functional-examples test examples",
       "options": {
         "cwd": "{workspaceRoot}"
       },

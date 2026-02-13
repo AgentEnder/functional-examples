@@ -33,6 +33,7 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "functional-examples": "workspace:*",
     "nx": "catalog:",
     "nx-github-pages": "^1.2.0",
@@ -52,7 +53,9 @@
       },
       "hydrate-readmes": {
         "command": "tsx scripts/hydrate-readmes.ts",
-        "dependsOn": ["^build"]
+        "dependsOn": [
+          "^build"
+        ]
       }
     }
   },

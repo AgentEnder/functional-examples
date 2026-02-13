@@ -1,6 +1,7 @@
 import eslintNxPlugin from '@nx/eslint-plugin';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
 
 export default [
   {
@@ -59,6 +60,16 @@ export default [
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       'no-empty-function': 'off',
       '@typescript-eslint/no-empty-function': 'error',
+    },
+  },
+  {
+    files: ['**/*.tsx', '**/*.jsx'],
+    plugins: {
+      'react-hooks': reactHooksPlugin,
+    },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
   {

@@ -86,10 +86,10 @@ describe('createJavaScriptPlugin', () => {
       const plugin = createJavaScriptPlugin();
 
       expect(plugin.fileContentsParsers).toHaveLength(2);
-      expect(plugin.fileContentsParsers![0].name).toBe(
+      expect(plugin.fileContentsParsers?.[0].name).toBe(
         'javascript-frontmatter-parser'
       );
-      expect(plugin.fileContentsParsers![1].name).toBe('javascript-parser');
+      expect(plugin.fileContentsParsers?.[1].name).toBe('javascript-parser');
     });
   });
 
@@ -290,7 +290,7 @@ const x = 1;
       const plugin = createJavaScriptPlugin({ skipExtraction: true });
 
       expect(plugin.fileContentsParsers).toBeDefined();
-      expect(plugin.fileContentsParsers!.length).toBeGreaterThan(0);
+      expect(plugin.fileContentsParsers?.length).toBeGreaterThan(0);
     });
 
     it('should include extractor when skipExtraction is false', () => {

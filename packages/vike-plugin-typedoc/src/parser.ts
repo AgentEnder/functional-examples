@@ -275,6 +275,23 @@ export function parseTypedocJson(
   modules.sort((a, b) => a.name.localeCompare(b.name));
   allExports.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Disambiguate exports with colliding slugs (e.g. templateHelpers vs TemplateHelpers)
+  const slugCounts = new Map<string, ApiExport[]>();
+  for (const exp of allExports) {
+    const group = slugCounts.get(exp.slug);
+    if (group) {
+      group.push(exp);
+    } else {
+      slugCounts.set(exp.slug, [exp]);
+    }
+  }
+  for (const [, group] of slugCounts) {
+    if (group.length < 2) continue;
+    for (const exp of group) {
+      exp.slug = `${exp.slug}-${exp.kind}`;
+    }
+  }
+
   return {
     name: packageName,
     slug: packageSlug,

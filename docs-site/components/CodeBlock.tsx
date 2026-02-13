@@ -162,8 +162,7 @@ export function CodeBlock({
       });
     }, 100);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hashHighlight?.start, hashHighlight?.end, anchorPrefix]);
+  }, [hashHighlight, anchorPrefix]);
 
   // ── Click handler for line number anchors (event delegation on Shiki HTML) ──
   useEffect(() => {

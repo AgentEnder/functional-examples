@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useData } from 'vike-react/useData';
 import {
   parseLineHash,
@@ -38,7 +38,7 @@ function resolveExplorerHash(
 export default function ExampleDetail() {
   const { example } = useData<ExampleDetailData>();
 
-  const files = example?.files ?? [];
+  const files = useMemo(() => example?.files ?? [], [example?.files]);
 
   // Default to first non-package.json file (matches FileExplorer's uncontrolled default)
   const fallbackFile =
@@ -59,7 +59,7 @@ export default function ExampleDetail() {
       setActiveFile(resolved.file);
       // highlight is handled by CodeBlock's own hash listener
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [files]);
 
   // Listen for hash changes targeting the explorer (e.g. from prose anchor clicks)
   useEffect(() => {

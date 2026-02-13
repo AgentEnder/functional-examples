@@ -237,8 +237,10 @@ export async function createTypedocContext(
 
     getAllPrerenderUrls(): string[] {
       return [
-        ...Object.values(apiDocs.packages).map((pkg) => buildUrl(pkg.slug)),
-        ...apiDocs.allExports.map((exp) => exp.path),
+        ...new Set([
+          ...Object.values(apiDocs.packages).map((pkg) => buildUrl(pkg.slug)),
+          ...apiDocs.allExports.map((exp) => exp.path),
+        ]),
       ];
     },
   };
