@@ -91,7 +91,7 @@ Files matching a mapping are *only* sent to the specified extractor. Unmapped fi
 
 You can enforce metadata standards using a JSON Schema in your config. Every scanned example's metadata is validated against it:
 
-<%= example('metadata-validation').file('functional-examples.config.ts') %>
+<%= example('metadata-validation').file('functional-examples.config.json') %>
 
 When an example's metadata doesn't match the schema, the scanner reports a validation error. Here's an example that passes validation:
 

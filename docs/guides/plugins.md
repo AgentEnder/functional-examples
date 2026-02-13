@@ -88,7 +88,7 @@ The documentation plugin generates markdown documentation from scanned examples.
 
 You can combine multiple plugins. When doing so, use **pathMappings** to route files to the right extractor and avoid conflicts:
 
-<%= example('mixed-plugins').file('functional-examples.config.ts') %>
+<%= example('mixed-plugins').file('functional-examples.config.json') %>
 
 Path mappings use glob patterns to assign files to specific extractors by name. Files that match a mapping are only sent to the specified extractor. Unmapped files are sent to all extractors.
 
