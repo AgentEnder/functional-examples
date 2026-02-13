@@ -350,6 +350,141 @@ title: Nested Example
     });
   });
 
+  describe('include glob patterns', () => {
+    it('collects only files matching include patterns', async () => {
+      const exampleDir = path.join(testDir, 'include-example');
+      await mkdir(path.join(exampleDir, 'src'), { recursive: true });
+      await mkdir(path.join(exampleDir, 'docs'), { recursive: true });
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: include-test
+title: Include Test
+include:
+  - "src/**/*.ts"
+  - "README.md"
+`
+      );
+      await writeFile(path.join(exampleDir, 'src', 'main.ts'), 'main');
+      await writeFile(path.join(exampleDir, 'src', 'helper.ts'), 'helper');
+      await writeFile(path.join(exampleDir, 'docs', 'guide.md'), 'guide');
+      await writeFile(path.join(exampleDir, 'README.md'), 'readme');
+      await writeFile(path.join(exampleDir, 'ignored.js'), 'ignored');
+
+      const extractor = createMetaYmlExtractor();
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
+
+      expect(result.examples).toHaveLength(1);
+      const paths = result.examples[0].files
+        .map((f) => f.relativePath)
+        .sort();
+      // Should include src/*.ts and README.md, but NOT docs/guide.md or ignored.js
+      expect(paths).toEqual(['README.md', 'src/helper.ts', 'src/main.ts']);
+    });
+
+    it('strips include from metadata', async () => {
+      const exampleDir = path.join(testDir, 'include-strip');
+      await mkdir(exampleDir);
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: strip-test
+title: Strip Test
+include:
+  - "*.ts"
+custom: value
+`
+      );
+      await writeFile(path.join(exampleDir, 'main.ts'), 'code');
+
+      const extractor = createMetaYmlExtractor();
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
+
+      expect(result.examples[0].metadata).not.toHaveProperty('include');
+      expect(result.examples[0].metadata).toHaveProperty('custom', 'value');
+    });
+
+    it('falls back to full directory walk when include is absent', async () => {
+      const exampleDir = path.join(testDir, 'no-include');
+      await mkdir(exampleDir);
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: no-include
+title: No Include
+`
+      );
+      await writeFile(path.join(exampleDir, 'main.ts'), 'code');
+      await writeFile(path.join(exampleDir, 'helper.js'), 'helper');
+
+      const extractor = createMetaYmlExtractor();
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
+
+      const paths = result.examples[0].files
+        .map((f) => f.relativePath)
+        .sort();
+      expect(paths).toEqual(['helper.js', 'main.ts']);
+    });
+
+    it('respects excludePatterns with include', async () => {
+      const exampleDir = path.join(testDir, 'include-exclude');
+      await mkdir(path.join(exampleDir, 'src'), { recursive: true });
+      await mkdir(path.join(exampleDir, 'node_modules'), { recursive: true });
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: include-exclude
+title: Include Exclude
+include:
+  - "**/*.ts"
+`
+      );
+      await writeFile(path.join(exampleDir, 'src', 'main.ts'), 'main');
+      await writeFile(
+        path.join(exampleDir, 'node_modules', 'dep.ts'),
+        'dep'
+      );
+
+      const extractor = createMetaYmlExtractor();
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
+
+      const paths = result.examples[0].files
+        .map((f) => f.relativePath)
+        .sort();
+      // node_modules should be excluded by default excludePatterns
+      expect(paths).toEqual(['src/main.ts']);
+    });
+
+    it('respects excludeFiles with include', async () => {
+      const exampleDir = path.join(testDir, 'include-excludefiles');
+      await mkdir(exampleDir);
+
+      await writeFile(
+        path.join(exampleDir, 'meta.yml'),
+        `id: include-ef
+title: Include EF
+include:
+  - "*.ts"
+`
+      );
+      await writeFile(path.join(exampleDir, 'main.ts'), 'main');
+      await writeFile(path.join(exampleDir, 'secret.ts'), 'secret');
+
+      const extractor = createMetaYmlExtractor({
+        excludeFiles: ['secret.ts'],
+      });
+      const candidates = await collectCandidates(testDir);
+      const result = await extractor.extract(candidates, getOptions());
+
+      const paths = result.examples[0].files.map((f) => f.relativePath);
+      expect(paths).toEqual(['main.ts']);
+    });
+  });
+
   describe('file candidates', () => {
     it('handles file candidates (meta.yml passed directly)', async () => {
       const exampleDir = path.join(testDir, 'file-candidate');

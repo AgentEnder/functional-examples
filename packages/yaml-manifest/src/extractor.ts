@@ -14,7 +14,7 @@ import type {
   ExtractorOptions,
   ExtractorResult,
 } from '@functional-examples/devkit';
-import { parseYaml } from '@functional-examples/devkit';
+import { glob, isMatch, parseYaml } from '@functional-examples/devkit';
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -86,11 +86,25 @@ export function createMetaYmlExtractor(
     const dirName = path.basename(exampleDir);
     const id = (metadata.id as string) ?? dirName;
 
-    const files = await collectFiles(
-      exampleDir,
-      [...options.excludeFiles, options.metaFileName],
-      options.excludePatterns
-    );
+    // Extract and remove the `include` field — it's structural, not descriptive
+    const includePatterns = metadata.include as string[] | undefined;
+    delete metadata.include;
+
+    let files: ExampleFile[];
+    if (includePatterns && includePatterns.length > 0) {
+      files = await collectFilesFromGlob(
+        exampleDir,
+        includePatterns,
+        [...options.excludeFiles, options.metaFileName],
+        options.excludePatterns
+      );
+    } else {
+      files = await collectFiles(
+        exampleDir,
+        [...options.excludeFiles, options.metaFileName],
+        options.excludePatterns
+      );
+    }
 
     const claimedFiles = [metaPath, ...files.map((f) => f.absolutePath)];
 
@@ -168,6 +182,45 @@ export function createMetaYmlExtractor(
       return { examples, errors, claimedFiles };
     },
   };
+}
+
+/**
+ * Collect files matching glob include patterns within an example directory.
+ */
+async function collectFilesFromGlob(
+  dir: string,
+  includePatterns: string[],
+  excludeNames: string[],
+  excludePatterns: string[]
+): Promise<ExampleFile[]> {
+  const matched = await glob(includePatterns, {
+    cwd: dir,
+    absolute: true,
+    ignore: excludePatterns,
+    onlyFiles: true,
+  });
+
+  const files: ExampleFile[] = [];
+  for (const absolutePath of matched) {
+    const relativePath = path.relative(dir, absolutePath);
+    const baseName = path.basename(absolutePath);
+
+    // Apply excludeNames filter
+    if (excludeNames.includes(baseName)) continue;
+
+    // Additional isMatch check for exclude patterns on relative path
+    if (
+      excludePatterns.length > 0 &&
+      (await isMatch(relativePath, excludePatterns))
+    ) {
+      continue;
+    }
+
+    const raw = await readFile(absolutePath, 'utf-8');
+    files.push({ absolutePath, relativePath, raw });
+  }
+
+  return files;
 }
 
 /**

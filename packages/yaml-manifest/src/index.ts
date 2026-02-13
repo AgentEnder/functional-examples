@@ -38,7 +38,7 @@ export type YamlManifestExtractorOptions = MetaYmlExtractorOptions;
  * treating each as a multi-file example.
  *
  * Unlike language plugins, this has no extensions (not file-type specific)
- * and no fileContentsParser (manifest is separate from content).
+ * and no fileContentsParsers (manifest is separate from content).
  */
 export function createYamlManifestPlugin(
   options?: MetaYmlExtractorOptions
@@ -47,6 +47,6 @@ export function createYamlManifestPlugin(
     name: 'yaml-manifest',
     extractor: createMetaYmlExtractor(options),
     // No extensions - not file-type specific
-    // No fileContentsParser - manifest is separate from content
+    // No fileContentsParsers - manifest is separate from content
   };
 }
