@@ -24,6 +24,7 @@ export type {
   ParsedRegion,
   PathMapping,
   Plugin,
+  PluginReference,
   PluginCommands,
   PluginRegistryInterface,
   PluginSchemaEntry,

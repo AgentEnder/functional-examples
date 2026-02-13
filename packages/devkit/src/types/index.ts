@@ -428,9 +428,20 @@ export interface GenerateConfig {
   outputDir?: string;
 }
 
+/**
+ * A reference to a plugin by package name, optionally with options.
+ *
+ * In JSON configs, plugins can be specified as:
+ * - A string: `"@functional-examples/yaml-manifest"`
+ * - A tuple: `["@functional-examples/javascript", { "regionTag": "#_" }]`
+ */
+export type PluginReference =
+  | string
+  | [string, Record<string, unknown>];
+
 export interface Config<TMetadata = Record<string, unknown>> {
   /** Plugins to use for scanning and parsing (recommended) */
-  plugins?: Plugin<TMetadata>[];
+  plugins?: (Plugin<TMetadata> | PluginReference)[];
   /** Scan options */
   scan?: ScanConfig;
   /** Path mappings for conflict resolution */
@@ -527,8 +538,8 @@ export interface Plugin<TMetadata = Record<string, unknown>> {
   /** Extractor that finds examples in a directory tree */
   readonly extractor?: Extractor<TMetadata>;
 
-  /** Parser that processes file contents (runs in pipeline order) */
-  readonly fileContentsParser?: FileContentsParser;
+  /** Parsers that process file contents (run in pipeline order) */
+  readonly fileContentsParsers?: FileContentsParser[];
 
   /**
    * JSON Schema definitions for IDE tooling.
