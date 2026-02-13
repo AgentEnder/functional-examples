@@ -542,3 +542,146 @@ describe('runTest (file/dir/not assertions)', () => {
     expect(result.error).toContain('Expected directory to exist: ./nope');
   });
 });
+
+describe('runTest (snapshot assertions)', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'fe-snap-'));
+    writeFileSync(join(tmpDir, 'output.txt'), 'Hello World\n');
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('creates snapshot on first run', async () => {
+    const snapshotPath = join(tmpDir, '__snapshots__', 'output.txt');
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'first run',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshot: { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(true);
+    const { existsSync, readFileSync } = await import('fs');
+    expect(existsSync(snapshotPath)).toBe(true);
+    expect(readFileSync(snapshotPath, 'utf-8')).toBe('Hello World\n');
+  });
+
+  it('passes when snapshot matches', async () => {
+    // Create snapshot first
+    mkdirSync(join(tmpDir, '__snapshots__'));
+    writeFileSync(join(tmpDir, '__snapshots__', 'output.txt'), 'Hello World\n');
+
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'match',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshot: { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(true);
+  });
+
+  it('fails when snapshot mismatches', async () => {
+    // Create snapshot with different content
+    mkdirSync(join(tmpDir, '__snapshots__'));
+    writeFileSync(join(tmpDir, '__snapshots__', 'output.txt'), 'Different content\n');
+
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'mismatch',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshot: { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(false);
+    expect(result.error).toContain('Snapshot mismatch');
+    expect(result.error).toContain('--update-snapshots');
+  });
+
+  it('overwrites snapshot with --update-snapshots', async () => {
+    mkdirSync(join(tmpDir, '__snapshots__'));
+    writeFileSync(join(tmpDir, '__snapshots__', 'output.txt'), 'Old content\n');
+
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'update',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshot: { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+        },
+      },
+      { timeout: 5000, updateSnapshots: true }
+    );
+
+    expect(result.passed).toBe(true);
+    const { readFileSync } = await import('fs');
+    expect(readFileSync(join(tmpDir, '__snapshots__', 'output.txt'), 'utf-8')).toBe('Hello World\n');
+  });
+
+  it('fails when source file does not exist', async () => {
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'no source',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshot: { path: './nonexistent.txt', snapshot: './__snapshots__/x.txt' },
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(false);
+    expect(result.error).toContain('Snapshot source file not found');
+  });
+
+  it('supports snapshots array', async () => {
+    writeFileSync(join(tmpDir, 'second.txt'), 'Second\n');
+
+    const result = await runTest(
+      'test-example',
+      tmpDir,
+      {
+        name: 'array',
+        options: { command: 'echo ok' },
+        assertions: {
+          snapshots: [
+            { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+            { path: './second.txt', snapshot: './__snapshots__/second.txt' },
+          ],
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(true);
+    const { existsSync } = await import('fs');
+    expect(existsSync(join(tmpDir, '__snapshots__', 'output.txt'))).toBe(true);
+    expect(existsSync(join(tmpDir, '__snapshots__', 'second.txt'))).toBe(true);
+  });
+});

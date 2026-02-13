@@ -31,6 +31,20 @@ const dirAssertionSchema = z.strictObject({
 const dirAssertionsSchema = dirAssertionSchema.optional();
 
 /**
+ * Single snapshot assertion — captures file content for comparison across runs.
+ *
+ * On first run, the snapshot file is created automatically. On subsequent runs,
+ * both the actual file and the stored snapshot are run through the parser
+ * pipeline (stripping region markers etc.) before comparison.
+ */
+const snapshotAssertionSchema = z.strictObject({
+  /** Path to the file to snapshot (relative to test cwd) */
+  path: z.string(),
+  /** Path to store the snapshot file (relative to example root) */
+  snapshot: z.string(),
+});
+
+/**
  * Test assertions
  *
  * Uses z.lazy() for the `not` field to allow recursive self-reference
@@ -46,6 +60,8 @@ const assertionsSchema: z.ZodOptional<any> = z
     files: z.array(fileAssertionSchema).optional(),
     dir: dirAssertionsSchema,
     directories: z.array(dirAssertionSchema).optional(),
+    snapshot: snapshotAssertionSchema.optional(),
+    snapshots: z.array(snapshotAssertionSchema).optional(),
     not: z.lazy(() => assertionsSchema).optional(),
   })
   .optional();
@@ -138,6 +154,7 @@ export type CommandStep = z.infer<typeof commandStepSchema>;
 export type TestStep = z.infer<typeof testStepSchema>;
 export type FileAssertions = z.infer<typeof fileAssertionsSchema>;
 export type DirAssertions = z.infer<typeof dirAssertionsSchema>;
+export type SnapshotAssertion = z.infer<typeof snapshotAssertionSchema>;
 
 // JSON Schema for plugin registration
 export const TEST_METADATA_JSON_SCHEMA = z.toJSONSchema(testMetadataSchema);

@@ -99,6 +99,7 @@ export type {
   DirAssertions,
   FileAssertions,
   OptionsTestCase,
+  SnapshotAssertion,
   StepsTestCase,
   TestAssertions,
   TestCase,

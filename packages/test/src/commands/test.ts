@@ -65,6 +65,12 @@ export function createTestCommand(
           type: 'number',
           description: 'Default timeout in ms',
           default: timeout,
+        })
+        .option('update-snapshots', {
+          type: 'boolean',
+          alias: ['u'],
+          description: 'Update snapshot files with actual content',
+          default: false,
         }),
     handler: async (args) => {
       const formatName = args.format ?? (isCI() ? ciReporter : defaultReporter);
@@ -117,6 +123,8 @@ export function createTestCommand(
         for (const testCase of tests) {
           const result = await runTest(example.id, example.rootPath, testCase, {
             timeout: args.timeout,
+            config,
+            updateSnapshots: args['update-snapshots'],
           });
 
           await reporter.report(result, args.verbose);

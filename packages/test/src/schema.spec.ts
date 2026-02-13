@@ -246,6 +246,63 @@ describe('assertionsSchema (file, dir, not)', () => {
   });
 });
 
+describe('assertionsSchema (snapshot)', () => {
+  it('validates snapshot with path and snapshot file', () => {
+    const result = testCaseSchema.safeParse({
+      name: 'snapshot test',
+      options: { command: 'echo hi' },
+      assertions: {
+        snapshot: { path: './output.txt', snapshot: './__snapshots__/output.txt' },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates snapshots array', () => {
+    const result = testCaseSchema.safeParse({
+      name: 'snapshots array',
+      options: { command: 'echo hi' },
+      assertions: {
+        snapshots: [
+          { path: './a.txt', snapshot: './__snapshots__/a.txt' },
+          { path: './b.txt', snapshot: './__snapshots__/b.txt' },
+        ],
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates snapshot and snapshots together', () => {
+    const result = testCaseSchema.safeParse({
+      name: 'both',
+      options: { command: 'echo hi' },
+      assertions: {
+        snapshot: { path: './main.txt', snapshot: './__snapshots__/main.txt' },
+        snapshots: [{ path: './extra.txt', snapshot: './__snapshots__/extra.txt' }],
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects snapshot without path', () => {
+    const result = testCaseSchema.safeParse({
+      name: 'bad snapshot',
+      options: { command: 'echo hi' },
+      assertions: { snapshot: { snapshot: './__snapshots__/x.txt' } },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects snapshot without snapshot field', () => {
+    const result = testCaseSchema.safeParse({
+      name: 'bad snapshot',
+      options: { command: 'echo hi' },
+      assertions: { snapshot: { path: './x.txt' } },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('testMetadataSchema', () => {
   it('validates single test', () => {
     const result = testMetadataSchema.safeParse({

@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
-import { existsSync, readFileSync, statSync } from 'fs';
-import { isAbsolute, join } from 'path';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { dirname, extname, isAbsolute, join } from 'path';
+import type { ResolvedConfig } from '@functional-examples/devkit';
 import type { TestCase, TestAssertions, OptionsTestCase, StepsTestCase } from './schema.js';
 import type { TestResult } from './reporters/types.js';
 
@@ -67,6 +68,93 @@ async function executeCommand(
  */
 function resolveAssertionPath(baseCwd: string, filePath: string): string {
   return isAbsolute(filePath) ? filePath : join(baseCwd, filePath);
+}
+
+/**
+ * Run content through the parser pipeline to strip region markers
+ * and other parser-managed syntax, enabling region-transparent comparison.
+ */
+async function parseContent(
+  content: string,
+  filePath: string,
+  config?: ResolvedConfig
+): Promise<string> {
+  if (!config) return content;
+
+  const ext = extname(filePath);
+  const parsers = config.registry.getParsersForExtension(ext);
+  if (parsers.length === 0) return content;
+
+  // Dynamically import to avoid hard dep on functional-examples at runtime
+  // when no snapshots are used
+  const { createInitialContext, runParsePipeline } = await import(
+    'functional-examples'
+  );
+
+  const ctx = createInitialContext(filePath, content);
+  const result = await runParsePipeline(ctx, parsers);
+  return result.parsed;
+}
+
+/**
+ * Check snapshot assertions — compare actual file content to stored snapshot
+ * after running both through the parser pipeline (region-transparent).
+ */
+async function checkSnapshotAssertions(
+  assertions: TestAssertions | undefined,
+  cwd: string,
+  examplePath: string,
+  options: RunTestOptions
+): Promise<string[]> {
+  const failures: string[] = [];
+  if (!assertions) return failures;
+
+  const snapshotChecks = [
+    ...(assertions.snapshot ? [assertions.snapshot] : []),
+    ...(assertions.snapshots ?? []),
+  ];
+
+  for (const snap of snapshotChecks) {
+    const actualPath = resolveAssertionPath(cwd, snap.path);
+    const snapshotPath = resolveAssertionPath(examplePath, snap.snapshot);
+
+    if (!existsSync(actualPath)) {
+      failures.push(`Snapshot source file not found: ${snap.path}`);
+      continue;
+    }
+
+    const actualContent = readFileSync(actualPath, 'utf-8');
+
+    if (!existsSync(snapshotPath) || options.updateSnapshots) {
+      // First run or update mode — write snapshot
+      mkdirSync(dirname(snapshotPath), { recursive: true });
+      writeFileSync(snapshotPath, actualContent, 'utf-8');
+      continue;
+    }
+
+    // Compare through parser pipeline
+    const snapshotContent = readFileSync(snapshotPath, 'utf-8');
+
+    const parsedActual = await parseContent(
+      actualContent,
+      actualPath,
+      options.config
+    );
+    const parsedSnapshot = await parseContent(
+      snapshotContent,
+      snapshotPath,
+      options.config
+    );
+
+    if (parsedActual !== parsedSnapshot) {
+      failures.push(
+        `Snapshot mismatch for "${snap.path}" (snapshot: "${snap.snapshot}"). ` +
+          `Run with --update-snapshots to update.`
+      );
+    }
+  }
+
+  return failures;
 }
 
 /**
@@ -182,6 +270,10 @@ function checkAssertions(
 
 export interface RunTestOptions {
   timeout: number;
+  /** Resolved config for parser pipeline access (needed by snapshot assertions) */
+  config?: ResolvedConfig;
+  /** When true, overwrite existing snapshots with actual content */
+  updateSnapshots?: boolean;
 }
 
 /**
@@ -219,6 +311,13 @@ async function runSteps(
       // Use explicit assertions if provided, otherwise assert exitCode 0
       const assertions = step.assertions ?? { exitCode: 0 };
       const failures = checkAssertions(assertions, actual, cwd);
+      const snapshotFailures = await checkSnapshotAssertions(
+        assertions,
+        cwd,
+        examplePath,
+        options
+      );
+      failures.push(...snapshotFailures);
 
       if (failures.length > 0) {
         return {
@@ -278,6 +377,13 @@ export async function runTest(
     });
 
     const failures = checkAssertions(tc.assertions, actual, cwd);
+    const snapshotFailures = await checkSnapshotAssertions(
+      tc.assertions,
+      cwd,
+      examplePath,
+      options
+    );
+    failures.push(...snapshotFailures);
 
     return {
       example: exampleId,
