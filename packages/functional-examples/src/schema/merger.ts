@@ -136,6 +136,35 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
 }
 
 /**
+ * Base metadata schema with universal fields shared across all plugins.
+ */
+function createBaseMetadataSchema(): JSONSchema {
+  return {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Unique example identifier',
+      },
+      title: {
+        type: 'string',
+        description: 'Example title',
+      },
+      description: {
+        type: 'string',
+        description: 'Example description',
+      },
+      tags: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Tags for categorizing the example',
+      },
+    },
+    required: ['id', 'title'],
+  };
+}
+
+/**
  * Deep merge two JSON Schema objects.
  * Second schema (b) takes priority on conflicts.
  */
@@ -151,6 +180,16 @@ function deepMergeSchemas(a: JSONSchema, b: JSONSchema): JSONSchema {
       // Merge properties, b takes priority
       result.properties = {
         ...result.properties,
+        ...(value as Record<string, JSONSchema>),
+      };
+    } else if (
+      key === '$defs' &&
+      result.$defs &&
+      typeof value === 'object'
+    ) {
+      // Merge $defs, b takes priority on conflicts
+      result.$defs = {
+        ...result.$defs,
         ...(value as Record<string, JSONSchema>),
       };
     } else if (
@@ -178,11 +217,13 @@ export function mergeMetadataSchemas(
 ): JSONSchema {
   const { configSchema, pluginSchemas } = options;
 
-  // Start with empty base or config schema
-  let merged: JSONSchema = configSchema ?? {
-    type: 'object',
-    properties: {},
-  };
+  // Start with base metadata schema containing universal fields
+  const base = createBaseMetadataSchema();
+
+  // Overlay config schema on top of base (config takes priority)
+  let merged: JSONSchema = configSchema
+    ? deepMergeSchemas(base, configSchema)
+    : base;
 
   // Merge in plugin schemas (config already in merged, so it has priority)
   for (const { pluginName, metadata } of pluginSchemas) {

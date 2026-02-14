@@ -275,6 +275,20 @@
         }
       ]
     },
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to include in the example bundle"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorizing the example"
+    },
     "id": {
       "type": "string",
       "description": "Unique example identifier"
@@ -384,6 +398,41 @@
             },
             "required": [
               "path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "snapshot": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "snapshot": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path",
+            "snapshot"
+          ],
+          "additionalProperties": false
+        },
+        "snapshots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "snapshot": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "snapshot"
             ],
             "additionalProperties": false
           }

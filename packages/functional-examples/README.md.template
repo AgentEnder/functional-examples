@@ -42,7 +42,6 @@ examples/
 id: my-example
 title: My Example
 description: Demonstrates something useful
-entryPoint: main.ts
 ```
 
 ### File-based (YAML frontmatter)

@@ -32,9 +32,19 @@ export function createSchemaValidator(
         path = basePath ? `${basePath}/${missingProp}` : missingProp;
       }
 
+      let message = err.message ?? 'Validation failed';
+
+      // Include the offending property name for additionalProperties errors
+      const additionalProp = err.params?.additionalProperty as
+        | string
+        | undefined;
+      if (additionalProp) {
+        message += `: '${additionalProp}'`;
+      }
+
       return {
         path,
-        message: err.message ?? 'Validation failed',
+        message,
       };
     });
 

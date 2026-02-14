@@ -24,7 +24,6 @@ Create a `meta.yml` file in each example directory:
 id: my-example
 title: My Example
 description: Demonstrates a multi-file pattern
-entryPoint: main.ts
 tags:
   - tutorial
   - typescript

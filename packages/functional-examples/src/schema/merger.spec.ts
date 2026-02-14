@@ -86,19 +86,25 @@ describe('mergeConfigSchema', () => {
 });
 
 describe('mergeMetadataSchemas', () => {
-  it('should return base schema when no plugin schemas', () => {
+  it('should return base schema with universal fields when no plugin schemas', () => {
     const result = mergeMetadataSchemas({
       pluginSchemas: [],
     });
 
     expect(result.type).toBe('object');
-    expect(result.properties).toEqual({});
+    // Base schema provides universal fields
+    expect(result.properties).toHaveProperty('id');
+    expect(result.properties).toHaveProperty('title');
+    expect(result.properties).toHaveProperty('description');
+    expect(result.properties).toHaveProperty('tags');
+    expect(result.required).toContain('id');
+    expect(result.required).toContain('title');
   });
 
-  it('should return config schema when no plugin schemas', () => {
+  it('should merge config schema over base schema', () => {
     const configSchema = {
       type: 'object',
-      properties: { id: { type: 'string' } },
+      properties: { id: { type: 'string', minLength: 3 } },
       required: ['id'],
     };
 
@@ -107,7 +113,13 @@ describe('mergeMetadataSchemas', () => {
       pluginSchemas: [],
     });
 
-    expect(result).toEqual(configSchema);
+    // Config overrides base's id property
+    const properties = result.properties ?? {};
+    const idProp = properties.id as { minLength?: number };
+    expect(idProp.minLength).toBe(3);
+    // Base fields still present
+    expect(result.properties).toHaveProperty('title');
+    expect(result.properties).toHaveProperty('tags');
   });
 
   it('should merge plugin metadata schemas', () => {
@@ -124,8 +136,12 @@ describe('mergeMetadataSchemas', () => {
       ],
     });
 
+    // Plugin fields merged in
     expect(result.properties).toHaveProperty('foo');
     expect(result.properties).toHaveProperty('bar');
+    // Base fields still present
+    expect(result.properties).toHaveProperty('id');
+    expect(result.properties).toHaveProperty('tags');
   });
 
   it('should give config schema priority over plugin schemas on conflict', () => {
@@ -181,7 +197,7 @@ describe('mergeMetadataSchemas', () => {
       ],
     });
 
-    // Union of required fields
+    // Union of required fields (includes base + config + plugin)
     expect(result.required).toContain('id');
     expect(result.required).toContain('title');
     expect(result.required).toContain('category');
@@ -199,5 +215,60 @@ describe('mergeMetadataSchemas', () => {
     });
 
     expect(result.properties).toHaveProperty('foo');
+  });
+
+  it('should merge $defs from multiple plugins', () => {
+    const result = mergeMetadataSchemas({
+      pluginSchemas: [
+        {
+          pluginName: 'a',
+          metadata: JSON.stringify({
+            type: 'object',
+            properties: {},
+            $defs: { FooType: { type: 'string' } },
+          }),
+        },
+        {
+          pluginName: 'b',
+          metadata: JSON.stringify({
+            type: 'object',
+            properties: {},
+            $defs: { BarType: { type: 'number' } },
+          }),
+        },
+      ],
+    });
+
+    expect(result.$defs).toHaveProperty('FooType');
+    expect(result.$defs).toHaveProperty('BarType');
+  });
+
+  it('should keep earlier $defs on key conflicts (merged accumulator wins)', () => {
+    const result = mergeMetadataSchemas({
+      pluginSchemas: [
+        {
+          pluginName: 'a',
+          metadata: JSON.stringify({
+            type: 'object',
+            properties: {},
+            $defs: { Shared: { type: 'string' } },
+          }),
+        },
+        {
+          pluginName: 'b',
+          metadata: JSON.stringify({
+            type: 'object',
+            properties: {},
+            $defs: { Shared: { type: 'number' } },
+          }),
+        },
+      ],
+    });
+
+    // The accumulated merged schema is the `b` arg in deepMergeSchemas,
+    // so plugin a's Shared (already in merged) takes priority over plugin b's.
+    const defs = result.$defs ?? {};
+    const shared = defs.Shared as { type?: string };
+    expect(shared.type).toBe('string');
   });
 });

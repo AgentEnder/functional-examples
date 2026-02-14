@@ -67,6 +67,8 @@ declare module '@functional-examples/devkit' {
           assertions?: unknown;
         }>;
       }>;
+      include?: Array<string>;
+      tags?: Array<string>;
       id: string;
       title: string;
       description?: string;

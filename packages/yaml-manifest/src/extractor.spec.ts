@@ -279,7 +279,6 @@ title: Custom Meta
         path.join(exampleDir, 'meta.yml'),
         `id: complex
 title: Complex Example
-entryPoint: main.ts
 commands:
   - command: 'run main.ts'
     assertions:
@@ -295,7 +294,6 @@ commands:
       expect(result.examples[0].metadata).toMatchObject({
         id: 'complex',
         title: 'Complex Example',
-        entryPoint: 'main.ts',
         commands: [
           {
             command: 'run main.ts',
