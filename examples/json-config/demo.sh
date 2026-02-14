@@ -3,15 +3,15 @@
 
 # #_region scan
 # Default scan output
-npx functional-examples scan .
+npx functional-examples scan
 # #_endregion scan
 
 # #_region json
 # JSON output format
-npx functional-examples scan . -f json
+npx functional-examples scan -f json
 # #_endregion json
 
 # #_region yaml
 # YAML output format
-npx functional-examples scan . -f yaml
+npx functional-examples scan -f yaml
 # #_endregion yaml

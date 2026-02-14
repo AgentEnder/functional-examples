@@ -4,4 +4,3 @@ description: |
   Demonstrates an example that spans multiple files.
   The YAML manifest plugin automatically includes all
   files in the directory.
-entryPoint: main.ts

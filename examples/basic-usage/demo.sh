@@ -3,10 +3,10 @@
 
 # #_region scan
 # Scan for examples and display results
-npx functional-examples scan .
+npx functional-examples scan
 # #_endregion scan
 
 # #_region json
 # Output scan results as JSON
-npx functional-examples scan . -f json
+npx functional-examples scan -f json
 # #_endregion json

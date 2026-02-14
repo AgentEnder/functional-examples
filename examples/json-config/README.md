@@ -6,7 +6,7 @@ This example demonstrates using a JSON configuration file (`functional-examples.
 
 ```bash
 # From the example directory
-npx functional-examples scan .
+npx functional-examples scan
 ```
 
 ## Configuration File

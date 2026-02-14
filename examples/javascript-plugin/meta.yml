@@ -3,7 +3,6 @@ title: JavaScript Plugin
 description: |
   Demonstrates using frontmatter comments in TypeScript/JavaScript files
   to define example metadata, including region markers for code snippets.
-entryPoint: functional-examples.config.ts
 tags:
   - plugin
   - frontmatter
@@ -21,3 +20,5 @@ test:
       command: bash demo.sh
     assertions:
       exitCode: 0
+      stdout:
+        contains: getting-started

@@ -3,7 +3,6 @@ title: Getting Started
 description: |
   Minimal setup demonstrating CLI usage and simple programmatic scanning.
   This is the first example new users should explore.
-entryPoint: scan.ts
 tags:
   - beginner
   - scanning
@@ -21,3 +20,5 @@ test:
       command: bash demo.sh
     assertions:
       exitCode: 0
+      stdout:
+        contains: Scan completed

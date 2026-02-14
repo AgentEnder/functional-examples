@@ -20,3 +20,5 @@ test:
       command: bash demo.sh
     assertions:
       exitCode: 0
+      stdout:
+        contains: getting-started

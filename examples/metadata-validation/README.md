@@ -6,10 +6,10 @@ This example demonstrates enforcing metadata requirements using JSON Schema vali
 
 ```bash
 # Scan and display examples (will show validation errors)
-npx functional-examples scan .
+npx functional-examples scan
 
 # Output as JSON to see error details
-npx functional-examples scan . -f json
+npx functional-examples scan -f json
 ```
 
 ## Configuration Schema

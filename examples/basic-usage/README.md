@@ -6,10 +6,10 @@ This example demonstrates the most basic use case: scanning for examples using t
 
 ```bash
 # Scan for examples
-functional-examples scan .
+functional-examples scan
 
 # Output as JSON
-functional-examples scan . -f json
+functional-examples scan -f json
 ```
 
 ## Programmatic Usage

@@ -4,7 +4,6 @@ description: |
   Demonstrates creating a custom Extractor implementation to support
   alternative metadata formats like TOML. Advanced usage requiring
   a TypeScript config with inline plugin code.
-entryPoint: scan.ts
 tags:
   - custom
   - extractor

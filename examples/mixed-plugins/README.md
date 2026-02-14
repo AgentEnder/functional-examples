@@ -6,10 +6,10 @@ This example demonstrates using multiple plugins together with conflict resoluti
 
 ```bash
 # Scan and display examples
-npx functional-examples scan .
+npx functional-examples scan
 
 # Output as JSON
-npx functional-examples scan . -f json
+npx functional-examples scan -f json
 ```
 
 ## The Problem

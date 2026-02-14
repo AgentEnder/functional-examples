@@ -16,7 +16,7 @@ include:
 test:
   - name: scan reports validation errors
     options:
-      command: npx functional-examples scan . -f json
+      command: npx functional-examples scan -f json
     assertions:
       exitCode: 1
       stdout:

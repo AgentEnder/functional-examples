@@ -6,10 +6,10 @@ This example demonstrates the `@functional-examples/yaml-manifest` plugin, which
 
 ```bash
 # Scan and display examples
-npx functional-examples scan .
+npx functional-examples scan
 
 # Output as JSON
-npx functional-examples scan . -f json
+npx functional-examples scan -f json
 ```
 
 ## Directory Structure
@@ -39,7 +39,6 @@ title: My Example Title
 description: |
   A longer description that can span
   multiple lines using YAML syntax.
-entryPoint: index.ts  # Optional: main file of the example
 tags:
   - beginner
   - tutorial
