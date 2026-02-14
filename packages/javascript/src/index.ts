@@ -16,6 +16,7 @@ export const JAVASCRIPT_EXTENSIONS = [
   '.tsx',
   '.mts',
   '.cts',
+  '.json',
 ] as const;
 
 export { createJavaScriptParser, type RegionTagConfig } from './parser.js';
@@ -66,25 +67,19 @@ const OPTIONS_SCHEMA = JSON.stringify({
 });
 
 /**
- * JSON Schema for metadata this plugin expects.
+ * JSON Schema for metadata fields contributed by the JavaScript plugin.
+ * Universal fields (id, title, description) are provided by the base schema;
+ * this plugin adds tags, which it validates at runtime.
  */
 const METADATA_SCHEMA = JSON.stringify({
   type: 'object',
   properties: {
-    id: {
-      type: 'string',
-      description: 'Unique example identifier',
-    },
-    title: {
-      type: 'string',
-      description: 'Example title',
-    },
-    description: {
-      type: 'string',
-      description: 'Example description',
+    tags: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Tags for categorizing the example',
     },
   },
-  required: ['id', 'title'],
 });
 
 /**

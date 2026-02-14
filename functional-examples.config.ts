@@ -66,6 +66,63 @@ const bashPlugin: Plugin = {
 };
 
 /**
+ * Inline JSON region parser plugin.
+ *
+ * Handles `"#_region name": true` / `"#_endregion name": true` key markers in
+ * .json files. These are valid JSON keys that Node.js ignores, so package.json
+ * files stay valid while still supporting region extraction for docs.
+ */
+const jsonRegionPlugin: Plugin = {
+  name: 'json-regions',
+  extensions: ['.json'],
+  fileContentsParsers: [{
+    name: 'json-region-parser',
+    parse(context: FileParseContext): FileParseContext {
+      const startRe = /^[ \t]*"#_region\s+(\S+)"\s*:\s*.+$/;
+      const endRe = /^[ \t]*"#_endregion\s+(\S+)"\s*:\s*.+$/;
+
+      const lines = context.parsed.split('\n');
+      const hunks: ParsedRegion[] = [];
+      const outputLines: string[] = [];
+      const regionStack: { id: string; startLine: number; lines: string[] }[] =
+        [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const lineNum = i + 1;
+
+        const startMatch = line.match(startRe);
+        if (startMatch) {
+          regionStack.push({ id: startMatch[1], startLine: lineNum, lines: [] });
+          continue;
+        }
+
+        const endMatch = line.match(endRe);
+        if (endMatch) {
+          const current = regionStack.pop();
+          if (current) {
+            hunks.push({
+              id: current.id,
+              content: current.lines.join('\n'),
+              startLine: current.startLine,
+              endLine: lineNum,
+            });
+          }
+          continue;
+        }
+
+        outputLines.push(line);
+        for (const region of regionStack) {
+          region.lines.push(line);
+        }
+      }
+
+      return { ...context, parsed: outputLines.join('\n'), hunks };
+    },
+  }],
+};
+
+/**
  * Root configuration for indexing all example projects.
  *
  * This dogfoods the functional-examples package by using it to
@@ -74,6 +131,7 @@ const bashPlugin: Plugin = {
  * - yaml-manifest handles file discovery via meta.yml + include globs
  * - javascript plugin contributes only parsing (frontmatter + custom regions)
  * - bash plugin handles region markers in shell scripts
+ * - json-regions plugin handles `"#_region name": true` key markers in .json files
  * - custom region tags (#_region) let standard #region comments stay visible in docs
  */
 const config: Config = {
@@ -83,6 +141,7 @@ const config: Config = {
       regionTag: { start: '#_region', end: '#_endregion' },
     }),
     bashPlugin,
+    jsonRegionPlugin,
     createYamlManifestPlugin(),
     createTestPlugin(),
     createDocumentationPlugin(),

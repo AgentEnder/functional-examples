@@ -73,6 +73,7 @@ describe('createJavaScriptPlugin', () => {
       expect(plugin.extensions).toContain('.cjs');
       expect(plugin.extensions).toContain('.mts');
       expect(plugin.extensions).toContain('.cts');
+      expect(plugin.extensions).toContain('.json');
     });
 
     it('should include extractor by default', () => {
@@ -410,10 +411,10 @@ describe('schemas', () => {
 
     const schema = JSON.parse(metadataSchema);
     expect(schema.type).toBe('object');
-    expect(schema.properties).toHaveProperty('id');
-    expect(schema.properties).toHaveProperty('title');
-    expect(schema.required).toContain('id');
-    expect(schema.required).toContain('title');
+    // Universal fields (id, title, description) are now in the base schema;
+    // the JS plugin contributes tags
+    expect(schema.properties).toHaveProperty('tags');
+    expect(schema.properties.tags.type).toBe('array');
   });
 });
 
