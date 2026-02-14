@@ -1,3 +1,27 @@
+## 0.0.0-alpha.2 (2026-02-14)
+
+### 🚀 Features
+
+- add rehype-typedoc and vike-plugin-typedoc packages ([c95ded5](https://github.com/AgentEnder/functional-examples/commit/c95ded5))
+- add typedoc extract-docs pipeline ([331e736](https://github.com/AgentEnder/functional-examples/commit/331e736))
+- add hydrate-readmes script and README templates ([c5479c6](https://github.com/AgentEnder/functional-examples/commit/c5479c6))
+- restructure examples for CLI-first workflow ([980fb97](https://github.com/AgentEnder/functional-examples/commit/980fb97))
+- **core:** auto-detect plugins, pipeline hunk accumulation, and scanner fixes ([736cbd6](https://github.com/AgentEnder/functional-examples/commit/736cbd6))
+- **devkit:** add PluginReference type and multi-parser plugin interface ([2eb5bd8](https://github.com/AgentEnder/functional-examples/commit/2eb5bd8))
+- **docs-site:** integrate typedoc API documentation ([f0ff2c2](https://github.com/AgentEnder/functional-examples/commit/f0ff2c2))
+- **docs-site:** adopt plugin prerendering and language class injection ([5d8d802](https://github.com/AgentEnder/functional-examples/commit/5d8d802))
+- **functional-examples:** make scan() generic over metadata type ([0d7c550](https://github.com/AgentEnder/functional-examples/commit/0d7c550))
+- **javascript:** multi-parser architecture, frontmatter hunks, and custom regions ([466738f](https://github.com/AgentEnder/functional-examples/commit/466738f))
+- **rehype-typedoc:** filter code block linking by language ([8e90f36](https://github.com/AgentEnder/functional-examples/commit/8e90f36))
+- **test:** add snapshot assertions and test definitions in meta.yml ([57eea0d](https://github.com/AgentEnder/functional-examples/commit/57eea0d))
+- **vike-plugin-typedoc:** add baseUrl support and centralize prerendering ([0899233](https://github.com/AgentEnder/functional-examples/commit/0899233))
+- **yaml-manifest:** support include globs and custom region tags ([0822ebc](https://github.com/AgentEnder/functional-examples/commit/0822ebc))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.0.0-alpha.1 (2026-02-10)
 
 ### 🚀 Features
