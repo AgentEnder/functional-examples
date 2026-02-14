@@ -1,0 +1,20 @@
+{
+  "name": "error-handling-example",
+  "private": true,
+  "main": "./fail.js",
+  "#_region error-test": true,
+  "functional-examples": {
+    "title": "Error Handling",
+    "test": [
+      {
+        "name": "fails with bad args",
+        "options": { "command": "node fail.js --fail" },
+        "assertions": {
+          "exitCode": 1,
+          "stderr": { "contains": "Error" }
+        }
+      }
+    ]
+  },
+  "#_endregion error-test": true
+}

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Demonstrates running tests on examples
-
+cd "$(dirname "$0")"
 # #_region test
-# Run all tests for this example
-npx functional-examples test .
+npx functional-examples test
 # #_endregion test

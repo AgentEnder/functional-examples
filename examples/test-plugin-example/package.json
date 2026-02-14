@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "description": "Demonstrates the test plugin with command execution and assertions",
-  "main": "./hello.js",
   "dependencies": {
-    "functional-examples": "workspace:*"
+    "functional-examples": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
+    "@functional-examples/test": "workspace:*"
   },
   "functional-examples": {
     "title": "Test Plugin Example",

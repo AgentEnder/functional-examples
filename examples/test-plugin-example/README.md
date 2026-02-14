@@ -9,17 +9,27 @@ This example demonstrates the `@functional-examples/test` plugin, which allows y
 npx functional-examples test examples/test-plugin-example
 ```
 
-## The Script
+## Sub-Examples
 
-The test target is a simple Node script:
+### Hello Script
 
-<%= region('script') %>
+A simple script that prints a greeting:
 
-## Test Definition
+<%= region('hello-script') %>
 
-Tests are defined in the `functional-examples.test` field of `package.json`:
+Test definition:
 
-<%= file('package.json') %>
+<%= region('hello-test') %>
+
+### Error Handling
+
+A script that demonstrates failure assertions:
+
+<%= region('error-script') %>
+
+Test definition:
+
+<%= region('error-test') %>
 
 ## Assertions
 

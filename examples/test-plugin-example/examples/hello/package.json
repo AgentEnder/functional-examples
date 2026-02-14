@@ -1,0 +1,20 @@
+{
+  "name": "hello-example",
+  "private": true,
+  "main": "./hello.js",
+  "#_region hello-test": true,
+  "functional-examples": {
+    "title": "Hello Script",
+    "test": [
+      {
+        "name": "runs hello script",
+        "options": { "command": "node hello.js" },
+        "assertions": {
+          "exitCode": 0,
+          "stdout": { "contains": "Hello from example" }
+        }
+      }
+    ]
+  },
+  "#_endregion hello-test": true
+}

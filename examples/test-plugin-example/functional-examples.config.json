@@ -1,0 +1,15 @@
+{
+  "$schema": "./.functional-examples/schema.json",
+  "#_region plugins": true,
+  "plugins": [
+    "@functional-examples/javascript",
+    "@functional-examples/test"
+  ],
+  "#_endregion plugins": true,
+  "#_region scan": true,
+  "scan": {
+    "include": ["examples/**/*.js", "examples/**/package.json"],
+    "exclude": ["**/node_modules/**"]
+  },
+  "#_endregion scan": true
+}
