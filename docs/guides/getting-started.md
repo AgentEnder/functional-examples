@@ -2,7 +2,6 @@
 title: "Getting Started"
 description: "Install functional-examples, configure your first project, and run your first scan."
 nav:
-  section: "Guides"
   order: 1
 ---
 
@@ -109,3 +108,17 @@ For tighter integration, use the `scan()` convenience function. Here's how the *
 - **[Plugins](../plugins)** — explore built-in plugins and when to use each one
 - **[Configuration](../configuration)** — deep dive into config options, scan patterns, and metadata schemas
 - **[Testing Examples](../testing-examples)** — verify that your examples actually run
+
+### Deep Dives
+
+- **[JavaScript Plugin](../../plugins/javascript)** — frontmatter, regions, and package.json metadata
+- **[YAML Manifest Plugin](../../plugins/yaml-manifest)** — directory-based example discovery
+- **[Test Plugin](../../plugins/test)** — full assertion reference and reporter options
+- **[Documentation Plugin](../../plugins/documentation)** — template rendering and prose helpers
+
+### Advanced Topics
+
+- **[Custom Extractors](../../advanced/custom-extractors)** — support alternative metadata formats
+- **[Plugin Authoring](../../advanced/plugin-authoring)** — build complete plugins from scratch
+- **[Snapshot Testing](../../advanced/snapshot-testing)** — verify output against reference files
+- **[CI Integration](../../advanced/ci-integration)** — run example tests in GitHub Actions

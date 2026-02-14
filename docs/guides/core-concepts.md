@@ -2,7 +2,6 @@
 title: "Core Concepts"
 description: "Understand examples, extractors, plugins, configuration, regions, and the scanner pipeline."
 nav:
-  section: "Guides"
   order: 3
 ---
 
@@ -87,7 +86,7 @@ console.log(result.examples);
 Regions let you reference specific parts of a file in documentation. Instead of showing an entire file, you can pull just the `setup` region:
 
 ```markdown
-<​%= example('my-example').region('setup') %​>;
+<\%= example('my-example').region('setup') %\>;
 ```
 
 > [!NOTE]

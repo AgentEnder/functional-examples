@@ -2,7 +2,6 @@
 title: "Testing Examples"
 description: "Use the test plugin to verify examples run correctly, define assertions, and integrate with CI."
 nav:
-  section: "Guides"
   order: 6
 ---
 
@@ -38,7 +37,7 @@ Test definitions live in the `test` field of an example's metadata. The test plu
 
 For package.json-based examples (via the JavaScript plugin), tests go under `functional-examples.test`:
 
-<%= example('test-plugin-example').file('package.json') %>
+<%= example('test-plugin-example').region('hello-test') %>
 
 For frontmatter-based examples, you'd add a `test` field to the YAML metadata. For YAML manifest examples, add it to `meta.yml`. The test plugin works with any metadata source.
 
@@ -50,7 +49,7 @@ Each test has:
 
 Here's the script being tested:
 
-<%= example('test-plugin-example').file('hello.js') %>
+<%= example('test-plugin-example').region('hello-script') %>
 
 ## Available Assertions
 
@@ -109,3 +108,9 @@ The test command exits with a non-zero code if any assertion fails, so CI will c
 - **Test error cases** — confirm examples fail gracefully with meaningful errors
 - **Keep commands fast** — example tests run in CI, so avoid long-running operations
 - **Use `stdout.contains`** over exact matching — partial matches are more resilient to formatting changes
+
+## Going Further
+
+- **[Test Plugin Reference](../../plugins/test)** — full assertion table including file, directory, and snapshot assertions
+- **[Snapshot Testing](../../advanced/snapshot-testing)** — when to use snapshots, first-run behavior, and update workflow
+- **[CI Integration](../../advanced/ci-integration)** — GitHub Actions setup, TAP reporter, and local workflow testing

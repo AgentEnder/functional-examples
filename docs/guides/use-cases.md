@@ -2,7 +2,6 @@
 title: "Use Cases"
 description: "Real-world scenarios where functional-examples shines: doc sites, tutorials, API references, monorepos, and OSS showcases."
 nav:
-  section: "Guides"
   order: 7
 ---
 

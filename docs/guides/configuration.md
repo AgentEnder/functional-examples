@@ -2,7 +2,6 @@
 title: "Configuration"
 description: "TypeScript vs JSON config, scan patterns, metadata schemas, and path mappings."
 nav:
-  section: "Guides"
   order: 5
 ---
 

@@ -2,7 +2,6 @@
 title: "Why functional-examples"
 description: "The problem functional-examples solves, its design philosophy, and how it treats examples as first-class project artifacts."
 nav:
-  section: "Guides"
   order: 2
 ---
 

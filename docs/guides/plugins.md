@@ -2,7 +2,6 @@
 title: "Plugins"
 description: "Built-in plugins, when to use each one, multi-plugin setups, and building custom extractors."
 nav:
-  section: "Guides"
   order: 4
 ---
 
@@ -31,6 +30,8 @@ Here's a single-file example:
 - You want region markers for referencing specific code sections
 - You want multi-file examples with automatic entry point tracing
 
+> **Full guide →** [JavaScript Plugin](../../plugins/javascript) — frontmatter syntax, region markers, package.json mode, and all configuration options.
+
 ## YAML Manifest Plugin
 
 **Package:** `@functional-examples/yaml-manifest`
@@ -43,6 +44,8 @@ The YAML manifest plugin discovers examples via `meta.yml` files in directories.
 - You work with non-JS/TS files (Python, Go, Rust, etc.)
 - You want metadata separate from source code
 - You need complex metadata structures
+
+> **Full guide →** [YAML Manifest Plugin](../../plugins/yaml-manifest) — meta.yml field reference, directory discovery, and when to choose YAML vs JavaScript.
 
 ## Test Plugin
 
@@ -68,6 +71,8 @@ npx functional-examples test
 - You need to assert exit codes, stdout, or stderr patterns
 - You want regression testing for example code
 
+> **Full guide →** [Test Plugin](../../plugins/test) — full assertion reference, multi-step tests, snapshots, and reporter options.
+
 ## Documentation Plugin
 
 **Package:** `@functional-examples/documentation`
@@ -83,6 +88,8 @@ The documentation plugin generates markdown documentation from scanned examples.
 - You want auto-generated API docs from example code
 - You write guides that reference live example files
 - You need consistent documentation format across many examples
+
+> **Full guide →** [Documentation Plugin](../../plugins/documentation) — template system, prose helpers, and guide rendering.
 
 ## Multi-Plugin Setup
 
