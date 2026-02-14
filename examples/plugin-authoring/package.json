@@ -1,0 +1,16 @@
+{
+  "name": "@examples/plugin-authoring",
+  "private": true,
+  "type": "module",
+  "description": "Demonstrates building a custom plugin from scratch with INI metadata",
+  "dependencies": {
+    "functional-examples": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "catalog:"
+  },
+  "functional-examples": {
+    "title": "Plugin Authoring",
+    "tags": ["advanced", "plugins", "authoring"]
+  }
+}

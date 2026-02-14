@@ -1,0 +1,25 @@
+id: plugin-authoring
+title: Plugin Authoring
+description: |
+  Demonstrates building a custom plugin from scratch that supports
+  INI-based metadata. Implements the full Plugin interface with
+  name, extensions, extractor, and fileContentsParsers.
+tags:
+  - advanced
+  - plugins
+  - authoring
+include:
+  - "*.ts"
+  - "*.sh"
+  - "*.json"
+  - "src/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: scan finds INI-based example
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: hello-ini

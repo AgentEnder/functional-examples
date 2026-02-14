@@ -1,0 +1,15 @@
+{
+  "name": "@examples/snapshot-testing",
+  "private": true,
+  "type": "module",
+  "description": "Demonstrates snapshot assertions for verifying scan output",
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
+    "@functional-examples/test": "workspace:*"
+  },
+  "functional-examples": {
+    "title": "Snapshot Testing",
+    "tags": ["testing", "snapshots", "advanced"]
+  }
+}

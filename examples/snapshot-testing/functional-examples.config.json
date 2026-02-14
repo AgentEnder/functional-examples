@@ -1,0 +1,7 @@
+{
+  "$schema": "./.functional-examples/schema.json",
+  "scan": {
+    "include": ["examples/**/*.ts", "examples/**/*.js", "examples/**/package.json"],
+    "exclude": ["**/node_modules/**", "**/dist/**"]
+  }
+}

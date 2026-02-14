@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=../../.functional-examples/metadata.schema.json
+id: documentation-plugin
+title: Documentation Plugin
+description: |
+  Demonstrates using the documentation plugin to generate
+  markdown documentation from scanned examples. Shows template
+  rendering, region extraction, and generated output structure.
+tags:
+  - docs
+  - templates
+  - generation
+include:
+  - '*.ts'
+  - '*.sh'
+  - '*.json'
+  - 'src/**/*'
+  - '__snapshots__/**/*'
+  - 'README.md'
+  - 'package.json'
+test:
+  - name: scan with docs plugin works
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: doc-sample
+  - name: generate produces expected documentation
+    steps:
+      - command: bash generate.sh
+        assertions:
+          exitCode: 0
+          stdout:
+            contains: documented
+      - command: 'true'
+        assertions:
+          snapshot:
+            path: ./generated-docs/doc-sample.md
+            snapshot: ./__snapshots__/doc-sample.md
+          file:
+            path: ./generated-docs/index.md
+            contains: Sample for Documentation
+      - command: rm -rf generated-docs .functional-examples
+        assertions:
+          exitCode: 0

@@ -1,0 +1,33 @@
+id: snapshot-testing
+title: Snapshot Testing
+description: |
+  Demonstrates snapshot assertions for verifying scan output.
+  Shows how to annotate snapshot files with region tags for
+  extracting documentation snippets.
+tags:
+  - testing
+  - snapshots
+  - advanced
+include:
+  - "*.json"
+  - "*.sh"
+  - "examples/**/*"
+  - "__snapshots__/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: scan output matches snapshot
+    steps:
+      - command: bash scan.sh
+        assertions:
+          exitCode: 0
+      - command: "true"
+        assertions:
+          snapshot:
+            path: ./output.txt
+            snapshot: ./__snapshots__/scan-output.txt
+  - name: cleanup
+    options:
+      command: rm -f output.txt
+    assertions:
+      exitCode: 0

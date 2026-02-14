@@ -1,0 +1,26 @@
+name: Example Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # #_region install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      # #_endregion install
+
+      # #_region scan
+      - name: Scan for examples
+        run: npx functional-examples scan
+      # #_endregion scan

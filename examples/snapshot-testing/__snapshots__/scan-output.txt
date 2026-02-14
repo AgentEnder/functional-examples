@@ -1,0 +1,7 @@
+Found 2 example(s)
+
+ID                            Title                                   Files     Extractor
+------------------------------------------------------------------------------------------
+snapshot-greeting             Greeting Function                       1         javascript-extractor
+greeting-example              Greeting Function                       2         javascript-extractor
+

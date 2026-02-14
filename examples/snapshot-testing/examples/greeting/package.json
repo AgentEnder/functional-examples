@@ -1,0 +1,41 @@
+{
+  "name": "greeting-example",
+  "private": true,
+  "main": "./greeting.ts",
+  "#_region snapshot-test": true,
+  "functional-examples": {
+    "title": "Greeting Function",
+    "test": [
+      {
+        "name": "scan output matches snapshot",
+        "steps": [
+          {
+            "command": "bash ../../scan.sh",
+            "assertions": {
+              "exitCode": 0
+            }
+          },
+          {
+            "command": "true",
+            "assertions": {
+              "snapshot": {
+                "path": "../../output.txt",
+                "snapshot": "../../__snapshots__/scan-output.txt"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "cleanup",
+        "options": {
+          "command": "rm -f ../../output.txt"
+        },
+        "assertions": {
+          "exitCode": 0
+        }
+      }
+    ]
+  },
+  "#_endregion snapshot-test": true
+}

@@ -1,0 +1,28 @@
+id: ci-integration
+title: CI Integration
+description: |
+  Demonstrates integrating functional-examples into a CI pipeline
+  using GitHub Actions. The workflow file is annotated with region
+  tags for documentation extraction.
+tags:
+  - ci
+  - github-actions
+  - advanced
+docs:
+  skip: true
+include:
+  - "*.json"
+  - "*.sh"
+  - "*.ts"
+  - ".github/**/*"
+  - "src/**/*"
+  - "README.md"
+  - "package.json"
+test:
+  - name: workflow runner executes run steps
+    options:
+      command: npx tsx ../../scripts/run-workflow.mts .github/workflows/examples.yml
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: completed successfully
