@@ -80,6 +80,12 @@ npx nx run-many -t test
 npx nx run-many -t lint
 ```
 
+## Examples
+
+Examples serve three purposes: **human-readable code samples**, **type-safe tested docs content** (via Eta tags in `docs/guides/*.md` and standalone pages at `/examples/[slug]`), and **E2E tests** (via `functional-examples test`).
+
+When writing or modifying examples, use the `/write-example` skill for full guidance on structure, region tags, `docs.skip`, test assertions, and the Eta template API.
+
 ## Coding Conventions
 
 - **ESM only** — all packages use `"type": "module"`

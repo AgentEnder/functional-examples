@@ -13,7 +13,8 @@
       "Bash(for pkg in devkit functional-examples javascript yaml-manifest test documentation rehype-typedoc vike-plugin-typedoc)",
       "Bash(do)",
       "Bash(for:*)",
-      "Bash(do basename \"$dir\")"
+      "Bash(do basename \"$dir\")",
+      "Bash(xxd:*)"
     ]
   }
 }

@@ -40,7 +40,8 @@
     "prettier": "catalog:",
     "tsx": "catalog:",
     "typedoc": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "yaml": "catalog:"
   },
   "nx": {
     "includedScripts": [],
