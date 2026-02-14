@@ -1,8 +1,9 @@
 import type { OnBeforePrerenderStartAsync } from 'vike/types';
-import { scanDocs } from '../../../server/utils/docs';
+import { scanCategories, scanDocs } from '../../../server/utils/docs';
 
 const onBeforePrerenderStart: OnBeforePrerenderStartAsync = async () => {
-  const docs = await scanDocs();
+  const categories = await scanCategories();
+  const docs = await scanDocs(categories);
   return docs.map((doc) => `/docs/${doc.slug}`);
 };
 

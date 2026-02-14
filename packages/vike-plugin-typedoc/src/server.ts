@@ -30,6 +30,12 @@ export interface LoadTypedocContextOptions extends TypedocContextOptions {
    * from `<packagesDir>/<slug>/package.json` when not in `packageNames`.
    */
   packagesDir?: string;
+
+  /**
+   * Ignores some typedoc packages. Should be the package name
+   * as defined by .typedoc/[package].json
+   */
+  exclude?: string[];
 }
 
 /**
@@ -68,6 +74,9 @@ export async function loadTypedocContextInternal(
     if (!entry.endsWith('.json')) continue;
 
     const slug = basename(entry, '.json');
+    if (contextOptions.exclude?.includes(slug)) {
+      continue;
+    }
     let npmName = packageNames[slug];
 
     // Auto-discover from package.json if not provided

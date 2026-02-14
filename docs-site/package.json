@@ -17,6 +17,7 @@
     "@shikijs/rehype": "^3.21.0",
     "functional-examples": "workspace:*",
     "gray-matter": "^4.0.3",
+    "yaml": "catalog:",
     "lucide-react": "^0.563.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
@@ -58,7 +59,11 @@
         "executor": "nx-github-pages:deploy",
         "options": {
           "directory": "{projectRoot}/dist/client"
-        }
+        },
+        "dependsOn": [
+          "build",
+          "check-links"
+        ]
       },
       "check-links": {
         "dependsOn": [

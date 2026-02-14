@@ -3,6 +3,7 @@ import type { GlobalContextServer } from 'vike/types';
 import {
   buildDocsNavigation,
   hydrateGuides,
+  scanCategories,
   scanDocs,
   type DocPage,
   type NavigationItem,
@@ -36,13 +37,19 @@ export async function onCreateGlobalContext(
   // Phase 2: Load all content in parallel.
   // renderMarkdown calls within these loaders will now
   // automatically apply typedoc symbol links.
-  const [{ siteExamples: examples, scannedExamples }, rawDocs, packageList] =
-    await Promise.all([loadExamples(), scanDocs(), scanPackages()]);
+  const [
+    { siteExamples: examples, scannedExamples },
+    categories,
+    packageList,
+  ] = await Promise.all([loadExamples(), scanCategories(), scanPackages()]);
+
+  // Scan docs with category metadata for section assignment
+  const rawDocs = await scanDocs(categories);
 
   // Hydrate guide pages: expand Eta example references and render to HTML
   const docs = await hydrateGuides(rawDocs, scannedExamples);
 
-  const docsNavigation = buildDocsNavigation(docs);
+  const docsNavigation = buildDocsNavigation(docs, categories);
 
   const packages = Object.fromEntries(
     packageList.map((pkg) => [pkg.dirName, pkg])

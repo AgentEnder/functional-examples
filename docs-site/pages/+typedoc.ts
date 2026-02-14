@@ -9,7 +9,6 @@ const root = workspaceRoot();
 export default {
   typedocDir: join(root, '.typedoc'),
   packagesDir: join(root, 'packages'),
-  rehypePlugins: [
-    [rehypeShiki, { theme: blueprintTheme }],
-  ],
+  rehypePlugins: [[rehypeShiki, { theme: blueprintTheme }]],
+  exclude: ['rehype-typedoc', 'vike-plugin-typedoc'],
 } satisfies Config['typedoc'];
