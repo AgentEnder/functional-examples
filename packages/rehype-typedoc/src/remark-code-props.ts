@@ -1,13 +1,19 @@
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
-interface InlineCodeNode {
-  type: 'inlineCode';
-  value: string;
-  data?: {
-    hProperties?: Record<string, string>;
-    [key: string]: unknown;
-  };
+export interface RemarkCodePropsOptions {
+  resolveSignature?: (symbolName: string, pkg?: string) => string | undefined;
+}
+
+interface DirectiveNode {
+  type: string;
+  name: string;
+  attributes?: Record<string, string>;
+  children: Array<{ type: string; value?: string }>;
+  data?: Record<string, unknown>;
+  // Properties that exist on code nodes after mutation
+  lang?: string;
+  value?: string;
 }
 
 /**
@@ -20,88 +26,73 @@ interface InlineCodeNode {
  * whether the code came from HTML (rehype-parse) or markdown (remark-rehype).
  */
 function toHastDataProp(key: string): string {
-  const camel = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  const camel = key.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
   return `data${camel.charAt(0).toUpperCase()}${camel.slice(1)}`;
 }
 
 /**
- * Parse a `{key: value, key2: value2}` prefix from the start of a string.
- * Returns the parsed key-value pairs and the remaining text, or null if
- * the string doesn't start with a valid props block.
+ * Remark plugin that transforms `:typedoc` directives into code nodes
+ * with `data-*` attributes. Requires `remark-directive` to run before it.
  *
- * Keys become `data*` hast properties (camelCase). Values can be unquoted
- * identifiers or quoted strings (single or double quotes).
+ * **Text directive** — inline code with attributes:
+ *   `:typedoc[createMatcher]{pkg=devkit}` → `<code data-pkg="devkit">createMatcher</code>`
  *
- * Examples:
- *   `{pkg: devkit}createMatcher()` → { props: { dataPkg: 'devkit' }, rest: 'createMatcher()' }
- *   `{pkg: "my lib", kind: function}foo` → { props: { dataPkg: 'my lib', dataKind: 'function' }, rest: 'foo' }
+ * **Leaf directive** — fenced code block with resolved signature:
+ *   `::typedoc{symbol="Plugin" pkg="functional-examples"}` → code block with resolved type signature
+ *
+ * Attributes are converted to `data-*` hast properties using camelCase
+ * convention (e.g. `pkg` → `dataPkg`).
  */
-function parsePropsPrefix(
-  value: string
-): { props: Record<string, string>; rest: string } | null {
-  if (!value.startsWith('{')) return null;
+const remarkCodeProps: Plugin<[RemarkCodePropsOptions?]> = (options) => {
+  const resolveSignature = options?.resolveSignature;
 
-  const closeBrace = value.indexOf('}');
-  if (closeBrace === -1) return null;
-
-  const inside = value.slice(1, closeBrace);
-  const rest = value.slice(closeBrace + 1);
-
-  const props: Record<string, string> = {};
-  const pairs = inside.split(',');
-
-  for (const pair of pairs) {
-    const colonIdx = pair.indexOf(':');
-    if (colonIdx === -1) return null; // Invalid — no colon
-
-    const key = pair.slice(0, colonIdx).trim();
-    let val = pair.slice(colonIdx + 1).trim();
-
-    if (!key) return null; // Empty key
-
-    // Strip surrounding quotes if present
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
-      val = val.slice(1, -1);
-    }
-
-    props[toHastDataProp(key)] = val;
-  }
-
-  return { props, rest };
-}
-
-/**
- * Remark plugin that transforms inline code with a `{key: value}` prefix
- * into code nodes with `data-*` attributes.
- *
- * In markdown: `` `{pkg: devkit}createMatcher()` ``
- * Produces:    `<code data-pkg="devkit">createMatcher()</code>`
- *
- * The `{...}` prefix is parsed as comma-separated `key: value` pairs.
- * Each key becomes a `data-{key}` attribute on the resulting HTML element.
- * Values can optionally be quoted with single or double quotes.
- *
- * This is achieved via mdast's `data.hProperties` which remark-rehype
- * carries through to the hast tree.
- */
-const remarkCodeProps: Plugin = () => {
   return (tree) => {
-    visit(tree, 'inlineCode', (node: InlineCodeNode) => {
-      const parsed = parsePropsPrefix(node.value);
-      if (!parsed) return;
+    // Handle text directives: :typedoc[symbolName]{attrs}
+    visit(tree, 'textDirective', (node: DirectiveNode) => {
+      if (node.name !== 'typedoc') return;
 
-      node.value = parsed.rest;
+      const symbolText = node.children
+        .filter((c) => c.type === 'text')
+        .map((c) => c.value ?? '')
+        .join('');
+
+      const hProperties: Record<string, string> = {};
+      if (node.attributes) {
+        for (const [key, val] of Object.entries(node.attributes)) {
+          hProperties[toHastDataProp(key)] = val;
+        }
+      }
+
       node.data = node.data || {};
-      node.data.hProperties = {
-        ...node.data.hProperties,
-        ...parsed.props,
-      };
+      node.data.hName = 'code';
+      node.data.hProperties = hProperties;
+      node.children = [{ type: 'text', value: symbolText }];
+    });
+
+    // Handle leaf directives: ::typedoc{symbol="..." pkg="..."}
+    visit(tree, 'leafDirective', (node: DirectiveNode) => {
+      if (node.name !== 'typedoc') return;
+      if (!resolveSignature) return;
+
+      const symbolName = node.attributes?.symbol;
+      if (!symbolName) return;
+
+      const pkg = node.attributes?.pkg;
+      const signature = resolveSignature(symbolName, pkg);
+      if (!signature) return;
+
+      // Mutate the node into a code node
+      (node as unknown as Record<string, unknown>).type = 'code';
+      node.lang = 'typescript';
+      node.value = signature;
+
+      // Clean up directive-specific properties
+      delete (node as Partial<DirectiveNode>).children;
+      delete (node as Partial<DirectiveNode>).name;
+      delete (node as Partial<DirectiveNode>).attributes;
+      delete node.data;
     });
   };
 };
 
-export { parsePropsPrefix };
 export default remarkCodeProps;

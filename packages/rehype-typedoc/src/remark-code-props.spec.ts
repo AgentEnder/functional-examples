@@ -1,101 +1,94 @@
 import rehypeStringify from 'rehype-stringify';
+import remarkDirective from 'remark-directive';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { describe, expect, it } from 'vitest';
-import remarkCodeProps, { parsePropsPrefix } from './remark-code-props.js';
+import remarkCodeProps, {
+  type RemarkCodePropsOptions,
+} from './remark-code-props.js';
 
-function process(md: string) {
-  return unified()
+async function process(
+  md: string,
+  options?: RemarkCodePropsOptions
+): Promise<string> {
+  const file = await unified()
     .use(remarkParse)
-    .use(remarkCodeProps)
+    .use(remarkDirective)
+    .use(remarkCodeProps, options)
     .use(remarkRehype)
     .use(rehypeStringify)
-    .processSync(md)
-    .toString();
+    .process(md);
+  return String(file);
 }
 
-describe('parsePropsPrefix', () => {
-  it('parses a single key-value pair', () => {
-    const result = parsePropsPrefix('{pkg: devkit}createMatcher');
-    expect(result).toEqual({
-      props: { dataPkg: 'devkit' },
-      rest: 'createMatcher',
-    });
-  });
-
-  it('parses multiple key-value pairs', () => {
-    const result = parsePropsPrefix('{pkg: devkit, kind: function}foo');
-    expect(result).toEqual({
-      props: { dataPkg: 'devkit', dataKind: 'function' },
-      rest: 'foo',
-    });
-  });
-
-  it('handles quoted values', () => {
-    const result = parsePropsPrefix('{pkg: "my lib"}foo');
-    expect(result).toEqual({
-      props: { dataPkg: 'my lib' },
-      rest: 'foo',
-    });
-  });
-
-  it('handles single-quoted values', () => {
-    const result = parsePropsPrefix("{pkg: 'my lib'}foo");
-    expect(result).toEqual({
-      props: { dataPkg: 'my lib' },
-      rest: 'foo',
-    });
-  });
-
-  it('returns null for strings not starting with {', () => {
-    expect(parsePropsPrefix('createMatcher')).toBeNull();
-  });
-
-  it('returns null for unterminated brace', () => {
-    expect(parsePropsPrefix('{pkg: devkit')).toBeNull();
-  });
-
-  it('returns null for missing colon', () => {
-    expect(parsePropsPrefix('{pkg}foo')).toBeNull();
-  });
-
-  it('returns null for empty key', () => {
-    expect(parsePropsPrefix('{: devkit}foo')).toBeNull();
-  });
-});
-
-describe('remarkCodeProps', () => {
-  it('transforms {key: val} prefix to data attributes', () => {
-    const result = process('Use `{pkg: devkit}createMatcher` here.');
+describe('text directive — :typedoc[symbol]{attrs}', () => {
+  it('transforms to <code> with data attributes', async () => {
+    const result = await process(
+      'Use :typedoc[createMatcher]{pkg=devkit} here.'
+    );
     expect(result).toContain('data-pkg="devkit"');
     expect(result).toContain('>createMatcher</code>');
-    // The prefix should be stripped
-    expect(result).not.toContain('{pkg');
   });
 
-  it('leaves normal inline code unchanged', () => {
-    const result = process('Use `createMatcher` here.');
-    expect(result).toContain('<code>createMatcher</code>');
-    expect(result).not.toContain('data-');
-  });
-
-  it('handles multiple props', () => {
-    const result = process('Use `{pkg: devkit, kind: function}foo` here.');
+  it('handles multiple attributes', async () => {
+    const result = await process(
+      'Use :typedoc[foo]{pkg=devkit kind=function} here.'
+    );
     expect(result).toContain('data-pkg="devkit"');
     expect(result).toContain('data-kind="function"');
     expect(result).toContain('>foo</code>');
   });
 
-  it('does not transform fenced code blocks', () => {
-    const result = process('```\n{pkg: devkit}createMatcher\n```');
-    // Fenced blocks are not inlineCode — should be untouched
-    expect(result).toContain('{pkg: devkit}createMatcher');
+  it('works with no attributes', async () => {
+    const result = await process('Use :typedoc[Plugin] here.');
+    expect(result).toContain('<code>Plugin</code>');
   });
 
-  it('handles curly braces that are not valid props (no colon)', () => {
-    const result = process('Use `{something}` here.');
-    // Not a valid props prefix — should remain as-is
-    expect(result).toContain('{something}');
+  it('does not transform non-typedoc directives', async () => {
+    const result = await process('Use :other[text]{key=val} here.');
+    expect(result).not.toContain('data-key');
+    // Should not be a bare <code> element from our plugin
+    expect(result).not.toContain('<code>text</code>');
+  });
+});
+
+describe('leaf directive — ::typedoc{symbol="..." pkg="..."}', () => {
+  const mockResolve = (name: string, pkg?: string) => {
+    if (name === 'Plugin') {
+      return pkg
+        ? `export interface Plugin { name: string; pkg: "${pkg}"; }`
+        : 'export interface Plugin { name: string; }';
+    }
+    return undefined;
+  };
+
+  it('produces a code block with resolved signature', async () => {
+    const result = await process('::typedoc{symbol="Plugin"}', {
+      resolveSignature: mockResolve,
+    });
+    expect(result).toContain('<code');
+    expect(result).toContain('export interface Plugin { name: string; }');
+  });
+
+  it('passes pkg to resolveSignature', async () => {
+    const result = await process(
+      '::typedoc{symbol="Plugin" pkg="functional-examples"}',
+      { resolveSignature: mockResolve }
+    );
+    expect(result).toContain('pkg: "functional-examples"');
+  });
+
+  it('does not transform when resolveSignature is not provided', async () => {
+    const result = await process('::typedoc{symbol="Plugin"}');
+    // Without resolveSignature, the node is left as-is (no code block)
+    expect(result).not.toContain('export interface');
+  });
+
+  it('does not transform when resolveSignature returns undefined', async () => {
+    const result = await process('::typedoc{symbol="NonExistent"}', {
+      resolveSignature: mockResolve,
+    });
+    expect(result).not.toContain('export');
   });
 });

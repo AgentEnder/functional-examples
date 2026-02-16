@@ -12,5 +12,6 @@ export {
 
 export {
   default as remarkCodeProps,
-  parsePropsPrefix,
 } from './remark-code-props.js';
+
+export type { RemarkCodePropsOptions } from './remark-code-props.js';
