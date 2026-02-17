@@ -100,6 +100,39 @@ describe('mergeConfigSchema', () => {
     expect(jsTuple?.maxItems).toBe(2);
   });
 
+  it('should include generic fallbacks for unknown plugins', () => {
+    const schema = mergeConfigSchema({
+      pluginSchemas: [
+        { pluginName: '@functional-examples/javascript', options: '{"type":"object"}' },
+      ],
+    });
+
+    const properties = schema.properties ?? {};
+    const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
+    const anyOf = pluginsSchema.items?.anyOf ?? [];
+
+    // Should include generic string fallback
+    const genericString = anyOf.find((item: any) =>
+      item.type === 'string' && item.description?.includes('Unknown')
+    );
+    expect(genericString).toBeDefined();
+    expect(genericString).toEqual({
+      type: 'string',
+      description: 'Unknown plugin package name',
+    });
+
+    // Should include generic tuple fallback
+    const genericTuple = anyOf.find((item: any) =>
+      item.type === 'array' &&
+      item.prefixItems?.[0]?.type === 'string' &&
+      item.prefixItems?.[1]?.type === 'object'
+    ) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
+    expect(genericTuple).toBeDefined();
+    expect(genericTuple?.prefixItems).toHaveLength(2);
+    expect(genericTuple?.minItems).toBe(1);
+    expect(genericTuple?.maxItems).toBe(2);
+  });
+
   it('should produce valid JSON Schema', () => {
     const schema = mergeConfigSchema({ pluginSchemas: [] });
 
