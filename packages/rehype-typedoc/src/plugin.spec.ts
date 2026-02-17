@@ -1,5 +1,6 @@
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
+import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -27,6 +28,7 @@ function processMd(md: string, options: RehypeTypedocOptions) {
   return unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkDirective)
     .use(remarkCodeProps)
     .use(remarkRehype)
     .use(rehypeTypedoc, options)
@@ -219,8 +221,8 @@ describe('remarkCodeProps + rehypeTypedoc integration', () => {
     expect(result).toContain('href="/api/devkit/plugin"');
   });
 
-  it('disambiguates genuine clash with {pkg: ...} in markdown', () => {
-    const md = 'Use `{pkg: core}Config` for configuration.';
+  it('disambiguates genuine clash with :typedoc directive in markdown', () => {
+    const md = 'Use :typedoc[Config]{pkg=core} for configuration.';
     const result = processMd(md, opts);
     expect(result).toContain('href="/api/core/config"');
     expect(result).toContain('>Config</code>');
@@ -240,14 +242,14 @@ describe('remarkCodeProps + rehypeTypedoc integration', () => {
     expect(result).toContain('href="/api/devkit/create-matcher"');
   });
 
-  it('allows {pkg: ...} to select a re-export explicitly', () => {
-    const md = 'Use `{pkg: core}Plugin` from core.';
+  it('allows :typedoc directive to select a re-export explicitly', () => {
+    const md = 'Use :typedoc[Plugin]{pkg=core} from core.';
     const result = processMd(md, opts);
     expect(result).toContain('href="/api/core/plugin"');
   });
 
-  it('leaves non-symbol code with props alone', () => {
-    const md = 'Use `{pkg: devkit}notASymbol` for something.';
+  it('leaves non-symbol code with directive alone', () => {
+    const md = 'Use :typedoc[notASymbol]{pkg=devkit} for something.';
     const result = processMd(md, opts);
     expect(result).not.toContain('<a');
     expect(result).toContain('>notASymbol</code>');
