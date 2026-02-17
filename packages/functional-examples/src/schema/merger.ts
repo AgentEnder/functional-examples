@@ -108,12 +108,18 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
       };
       schema.$defs = defs;
 
+      // 1. String format for this plugin
+      pluginRefs.push({ const: pluginName });
+
+      // 2. Tuple format for this plugin
       pluginRefs.push({
-        type: 'object',
-        properties: {
-          name: { const: pluginName },
-          options: { $ref: `#/$defs/${defName}` },
-        },
+        type: 'array',
+        prefixItems: [
+          { const: pluginName },
+          { $ref: `#/$defs/${defName}` },
+        ],
+        minItems: 2,
+        maxItems: 2,
       });
     } catch {
       // Invalid JSON schema, skip
@@ -121,16 +127,29 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
     }
   }
 
-  // Update plugins array to use anyOf if we have plugin schemas
-  if (pluginRefs.length > 0) {
-    const properties = schema.properties ?? {};
-    properties.plugins = {
+  // Add generic fallbacks for unknown plugins
+  pluginRefs.push(
+    { type: 'string', description: 'Unknown plugin package name' },
+    {
       type: 'array',
-      description: 'Plugins to use for scanning and parsing',
-      items: { anyOf: pluginRefs },
-    };
-    schema.properties = properties;
-  }
+      description: 'Unknown plugin with options',
+      prefixItems: [
+        { type: 'string' },
+        { type: 'object' },
+      ],
+      minItems: 1,
+      maxItems: 2,
+    }
+  );
+
+  // Update plugins array to use anyOf
+  const properties = schema.properties ?? {};
+  properties.plugins = {
+    type: 'array',
+    description: 'Plugins to use for scanning and parsing',
+    items: { anyOf: pluginRefs },
+  };
+  schema.properties = properties;
 
   return schema;
 }
