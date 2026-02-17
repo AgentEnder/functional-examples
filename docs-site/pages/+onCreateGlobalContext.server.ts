@@ -45,7 +45,7 @@ export async function onCreateGlobalContext(
 
       if (matches.length === 1) return matches[0].signature;
       if (matches.length > 1) {
-        console.warn(
+        throw new Error(
           `Ambiguous ::typedoc symbol "${symbolName}" found in packages: ${matches.map((m) => m.package).join(', ')}. Use pkg attribute to disambiguate.`
         );
       }

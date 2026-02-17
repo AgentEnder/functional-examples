@@ -30,10 +30,10 @@
     "extract-docs": "typedoc --options typedoc.json"
   },
   "dependencies": {
-    "remark-directive": "^3.0.1",
     "unist-util-visit": "^5.0.0"
   },
   "peerDependencies": {
+    "remark-directive": ">=3.0.0",
     "unified": ">=11.0.0"
   },
   "devDependencies": {

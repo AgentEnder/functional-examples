@@ -81,8 +81,9 @@ const remarkCodeProps: Plugin<[RemarkCodePropsOptions?]> = (options) => {
       const signature = resolveSignature(symbolName, pkg);
       if (!signature) return;
 
-      // Mutate the node into a code node
-      (node as unknown as Record<string, unknown>).type = 'code';
+      // In-place mutation: unist `visit` doesn't support node replacement,
+      // so we rewrite this directive node as a fenced code block.
+  (node as unknown as Record<string, unknown>).type = 'code';
       node.lang = 'typescript';
       node.value = signature;
 

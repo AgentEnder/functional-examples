@@ -7,7 +7,7 @@ tags:
   - regions
   - documentation
 include:
-  - "*.ts"
+  - "src/**/*.ts"
   - "*.json"
 docs:
   skip: true

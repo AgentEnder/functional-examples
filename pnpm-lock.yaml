@@ -584,7 +584,7 @@ importers:
   packages/rehype-typedoc:
     dependencies:
       remark-directive:
-        specifier: ^3.0.1
+        specifier: '>=3.0.0'
         version: 3.0.1
       unist-util-visit:
         specifier: ^5.0.0
