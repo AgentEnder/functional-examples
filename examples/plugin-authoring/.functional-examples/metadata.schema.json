@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique example identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Example title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Example description"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorizing the example"
+    }
+  },
+  "required": [
+    "id",
+    "title"
+  ]
+}

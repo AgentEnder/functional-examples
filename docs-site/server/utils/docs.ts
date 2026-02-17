@@ -96,7 +96,6 @@ export async function scanDocs(
   categories: Map<string, CategoryMeta>
 ): Promise<DocPage[]> {
   const docsDir = join(workspaceRoot(), 'docs');
-  console.log('Looking in', docsDir);
   const pages: DocPage[] = [];
 
   let entries: string[];
@@ -119,7 +118,8 @@ export async function scanDocs(
     // Derive section from directory
     const dirKey = dirname(entry).replace(/\\/g, '/');
     const category = categories.get(dirKey);
-    const section = category?.title ?? (dirKey === '.' ? 'Documentation' : titleCase(dirKey));
+    const section =
+      category?.title ?? (dirKey === '.' ? 'Documentation' : titleCase(dirKey));
 
     pages.push({
       slug,
@@ -217,4 +217,3 @@ export function buildDocsNavigation(
     (a, b) => (a.order ?? 999) - (b.order ?? 999)
   );
 }
-

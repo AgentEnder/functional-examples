@@ -95,14 +95,16 @@ export function createMetaYmlExtractor(
       files = await collectFilesFromGlob(
         exampleDir,
         includePatterns,
-        [...options.excludeFiles, options.metaFileName],
-        options.excludePatterns
+        options.excludeFiles,
+        options.excludePatterns,
+        options.metaFileName
       );
     } else {
       files = await collectFiles(
         exampleDir,
-        [...options.excludeFiles, options.metaFileName],
-        options.excludePatterns
+        options.excludeFiles,
+        options.excludePatterns,
+        options.metaFileName
       );
     }
 
@@ -191,7 +193,8 @@ async function collectFilesFromGlob(
   dir: string,
   includePatterns: string[],
   excludeNames: string[],
-  excludePatterns: string[]
+  excludePatterns: string[],
+  metaFileName: string
 ): Promise<ExampleFile[]> {
   const matched = await glob(includePatterns, {
     cwd: dir,
@@ -204,6 +207,9 @@ async function collectFilesFromGlob(
   for (const absolutePath of matched) {
     const relativePath = path.relative(dir, absolutePath);
     const baseName = path.basename(absolutePath);
+
+    // Skip the root-level meta file (nested ones are regular content)
+    if (relativePath === metaFileName) continue;
 
     // Apply excludeNames filter
     if (excludeNames.includes(baseName)) continue;
@@ -229,7 +235,8 @@ async function collectFilesFromGlob(
 async function collectFiles(
   dir: string,
   excludeNames: string[],
-  excludePatterns: string[]
+  excludePatterns: string[],
+  metaFileName: string
 ): Promise<ExampleFile[]> {
   const files: ExampleFile[] = [];
 
@@ -242,6 +249,9 @@ async function collectFiles(
 
       const fullPath = path.join(currentDir, entry.name);
       const relativePath = path.relative(baseDir, fullPath);
+
+      // Skip the root-level meta file (nested ones are regular content)
+      if (relativePath === metaFileName) continue;
 
       // Check exclude patterns
       if (

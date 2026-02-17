@@ -67,14 +67,6 @@ Embeds the entire file contents as a fenced code block with syntax highlighting.
 
 Embeds a named code region (marked with `#region` / `#endregion` in source).
 
-### Fenced Block
-
-```
-<%= fencedBlock(content, 'typescript') %>
-```
-
-Wraps content in a markdown fenced code block with the specified language.
-
 ## Guide Rendering
 
 The documentation plugin powers the guide rendering system. Guides use Eta tags to reference live example code:

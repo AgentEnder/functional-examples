@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to include in the example bundle"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorizing the example"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique example identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Example title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Example description"
+    },
+    "category": {
+      "type": "string",
+      "description": "Category for organizing examples"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "description": "Difficulty level"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "category",
+    "difficulty"
+  ]
+}

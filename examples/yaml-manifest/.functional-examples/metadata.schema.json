@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to include in the example bundle"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorizing the example"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique example identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Example title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Example description"
+    }
+  },
+  "required": [
+    "id",
+    "title"
+  ]
+}

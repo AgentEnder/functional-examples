@@ -10,59 +10,69 @@ import type {
 } from 'functional-examples';
 
 /**
- * Inline bash region parser plugin.
+ * Inline hash-comment region parser plugin.
  *
- * Handles `# #_region name` / `# #_endregion name` markers in .sh/.bash files,
- * mirroring the JavaScript parser algorithm but with `#` comment prefix.
+ * Handles `# #_region name` / `# #_endregion name` markers in files that use
+ * `#` as a comment prefix (.sh, .bash, .yml, .yaml), mirroring the JavaScript
+ * parser algorithm.
  */
-const bashPlugin: Plugin = {
-  name: 'bash',
-  extensions: ['.sh', '.bash'],
-  fileContentsParsers: [{
-    name: 'bash-parser',
-    parse(context: FileParseContext): FileParseContext {
-      const startRe = /^[ \t]*#\s*#_region\s+(\S+)\s*$/;
-      const endRe = /^[ \t]*#\s*#_endregion(?:\s+(\S+))?\s*$/;
+const hashCommentRegionPlugin: Plugin = {
+  name: 'hash-comment-regions',
+  extensions: ['.sh', '.bash', '.yml', '.yaml'],
+  fileContentsParsers: [
+    {
+      name: 'bash-parser',
+      parse(context: FileParseContext): FileParseContext {
+        const startRe = /^[ \t]*#\s*#_region\s+(\S+)\s*$/;
+        const endRe = /^[ \t]*#\s*#_endregion(?:\s+(\S+))?\s*$/;
 
-      const lines = context.parsed.split('\n');
-      const hunks: ParsedRegion[] = [];
-      const outputLines: string[] = [];
-      const regionStack: { id: string; startLine: number; lines: string[] }[] =
-        [];
+        const lines = context.parsed.split('\n');
+        const hunks: ParsedRegion[] = [];
+        const outputLines: string[] = [];
+        const regionStack: {
+          id: string;
+          startLine: number;
+          lines: string[];
+        }[] = [];
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const lineNum = i + 1;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const lineNum = i + 1;
 
-        const startMatch = line.match(startRe);
-        if (startMatch) {
-          regionStack.push({ id: startMatch[1], startLine: lineNum, lines: [] });
-          continue;
-        }
-
-        const endMatch = line.match(endRe);
-        if (endMatch) {
-          const current = regionStack.pop();
-          if (current) {
-            hunks.push({
-              id: current.id,
-              content: current.lines.join('\n'),
-              startLine: current.startLine,
-              endLine: lineNum,
+          const startMatch = line.match(startRe);
+          if (startMatch) {
+            regionStack.push({
+              id: startMatch[1],
+              startLine: lineNum,
+              lines: [],
             });
+            continue;
           }
-          continue;
+
+          const endMatch = line.match(endRe);
+          if (endMatch) {
+            const current = regionStack.pop();
+            if (current) {
+              hunks.push({
+                id: current.id,
+                content: current.lines.join('\n'),
+                startLine: current.startLine,
+                endLine: lineNum,
+              });
+            }
+            continue;
+          }
+
+          outputLines.push(line);
+          for (const region of regionStack) {
+            region.lines.push(line);
+          }
         }
 
-        outputLines.push(line);
-        for (const region of regionStack) {
-          region.lines.push(line);
-        }
-      }
-
-      return { ...context, parsed: outputLines.join('\n'), hunks };
+        return { ...context, parsed: outputLines.join('\n'), hunks };
+      },
     },
-  }],
+  ],
 };
 
 /**
@@ -75,51 +85,60 @@ const bashPlugin: Plugin = {
 const jsonRegionPlugin: Plugin = {
   name: 'json-regions',
   extensions: ['.json'],
-  fileContentsParsers: [{
-    name: 'json-region-parser',
-    parse(context: FileParseContext): FileParseContext {
-      const startRe = /^[ \t]*"#_region\s+(\S+)"\s*:\s*.+$/;
-      const endRe = /^[ \t]*"#_endregion\s+(\S+)"\s*:\s*.+$/;
+  fileContentsParsers: [
+    {
+      name: 'json-region-parser',
+      parse(context: FileParseContext): FileParseContext {
+        const startRe = /^[ \t]*"#_region\s+(\S+)"\s*:\s*.+$/;
+        const endRe = /^[ \t]*"#_endregion\s+(\S+)"\s*:\s*.+$/;
 
-      const lines = context.parsed.split('\n');
-      const hunks: ParsedRegion[] = [];
-      const outputLines: string[] = [];
-      const regionStack: { id: string; startLine: number; lines: string[] }[] =
-        [];
+        const lines = context.parsed.split('\n');
+        const hunks: ParsedRegion[] = [];
+        const outputLines: string[] = [];
+        const regionStack: {
+          id: string;
+          startLine: number;
+          lines: string[];
+        }[] = [];
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const lineNum = i + 1;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const lineNum = i + 1;
 
-        const startMatch = line.match(startRe);
-        if (startMatch) {
-          regionStack.push({ id: startMatch[1], startLine: lineNum, lines: [] });
-          continue;
-        }
-
-        const endMatch = line.match(endRe);
-        if (endMatch) {
-          const current = regionStack.pop();
-          if (current) {
-            hunks.push({
-              id: current.id,
-              content: current.lines.join('\n'),
-              startLine: current.startLine,
-              endLine: lineNum,
+          const startMatch = line.match(startRe);
+          if (startMatch) {
+            regionStack.push({
+              id: startMatch[1],
+              startLine: lineNum,
+              lines: [],
             });
+            continue;
           }
-          continue;
+
+          const endMatch = line.match(endRe);
+          if (endMatch) {
+            const current = regionStack.pop();
+            if (current) {
+              hunks.push({
+                id: current.id,
+                content: current.lines.join('\n'),
+                startLine: current.startLine,
+                endLine: lineNum,
+              });
+            }
+            continue;
+          }
+
+          outputLines.push(line);
+          for (const region of regionStack) {
+            region.lines.push(line);
+          }
         }
 
-        outputLines.push(line);
-        for (const region of regionStack) {
-          region.lines.push(line);
-        }
-      }
-
-      return { ...context, parsed: outputLines.join('\n'), hunks };
+        return { ...context, parsed: outputLines.join('\n'), hunks };
+      },
     },
-  }],
+  ],
 };
 
 /**
@@ -130,7 +149,7 @@ const jsonRegionPlugin: Plugin = {
  *
  * - yaml-manifest handles file discovery via meta.yml + include globs
  * - javascript plugin contributes only parsing (frontmatter + custom regions)
- * - bash plugin handles region markers in shell scripts
+ * - hash-comment-regions plugin handles region markers in shell and YAML files
  * - json-regions plugin handles `"#_region name": true` key markers in .json files
  * - custom region tags (#_region) let standard #region comments stay visible in docs
  */
@@ -140,7 +159,7 @@ const config: Config = {
       skipExtraction: true,
       regionTag: { start: '#_region', end: '#_endregion' },
     }),
-    bashPlugin,
+    hashCommentRegionPlugin,
     jsonRegionPlugin,
     createYamlManifestPlugin(),
     createTestPlugin(),
@@ -149,6 +168,7 @@ const config: Config = {
   scan: {
     exclude: ['**/node_modules/**', '**/dist/**'],
     root: 'examples',
+    include: ['*'],
   },
 };
 

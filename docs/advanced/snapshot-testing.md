@@ -54,7 +54,7 @@ This overwrites stored snapshot files with current output.
 
 ## Multi-Step Snapshot Workflow
 
-<%= example('snapshot-testing').region('multi-step-test') %>
+<%= example('snapshot-testing').region('snapshot-test') %>
 
 This pattern:
 1. Runs the scan and captures output to a file
