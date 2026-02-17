@@ -39,7 +39,7 @@ The JavaScript plugin supports two ways to define examples:
 
 For standalone files, embed YAML frontmatter in a comment block. Create `examples/hello.ts`:
 
-<%= example('getting-started').region('frontmatter-example') %>
+<%= example('getting-started').file('src/hello.ts') %>
 
 The frontmatter provides metadata — an `id`, `title`, and optional `description` — that the scanner extracts alongside the code.
 

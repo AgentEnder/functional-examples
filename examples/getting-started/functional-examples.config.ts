@@ -4,7 +4,7 @@ import { createJavaScriptPlugin } from '@functional-examples/javascript';
 export default {
   plugins: [createJavaScriptPlugin()],
   scan: {
-    root: 'src',
+    include: ['src/**/*'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
 };
