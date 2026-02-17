@@ -15,6 +15,7 @@ include:
   - "__snapshots__/**/*"
   - "README.md"
   - "package.json"
+# #_region multi-step-test
 test:
   - name: scan output matches snapshot
     steps:
@@ -31,3 +32,4 @@ test:
       command: rm -f output.txt
     assertions:
       exitCode: 0
+# #_endregion multi-step-test

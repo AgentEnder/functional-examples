@@ -65,37 +65,19 @@ The context includes:
 
 Contribute JSON Schema definitions for plugin options and metadata validation:
 
-```typescript
-schemas: {
-  options: { /* JSON Schema for plugin options */ },
-  metadata: { /* JSON Schema for metadata fields */ },
-}
-```
+<%= example('plugin-authoring').region('schemas') %>
 
 ### 4. Validators (Optional)
 
 Provide custom validation functions beyond what JSON Schema can express:
 
-```typescript
-validators: {
-  validateOptions(options) { return { success: true, errors: [] }; },
-  validateMetadata(metadata) { return { success: true, errors: [] }; },
-}
-```
+<%= example('plugin-authoring').region('validators') %>
 
 ### 5. Commands (Optional)
 
 Add CLI commands that are loaded when your plugin is registered:
 
-```typescript
-commands: [
-  {
-    name: 'my-command',
-    description: 'Does something useful',
-    handler: async (args) => { /* ... */ },
-  },
-]
-```
+<%= example('plugin-authoring').region('commands') %>
 
 ## Plugin Lifecycle
 

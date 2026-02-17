@@ -36,16 +36,7 @@ npm install @functional-examples/yaml-manifest
 
 ### Example meta.yml
 
-```yaml
-id: basic-usage
-title: Basic Usage
-description: |
-  Demonstrates scanning for examples in a directory
-  using the functional-examples library.
-tags:
-  - getting-started
-  - api
-```
+<%= example('yaml-manifest').file('examples/basic-usage/meta.yml') %>
 
 ## Directory-Based Discovery
 

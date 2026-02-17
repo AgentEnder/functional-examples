@@ -54,24 +54,7 @@ This overwrites stored snapshot files with current output.
 
 ## Multi-Step Snapshot Workflow
 
-```yaml
-test:
-  - name: scan output matches snapshot
-    steps:
-      - command: bash scan.sh
-        assertions:
-          exitCode: 0
-      - command: "true"
-        assertions:
-          snapshot:
-            path: ./output.txt
-            snapshot: ./__snapshots__/scan-output.txt
-  - name: cleanup
-    options:
-      command: rm -f output.txt
-    assertions:
-      exitCode: 0
-```
+<%= example('snapshot-testing').region('multi-step-test') %>
 
 This pattern:
 1. Runs the scan and captures output to a file

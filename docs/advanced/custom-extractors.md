@@ -46,21 +46,7 @@ Here's a complete custom extractor that reads TOML metadata files:
 
 Wrap your extractor in a plugin object to register it via config:
 
-```typescript
-import type { Plugin } from 'functional-examples';
-import { createTomlExtractor } from './toml-extractor.js';
-
-const tomlPlugin: Plugin = {
-  name: 'toml',
-  extensions: ['.toml'],
-  extractor: createTomlExtractor(),
-};
-
-export default {
-  plugins: [tomlPlugin],
-  scan: { include: ['examples/**/*'] },
-};
-```
+<%= example('custom-extractor').region('plugin-config') %>
 
 ## Error Handling
 
