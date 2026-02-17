@@ -14,6 +14,11 @@ include:
 docs:
   skip: true
 test:
+  - name: typechecks pass
+    options:
+      command: npx tsc --noEmit -p tsconfig.json
+    assertions:
+      exitCode: 0
   - name: scan completes successfully
     options:
       command: bash demo.sh

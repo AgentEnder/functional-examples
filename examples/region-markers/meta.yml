@@ -11,3 +11,9 @@ include:
   - "*.json"
 docs:
   skip: true
+test:
+  - name: typechecks pass
+    options:
+      command: npx tsc --noEmit -p tsconfig.json
+    assertions:
+      exitCode: 0

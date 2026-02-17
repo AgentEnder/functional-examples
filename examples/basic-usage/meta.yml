@@ -15,6 +15,11 @@ include:
   - "README.md"
   - "package.json"
 test:
+  - name: typechecks pass
+    options:
+      command: npx tsc --noEmit -p tsconfig.json
+    assertions:
+      exitCode: 0
   - name: CLI scan works
     options:
       command: bash demo.sh

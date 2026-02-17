@@ -5,12 +5,12 @@
  * ---
  */
 
+import { scan } from 'functional-examples';
+
 // #region setup
-const config = loadConfig();
-const scanner = createScanner(config);
+const result = await scan();
 // #endregion
 
 // #region execution
-const result = await scanner.scan();
 console.log(result.examples);
 // #endregion

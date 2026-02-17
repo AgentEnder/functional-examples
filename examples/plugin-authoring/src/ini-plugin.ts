@@ -26,6 +26,7 @@ export interface IniMetadata {
   title: string;
   description?: string;
   author?: string;
+  [key: string]: unknown;
 }
 // #_endregion metadata
 

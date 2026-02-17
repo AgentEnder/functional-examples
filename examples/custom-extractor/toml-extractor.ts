@@ -24,6 +24,7 @@ export interface TomlMetadata {
   title: string;
   description?: string;
   author?: string;
+  [key: string]: unknown;
 }
 
 /**
