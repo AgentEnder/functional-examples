@@ -44,7 +44,9 @@ describe('mergeConfigSchema', () => {
     const properties = schema.properties ?? {};
     const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
     expect(pluginsSchema.items?.anyOf).toBeDefined();
-    expect(pluginsSchema.items?.anyOf).toHaveLength(2);
+    // Each plugin with options generates 2 explicit schemas + 2 generic fallbacks
+    // 2 plugins * 2 (string + tuple) + 2 fallbacks = 6
+    expect(pluginsSchema.items?.anyOf).toHaveLength(6);
   });
 
   it('should support string plugin references', () => {
