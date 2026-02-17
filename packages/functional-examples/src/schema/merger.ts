@@ -109,7 +109,10 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
       schema.$defs = defs;
 
       // 1. String format for this plugin
-      pluginRefs.push({ const: pluginName });
+      pluginRefs.push({
+        const: pluginName,
+        description: `Use the default options for ${pluginName}`,
+      });
 
       // 2. Tuple format for this plugin
       pluginRefs.push({

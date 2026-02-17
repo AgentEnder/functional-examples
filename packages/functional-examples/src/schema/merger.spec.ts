@@ -64,8 +64,14 @@ describe('mergeConfigSchema', () => {
     // Should include string const for each plugin
     const stringRefs = anyOf.filter((item: any) => item.const);
     expect(stringRefs).toHaveLength(2);
-    expect(stringRefs).toContainEqual({ const: '@functional-examples/javascript' });
-    expect(stringRefs).toContainEqual({ const: '@functional-examples/yaml-manifest' });
+    expect(stringRefs).toContainEqual({
+      const: '@functional-examples/javascript',
+      description: 'Use the default options for @functional-examples/javascript',
+    });
+    expect(stringRefs).toContainEqual({
+      const: '@functional-examples/yaml-manifest',
+      description: 'Use the default options for @functional-examples/yaml-manifest',
+    });
   });
 
   it('should support tuple plugin references with options', () => {

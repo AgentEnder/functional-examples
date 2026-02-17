@@ -8,23 +8,25 @@
       "items": {
         "anyOf": [
           {
-            "const": "javascript"
+            "const": "@functional-examples/javascript",
+            "description": "Use the default options for @functional-examples/javascript"
           },
           {
             "type": "array",
             "prefixItems": [
               {
-                "const": "javascript"
+                "const": "@functional-examples/javascript"
               },
               {
-                "$ref": "#/$defs/javascriptOptions"
+                "$ref": "#/$defs/functionalexamplesjavascriptOptions"
               }
             ],
             "minItems": 2,
             "maxItems": 2
           },
           {
-            "const": "@functional-examples/documentation"
+            "const": "@functional-examples/documentation",
+            "description": "Use the default options for @functional-examples/documentation"
           },
           {
             "type": "array",
@@ -113,7 +115,7 @@
     }
   },
   "$defs": {
-    "javascriptOptions": {
+    "functionalexamplesjavascriptOptions": {
       "type": "object",
       "properties": {
         "skipFrontmatter": {
@@ -141,7 +143,7 @@
           "description": "Skip file extraction/discovery"
         }
       },
-      "description": "Options for javascript plugin"
+      "description": "Options for @functional-examples/javascript plugin"
     },
     "functionalexamplesdocumentationOptions": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",

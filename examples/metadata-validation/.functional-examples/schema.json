@@ -8,16 +8,17 @@
       "items": {
         "anyOf": [
           {
-            "const": "javascript"
+            "const": "@functional-examples/javascript",
+            "description": "Use the default options for @functional-examples/javascript"
           },
           {
             "type": "array",
             "prefixItems": [
               {
-                "const": "javascript"
+                "const": "@functional-examples/javascript"
               },
               {
-                "$ref": "#/$defs/javascriptOptions"
+                "$ref": "#/$defs/functionalexamplesjavascriptOptions"
               }
             ],
             "minItems": 2,
@@ -97,7 +98,7 @@
     }
   },
   "$defs": {
-    "javascriptOptions": {
+    "functionalexamplesjavascriptOptions": {
       "type": "object",
       "properties": {
         "skipFrontmatter": {
@@ -125,7 +126,7 @@
           "description": "Skip file extraction/discovery"
         }
       },
-      "description": "Options for javascript plugin"
+      "description": "Options for @functional-examples/javascript plugin"
     }
   }
 }
