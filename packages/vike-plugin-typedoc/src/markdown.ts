@@ -2,6 +2,7 @@ import type { RehypeTypedocOptions } from 'rehype-typedoc';
 import rehypeTypedoc, { rehypeTypedocCodeBlocks, remarkCodeProps } from 'rehype-typedoc';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
+import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -29,7 +30,7 @@ type MarkdownProcessor = { process(md: string): Promise<{ toString(): string }> 
  * Build a unified processor for rendering markdown to HTML.
  *
  * The pipeline is:
- *   remarkParse → remarkGfm → remarkBreaks → remarkCodeProps → [user remarkPlugins]
+ *   remarkParse → remarkGfm → remarkBreaks → remarkDirective → remarkCodeProps → [user remarkPlugins]
  *     → remarkRehype → rehypeTypedoc → [user rehypePlugins]
  *     → rehypeTypedocCodeBlocks → rehypeStringify
  */
@@ -42,6 +43,7 @@ export function buildMarkdownProcessor(
     remarkParse,
     remarkGfm,
     remarkBreaks,
+    remarkDirective,
     remarkCodeProps,
     ...remarkPlugins,
     remarkRehype,

@@ -204,6 +204,9 @@ importers:
       rehype-typedoc:
         specifier: workspace:*
         version: link:../packages/rehype-typedoc
+      remark-directive:
+        specifier: ^3.0.1
+        version: 3.0.1
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
@@ -625,6 +628,9 @@ importers:
       remark-breaks:
         specifier: ^4.0.0
         version: 4.0.0
+      remark-directive:
+        specifier: ^3.0.1
+        version: 3.0.1
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1

@@ -5,6 +5,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
 import type { RehypeTypedocOptions } from 'rehype-typedoc';
 import { rehypeTypedoc, rehypeTypedocCodeBlocks, remarkCodeProps } from 'rehype-typedoc';
+import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -29,7 +30,7 @@ export function configureRehypeTypedoc(
  * Convert a Markdown string to syntax-highlighted HTML.
  *
  * The unified pipeline:
- *   remarkParse → remarkGfm → remarkCodeProps
+ *   remarkParse → remarkGfm → remarkDirective → remarkCodeProps
  *     → remarkRehype (with raw HTML pass-through) → rehypeRaw → rehypeGithubAlerts
  *     → rehypeTypedoc (inline code linking, if configured)
  *     → @shikijs/rehype (syntax highlighting)
@@ -40,6 +41,7 @@ export async function renderMarkdown(md: string): Promise<string> {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkDirective)
     .use(remarkCodeProps)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
