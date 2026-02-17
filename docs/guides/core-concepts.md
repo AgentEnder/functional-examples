@@ -55,15 +55,7 @@ A **Plugin** is a container that provides one or more capabilities:
 
 Plugins are registered in your config:
 
-```typescript
-export default {
-  plugins: [
-    createJavaScriptPlugin(),    // extracts from frontmatter or package.json
-    createTestPlugin(),          // reads metadata.test for assertions
-    createDocumentationPlugin(), // adds doc generation
-  ],
-};
-```
+<%= example('multi-plugin-config').region('full-config') %>
 
 Each plugin operates independently. The scanner calls each plugin's extractor in sequence, passing unclaimed files to subsequent extractors.
 
@@ -71,17 +63,7 @@ Each plugin operates independently. The scanner calls each plugin's extractor in
 
 **Regions** (also called hunks) are named sections within a file, marked with `#region` / `#endregion` comments:
 
-```typescript
-// #region setup
-const config = loadConfig();
-const scanner = createScanner(config);
-// #endregion
-
-// #region execution
-const result = await scanner.scan();
-console.log(result.examples);
-// #endregion
-```
+<%= example('region-markers').file('src/regions-demo.ts') %>
 
 Regions let you reference specific parts of a file in documentation. Instead of showing an entire file, you can pull just the `setup` region:
 

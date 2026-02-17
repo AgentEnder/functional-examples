@@ -1,0 +1,6 @@
+{
+  "name": "@examples/region-markers",
+  "private": true,
+  "type": "module",
+  "description": "Region markers demonstration"
+}

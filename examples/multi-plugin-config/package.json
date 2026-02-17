@@ -1,0 +1,12 @@
+{
+  "name": "@examples/multi-plugin-config",
+  "private": true,
+  "type": "module",
+  "description": "Multi-plugin configuration patterns",
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/javascript": "workspace:*",
+    "@functional-examples/test": "workspace:*",
+    "@functional-examples/documentation": "workspace:*"
+  }
+}

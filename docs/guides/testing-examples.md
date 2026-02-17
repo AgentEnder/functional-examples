@@ -19,17 +19,7 @@ npm install @functional-examples/test
 
 Add it to your config:
 
-```typescript
-import { createJavaScriptPlugin } from '@functional-examples/javascript';
-import { createTestPlugin } from '@functional-examples/test';
-
-export default {
-  plugins: [
-    createJavaScriptPlugin(),
-    createTestPlugin(),
-  ],
-};
-```
+<%= example('multi-plugin-config').region('test-only-config') %>
 
 ## Defining Tests
 

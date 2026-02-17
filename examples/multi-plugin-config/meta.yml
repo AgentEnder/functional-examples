@@ -1,0 +1,12 @@
+id: multi-plugin-config
+title: Multi-Plugin Configuration
+description: |
+  Shows how to configure multiple plugins together in a single config file.
+tags:
+  - configuration
+  - plugins
+include:
+  - "*.ts"
+  - "*.json"
+docs:
+  skip: true

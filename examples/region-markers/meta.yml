@@ -1,0 +1,13 @@
+id: region-markers
+title: Region Markers
+description: |
+  Demonstrates how to use region markers to tag sections
+  of code for selective extraction in documentation.
+tags:
+  - regions
+  - documentation
+include:
+  - "*.ts"
+  - "*.json"
+docs:
+  skip: true

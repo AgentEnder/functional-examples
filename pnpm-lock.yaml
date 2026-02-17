@@ -383,6 +383,21 @@ importers:
         specifier: workspace:*
         version: link:../../packages/functional-examples
 
+  examples/multi-plugin-config:
+    dependencies:
+      '@functional-examples/documentation':
+        specifier: workspace:*
+        version: link:../../packages/documentation
+      '@functional-examples/javascript':
+        specifier: workspace:*
+        version: link:../../packages/javascript
+      '@functional-examples/test':
+        specifier: workspace:*
+        version: link:../../packages/test
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
+
   examples/plugin-authoring:
     dependencies:
       functional-examples:
@@ -392,6 +407,8 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
+
+  examples/region-markers: {}
 
   examples/snapshot-testing:
     dependencies:
