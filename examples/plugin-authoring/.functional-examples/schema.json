@@ -8,22 +8,6 @@
       "items": {
         "anyOf": [
           {
-            "const": "javascript"
-          },
-          {
-            "type": "array",
-            "prefixItems": [
-              {
-                "const": "javascript"
-              },
-              {
-                "$ref": "#/$defs/javascriptOptions"
-              }
-            ],
-            "minItems": 2,
-            "maxItems": 2
-          },
-          {
             "type": "string",
             "description": "Unknown plugin package name"
           },
@@ -96,36 +80,5 @@
       }
     }
   },
-  "$defs": {
-    "javascriptOptions": {
-      "type": "object",
-      "properties": {
-        "skipFrontmatter": {
-          "type": "boolean",
-          "description": "Skip frontmatter parsing"
-        },
-        "skipRegions": {
-          "type": "boolean",
-          "description": "Skip region parsing"
-        },
-        "regionTag": {
-          "type": "object",
-          "description": "Custom region tag markers",
-          "properties": {
-            "start": {
-              "type": "string"
-            },
-            "end": {
-              "type": "string"
-            }
-          }
-        },
-        "skipExtraction": {
-          "type": "boolean",
-          "description": "Skip file extraction/discovery"
-        }
-      },
-      "description": "Options for javascript plugin"
-    }
-  }
+  "$defs": {}
 }

@@ -24,6 +24,22 @@
             "maxItems": 2
           },
           {
+            "const": "@functional-examples/documentation"
+          },
+          {
+            "type": "array",
+            "prefixItems": [
+              {
+                "const": "@functional-examples/documentation"
+              },
+              {
+                "$ref": "#/$defs/functionalexamplesdocumentationOptions"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          {
             "type": "string",
             "description": "Unknown plugin package name"
           },
@@ -126,6 +142,38 @@
         }
       },
       "description": "Options for javascript plugin"
+    },
+    "functionalexamplesdocumentationOptions": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "outputDir": {
+          "default": "./docs/examples",
+          "type": "string"
+        },
+        "format": {
+          "default": "markdown",
+          "type": "string",
+          "enum": [
+            "markdown",
+            "mdoc"
+          ]
+        },
+        "templates": {
+          "type": "string"
+        },
+        "enableExtractor": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "outputDir",
+        "format",
+        "enableExtractor"
+      ],
+      "additionalProperties": false,
+      "description": "Options for @functional-examples/documentation plugin"
     }
   }
 }
