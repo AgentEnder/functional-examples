@@ -47,6 +47,25 @@ describe('mergeConfigSchema', () => {
     expect(pluginsSchema.items?.anyOf).toHaveLength(2);
   });
 
+  it('should support string plugin references', () => {
+    const schema = mergeConfigSchema({
+      pluginSchemas: [
+        { pluginName: '@functional-examples/javascript', options: '{"type":"object"}' },
+        { pluginName: '@functional-examples/yaml-manifest', options: '{"type":"object"}' },
+      ],
+    });
+
+    const properties = schema.properties ?? {};
+    const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
+    const anyOf = pluginsSchema.items?.anyOf ?? [];
+
+    // Should include string const for each plugin
+    const stringRefs = anyOf.filter((item: any) => item.const);
+    expect(stringRefs).toHaveLength(2);
+    expect(stringRefs).toContainEqual({ const: '@functional-examples/javascript' });
+    expect(stringRefs).toContainEqual({ const: '@functional-examples/yaml-manifest' });
+  });
+
   it('should produce valid JSON Schema', () => {
     const schema = mergeConfigSchema({ pluginSchemas: [] });
 
