@@ -11,17 +11,7 @@ A plugin bundles an extractor, file-contents parsers, validators, schemas, and C
 
 ## Plugin Interface
 
-```typescript
-interface Plugin<TMetadata> {
-  name: string;
-  extensions?: string[];
-  extractor?: Extractor<TMetadata>;
-  fileContentsParsers?: FileContentsParser[];
-  schemas?: PluginSchemas;
-  validators?: PluginValidators<TMetadata>;
-  commands?: PluginCommands<TMetadata>;
-}
-```
+::typedoc{symbol="Plugin" pkg="functional-examples"}
 
 | Field | Purpose |
 |-------|---------|
@@ -62,12 +52,7 @@ Key responsibilities:
 
 Parsers transform file content in a pipeline. Each parser receives a `FileParseContext` and returns a modified context:
 
-```typescript
-interface FileContentsParser {
-  name: string;
-  parse(context: FileParseContext): FileParseContext;
-}
-```
+::typedoc{symbol="FileContentsParser" pkg="devkit"}
 
 The context includes:
 - `raw` — original file content

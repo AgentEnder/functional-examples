@@ -11,28 +11,14 @@ When the built-in plugins don't support your metadata format, you can write a cu
 
 ## Extractor Interface
 
-```typescript
-interface Extractor<TMetadata> {
-  name: string;
-  extract(
-    candidates: Dirent[],
-    options?: ExtractorOptions
-  ): Promise<ExtractorResult<TMetadata>>;
-}
-```
+::typedoc{symbol="Extractor" pkg="devkit"}
 
 **Inputs:**
 - `candidates` — `Dirent[]` entries (files and directories) matching the scan config
 - `options` — optional `ExtractorOptions` with `rootPath`, `exclude[]`, and `signal` for cancellation
 
 **Output:**
-```typescript
-interface ExtractorResult<TMetadata> {
-  examples: Example<TMetadata>[];
-  errors: { path: string; message: string; cause?: unknown }[];
-  claimedFiles: Set<string>;
-}
-```
+::typedoc{symbol="ExtractorResult" pkg="devkit"}
 
 ## Step-by-Step Walkthrough
 
