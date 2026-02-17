@@ -23,6 +23,11 @@ test:
       command: npx tsc --noEmit -p tsconfig.json
     assertions:
       exitCode: 0
+  - name: lint passes
+    options:
+      command: npx eslint .
+    assertions:
+      exitCode: 0
   - name: scan with docs plugin works
     options:
       command: bash demo.sh

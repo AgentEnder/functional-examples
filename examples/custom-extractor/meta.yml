@@ -21,6 +21,11 @@ test:
       command: npx tsc --noEmit -p tsconfig.json
     assertions:
       exitCode: 0
+  - name: lint passes
+    options:
+      command: npx eslint .
+    assertions:
+      exitCode: 0
   - name: custom scan works
     options:
       command: npx tsx scan.ts
