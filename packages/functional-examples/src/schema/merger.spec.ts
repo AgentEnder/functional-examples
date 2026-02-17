@@ -91,13 +91,13 @@ describe('mergeConfigSchema', () => {
 
     const jsTuple = tupleRefs.find((item: any) =>
       item.prefixItems[0].const === '@functional-examples/javascript'
-    );
+    ) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
     expect(jsTuple).toBeDefined();
-    expect(jsTuple.prefixItems).toHaveLength(2);
-    expect(jsTuple.prefixItems[0]).toEqual({ const: '@functional-examples/javascript' });
-    expect(jsTuple.prefixItems[1]).toEqual({ $ref: '#/$defs/functionalexamplesjavascriptOptions' });
-    expect(jsTuple.minItems).toBe(2);
-    expect(jsTuple.maxItems).toBe(2);
+    expect(jsTuple?.prefixItems).toHaveLength(2);
+    expect(jsTuple?.prefixItems?.[0]).toEqual({ const: '@functional-examples/javascript' });
+    expect(jsTuple?.prefixItems?.[1]).toEqual({ $ref: '#/$defs/functionalexamplesjavascriptOptions' });
+    expect(jsTuple?.minItems).toBe(2);
+    expect(jsTuple?.maxItems).toBe(2);
   });
 
   it('should produce valid JSON Schema', () => {
