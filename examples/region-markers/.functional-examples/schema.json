@@ -25,6 +25,10 @@
             "maxItems": 2
           },
           {
+            "const": "@functional-examples/yaml-manifest",
+            "description": "Use the default options for @functional-examples/yaml-manifest"
+          },
+          {
             "type": "string",
             "description": "Unknown plugin package name"
           },

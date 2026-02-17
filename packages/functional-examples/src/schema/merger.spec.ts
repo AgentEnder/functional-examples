@@ -74,6 +74,32 @@ describe('mergeConfigSchema', () => {
     });
   });
 
+  it('should include string const for plugins without options schema', () => {
+    const schema = mergeConfigSchema({
+      pluginSchemas: [
+        { pluginName: '@functional-examples/test' },
+        { pluginName: '@functional-examples/javascript', options: '{"type":"object"}' },
+      ],
+    });
+
+    const properties = schema.properties ?? {};
+    const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
+    const anyOf = pluginsSchema.items?.anyOf ?? [];
+
+    // Plugin without options still gets a string const entry
+    const stringRefs = anyOf.filter((item: any) => item.const);
+    expect(stringRefs).toContainEqual({
+      const: '@functional-examples/test',
+      description: 'Use the default options for @functional-examples/test',
+    });
+
+    // But no tuple entry for plugin without options
+    const testTuple = anyOf.find((item: any) =>
+      item.type === 'array' && item.prefixItems?.[0]?.const === '@functional-examples/test'
+    );
+    expect(testTuple).toBeUndefined();
+  });
+
   it('should support tuple plugin references with options', () => {
     const schema = mergeConfigSchema({
       pluginSchemas: [

@@ -95,6 +95,12 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
   const pluginRefs: JSONSchema[] = [];
 
   for (const { pluginName, options: optionsSchema } of pluginSchemas) {
+    // Always add string format for every known plugin
+    pluginRefs.push({
+      const: pluginName,
+      description: `Use the default options for ${pluginName}`,
+    });
+
     if (!optionsSchema) continue;
 
     const defName = `${pluginName.replace(/[^a-zA-Z0-9]/g, '')}Options`;
@@ -108,13 +114,7 @@ export function mergeConfigSchema(options: MergeConfigSchemaOptions): JSONSchema
       };
       schema.$defs = defs;
 
-      // 1. String format for this plugin
-      pluginRefs.push({
-        const: pluginName,
-        description: `Use the default options for ${pluginName}`,
-      });
-
-      // 2. Tuple format for this plugin
+      // Tuple format for plugins with options
       pluginRefs.push({
         type: 'array',
         prefixItems: [
