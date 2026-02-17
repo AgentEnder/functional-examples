@@ -405,6 +405,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/functional-examples
 
+  examples/test-assertions: {}
+
   examples/test-plugin-example:
     dependencies:
       '@functional-examples/javascript':

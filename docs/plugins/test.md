@@ -61,65 +61,27 @@ Each step runs sequentially. If a step fails, subsequent steps in the same test 
 
 ### Exit Code
 
-```yaml
-assertions:
-  exitCode: 0      # Expected exit code (0 = success)
-```
+<%= example('test-assertions').region('exit-code') %>
 
 ### Standard Output
 
-```yaml
-assertions:
-  stdout:
-    contains: "expected text"     # Substring match
-    matches: "pattern.*regex"     # Regex match
-```
+<%= example('test-assertions').region('stdout') %>
 
 ### Standard Error
 
-```yaml
-assertions:
-  stderr:
-    contains: "Error"             # Substring match
-    matches: "Error:\\s+.*"       # Regex match
-```
+<%= example('test-assertions').region('stderr') %>
 
 ### File Assertions
 
-```yaml
-assertions:
-  file:
-    path: output.txt              # File must exist
-    contains: "expected content"  # File content substring
-    matches: "pattern"            # File content regex
-  files:                          # Multiple file checks
-    - path: a.txt
-      contains: "content a"
-    - path: b.txt
-```
+<%= example('test-assertions').region('file') %>
 
 ### Directory Assertions
 
-```yaml
-assertions:
-  dir:
-    path: output/                 # Directory must exist
-  directories:                    # Multiple directory checks
-    - path: dist/
-    - path: generated/
-```
+<%= example('test-assertions').region('dir') %>
 
 ### Snapshot Assertions
 
-```yaml
-assertions:
-  snapshot:
-    path: output.txt              # File to compare
-    snapshot: __snapshots__/expected.txt  # Reference snapshot
-  snapshots:                      # Multiple snapshot checks
-    - path: a.txt
-      snapshot: __snapshots__/a.txt
-```
+<%= example('test-assertions').region('snapshot') %>
 
 See [Snapshot Testing](../advanced/snapshot-testing) for details on the snapshot workflow.
 
@@ -127,14 +89,7 @@ See [Snapshot Testing](../advanced/snapshot-testing) for details on the snapshot
 
 Wrap any assertion in `not` to invert it:
 
-```yaml
-assertions:
-  not:
-    stdout:
-      contains: "ERROR"
-    file:
-      path: should-not-exist.txt
-```
+<%= example('test-assertions').region('negation') %>
 
 ## Running Tests
 

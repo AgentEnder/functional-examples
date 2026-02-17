@@ -1,0 +1,6 @@
+{
+  "name": "@examples/test-assertions",
+  "private": true,
+  "type": "module",
+  "description": "Test assertions reference"
+}

@@ -1,0 +1,61 @@
+# This file documents all available test assertion types.
+# Each section is a region that can be embedded in documentation.
+
+# #_region exit-code
+assertions:
+  exitCode: 0      # Expected exit code (0 = success)
+# #_endregion exit-code
+
+# #_region stdout
+assertions:
+  stdout:
+    contains: "expected text"     # Substring match
+    matches: "pattern.*regex"     # Regex match
+# #_endregion stdout
+
+# #_region stderr
+assertions:
+  stderr:
+    contains: "Error"             # Substring match
+    matches: "Error:\\s+.*"       # Regex match
+# #_endregion stderr
+
+# #_region file
+assertions:
+  file:
+    path: output.txt              # File must exist
+    contains: "expected content"  # File content substring
+    matches: "pattern"            # File content regex
+  files:                          # Multiple file checks
+    - path: a.txt
+      contains: "content a"
+    - path: b.txt
+# #_endregion file
+
+# #_region dir
+assertions:
+  dir:
+    path: output/                 # Directory must exist
+  directories:                    # Multiple directory checks
+    - path: dist/
+    - path: generated/
+# #_endregion dir
+
+# #_region snapshot
+assertions:
+  snapshot:
+    path: output.txt              # File to compare
+    snapshot: __snapshots__/expected.txt  # Reference snapshot
+  snapshots:                      # Multiple snapshot checks
+    - path: a.txt
+      snapshot: __snapshots__/a.txt
+# #_endregion snapshot
+
+# #_region negation
+assertions:
+  not:
+    stdout:
+      contains: "ERROR"
+    file:
+      path: should-not-exist.txt
+# #_endregion negation

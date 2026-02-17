@@ -1,0 +1,22 @@
+id: test-assertions
+title: Test Assertions Reference
+description: |
+  Documents all available test assertion types for functional-examples.
+tags:
+  - testing
+  - assertions
+  - reference
+include:
+  - "*.yml"
+  - "*.sh"
+  - "*.json"
+docs:
+  skip: true
+test:
+  - name: basic assertion check
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: "Hello"
