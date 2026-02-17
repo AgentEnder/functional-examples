@@ -29,17 +29,7 @@ Create a `functional-examples.config.ts` at your project root. This tells the sc
 
 Here's a minimal configuration that uses the JavaScript plugin to scan an `examples/` directory:
 
-```typescript
-import { createJavaScriptPlugin } from '@functional-examples/javascript';
-
-export default {
-  plugins: [createJavaScriptPlugin()],
-  scan: {
-    root: 'examples',
-    exclude: ['**/node_modules/**', '**/dist/**'],
-  },
-};
-```
+<%= example('getting-started').region('config') %>
 
 ## Writing Your First Example
 
@@ -49,18 +39,7 @@ The JavaScript plugin supports two ways to define examples:
 
 For standalone files, embed YAML frontmatter in a comment block. Create `examples/hello.ts`:
 
-```typescript
-/**
- * ---
- * id: hello
- * title: Hello World
- * description: A minimal example
- * ---
- */
-export function hello() {
-  return 'Hello from functional-examples!';
-}
-```
+<%= example('getting-started').region('frontmatter-example') %>
 
 The frontmatter provides metadata — an `id`, `title`, and optional `description` — that the scanner extracts alongside the code.
 

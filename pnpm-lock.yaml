@@ -338,6 +338,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/functional-examples
 
+  examples/getting-started:
+    dependencies:
+      '@functional-examples/javascript':
+        specifier: workspace:*
+        version: link:../../packages/javascript
+      functional-examples:
+        specifier: workspace:*
+        version: link:../../packages/functional-examples
+    devDependencies:
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
+
   examples/javascript-plugin:
     dependencies:
       '@functional-examples/javascript':

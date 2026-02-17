@@ -1,0 +1,23 @@
+id: getting-started
+title: Getting Started
+description: |
+  Minimal setup walkthrough showing a configuration file,
+  a single-file example with frontmatter, and scanning.
+tags:
+  - beginner
+  - getting-started
+include:
+  - "*.ts"
+  - "*.sh"
+  - "*.json"
+  - "src/**/*"
+docs:
+  skip: true
+test:
+  - name: scan completes successfully
+    options:
+      command: bash demo.sh
+    assertions:
+      exitCode: 0
+      stdout:
+        contains: "hello"

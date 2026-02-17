@@ -1,0 +1,13 @@
+{
+  "name": "@examples/getting-started",
+  "private": true,
+  "type": "module",
+  "description": "Minimal setup walkthrough",
+  "dependencies": {
+    "functional-examples": "workspace:*",
+    "@functional-examples/javascript": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "catalog:"
+  }
+}
