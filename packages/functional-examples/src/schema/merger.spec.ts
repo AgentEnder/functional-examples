@@ -66,6 +66,40 @@ describe('mergeConfigSchema', () => {
     expect(stringRefs).toContainEqual({ const: '@functional-examples/yaml-manifest' });
   });
 
+  it('should support tuple plugin references with options', () => {
+    const schema = mergeConfigSchema({
+      pluginSchemas: [
+        {
+          pluginName: '@functional-examples/javascript',
+          options: JSON.stringify({
+            type: 'object',
+            properties: { skipFrontmatter: { type: 'boolean' } },
+          }),
+        },
+      ],
+    });
+
+    const properties = schema.properties ?? {};
+    const pluginsSchema = properties.plugins as { items?: { anyOf?: unknown[] } };
+    const anyOf = pluginsSchema.items?.anyOf ?? [];
+
+    // Should include tuple schema with const name + options ref
+    const tupleRefs = anyOf.filter((item: any) =>
+      item.type === 'array' && item.prefixItems?.[0]?.const
+    );
+    expect(tupleRefs.length).toBeGreaterThan(0);
+
+    const jsTuple = tupleRefs.find((item: any) =>
+      item.prefixItems[0].const === '@functional-examples/javascript'
+    );
+    expect(jsTuple).toBeDefined();
+    expect(jsTuple.prefixItems).toHaveLength(2);
+    expect(jsTuple.prefixItems[0]).toEqual({ const: '@functional-examples/javascript' });
+    expect(jsTuple.prefixItems[1]).toEqual({ $ref: '#/$defs/functionalexamplesjavascriptOptions' });
+    expect(jsTuple.minItems).toBe(2);
+    expect(jsTuple.maxItems).toBe(2);
+  });
+
   it('should produce valid JSON Schema', () => {
     const schema = mergeConfigSchema({ pluginSchemas: [] });
 
