@@ -3,7 +3,7 @@ import rehypeShiki from '@shikijs/rehype';
 import { rehypeGithubAlerts } from 'rehype-github-alerts';
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
-import type { RehypeTypedocOptions } from 'rehype-typedoc';
+import type { RehypeTypedocOptions, RemarkCodePropsOptions } from 'rehype-typedoc';
 import { rehypeTypedoc, rehypeTypedocCodeBlocks, remarkCodeProps } from 'rehype-typedoc';
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
@@ -15,6 +15,9 @@ import { blueprintTheme } from './highlighter.js';
 // Module-level rehype-typedoc options — configured once, used by all renderMarkdown calls
 let _rehypeOptions: RehypeTypedocOptions | undefined;
 
+// Module-level remark-code-props options — configured once, used by all renderMarkdown calls
+let _remarkCodePropsOptions: RemarkCodePropsOptions | undefined;
+
 /**
  * Configure rehype-typedoc options for auto-linking inline code to API docs.
  * Call this once at startup (before rendering markdown) so that all
@@ -24,6 +27,17 @@ export function configureRehypeTypedoc(
   options: RehypeTypedocOptions
 ): void {
   _rehypeOptions = options;
+}
+
+/**
+ * Configure remark-code-props options (e.g. `resolveSignature` for `::typedoc` directives).
+ * Call this once at startup so that all subsequent `renderMarkdown` calls
+ * can resolve type signatures from TypeDoc data.
+ */
+export function configureRemarkCodeProps(
+  options: RemarkCodePropsOptions
+): void {
+  _remarkCodePropsOptions = options;
 }
 
 /**
@@ -42,7 +56,7 @@ export async function renderMarkdown(md: string): Promise<string> {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkDirective)
-    .use(remarkCodeProps)
+    .use(remarkCodeProps, _remarkCodePropsOptions ?? {})
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeGithubAlerts, {});

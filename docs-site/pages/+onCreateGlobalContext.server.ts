@@ -9,7 +9,7 @@ import {
   type NavigationItem,
 } from '../server/utils/docs';
 import { loadExamples, type SiteExample } from '../server/utils/examples';
-import { configureRehypeTypedoc } from '../server/utils/markdown.js';
+import { configureRehypeTypedoc, configureRemarkCodeProps } from '../server/utils/markdown.js';
 import { scanPackages, type PackageInfo } from '../server/utils/packages';
 
 function sortNavigationItems(items: NavigationItem[]): NavigationItem[] {
@@ -33,6 +33,25 @@ export async function onCreateGlobalContext(
   // and configure rehype-typedoc so inline code auto-linking works.
   const typedoc = await loadTypedocContext(context);
   configureRehypeTypedoc(typedoc.rehypeOptions);
+  configureRemarkCodeProps({
+    resolveSignature: (symbolName, pkg) => {
+      const exports = typedoc.apiDocs.allExports;
+      const matches = exports.filter((exp) => exp.name === symbolName);
+
+      if (pkg) {
+        const match = matches.find((exp) => exp.package === pkg);
+        return match?.signature;
+      }
+
+      if (matches.length === 1) return matches[0].signature;
+      if (matches.length > 1) {
+        console.warn(
+          `Ambiguous ::typedoc symbol "${symbolName}" found in packages: ${matches.map((m) => m.package).join(', ')}. Use pkg attribute to disambiguate.`
+        );
+      }
+      return undefined;
+    },
+  });
 
   // Phase 2: Load all content in parallel.
   // renderMarkdown calls within these loaders will now
