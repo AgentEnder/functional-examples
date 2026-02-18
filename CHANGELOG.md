@@ -1,3 +1,35 @@
+## 0.0.0-alpha.3 (2026-02-18)
+
+### 🚀 Features
+
+- add universal metadata schema with base fields ([ad91620](https://github.com/AgentEnder/functional-examples/commit/ad91620))
+- add .json extension support and JSON region parsing ([2ecdaf7](https://github.com/AgentEnder/functional-examples/commit/2ecdaf7))
+- restructure test-plugin-example as meta-example ([ed6b303](https://github.com/AgentEnder/functional-examples/commit/ed6b303))
+- add snapshot-testing, ci-integration, documentation-plugin, and plugin-authoring examples ([765eda0](https://github.com/AgentEnder/functional-examples/commit/765eda0))
+- docs site infrastructure improvements ([696efc3](https://github.com/AgentEnder/functional-examples/commit/696efc3))
+- add remark-directive to markdown pipelines ([aa66beb](https://github.com/AgentEnder/functional-examples/commit/aa66beb))
+- add getting-started example and embed in docs ([5fad258](https://github.com/AgentEnder/functional-examples/commit/5fad258))
+- add test-assertions example and embed in docs ([e70c679](https://github.com/AgentEnder/functional-examples/commit/e70c679))
+- add region-markers and multi-plugin-config examples ([4bbefbe](https://github.com/AgentEnder/functional-examples/commit/4bbefbe))
+- extend examples with regions for remaining doc code blocks ([887d1be](https://github.com/AgentEnder/functional-examples/commit/887d1be))
+- support string and tuple plugin references in generated schemas ([e0c7cac](https://github.com/AgentEnder/functional-examples/commit/e0c7cac))
+- add descriptions to string plugin schema entries ([a89a8ed](https://github.com/AgentEnder/functional-examples/commit/a89a8ed))
+- **docs-site:** wire up resolveSignature for typedoc directives ([16467a8](https://github.com/AgentEnder/functional-examples/commit/16467a8))
+- **rehype-typedoc:** migrate remarkCodeProps to directive-based syntax ([7f7df1a](https://github.com/AgentEnder/functional-examples/commit/7f7df1a))
+
+### 🩹 Fixes
+
+- fix getting-started example frontmatter and config ([3a4ca4d](https://github.com/AgentEnder/functional-examples/commit/3a4ca4d))
+- address code review findings ([01241ad](https://github.com/AgentEnder/functional-examples/commit/01241ad))
+- add type assertions to tuple plugin test ([a71579f](https://github.com/AgentEnder/functional-examples/commit/a71579f))
+- include plugins without options schema in generated schema ([610f03a](https://github.com/AgentEnder/functional-examples/commit/610f03a))
+- update docs and ensure all guides render ([adedb71](https://github.com/AgentEnder/functional-examples/commit/adedb71))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.0.0-alpha.2 (2026-02-14)
 
 ### 🚀 Features

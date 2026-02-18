@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/devkit",
-  "version": "0.0.0-alpha.2",
+  "version": "0.0.0-alpha.3",
   "description": "Plugin development kit for functional-examples",
   "author": {
     "name": "Craigory Coppola",
