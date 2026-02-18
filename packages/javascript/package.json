@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/javascript",
-  "version": "0.0.0-alpha.3",
+  "version": "0.0.0-alpha.5",
   "description": "JavaScript/TypeScript plugin for functional-examples",
   "publishConfig": {
     "access": "public"
