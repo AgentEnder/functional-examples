@@ -1,233 +1,186 @@
-import { describe, it, expect } from 'vitest';
-import {
-  parseRegions,
-  extractRegion,
-  stripRegionMarkers,
-  listRegions,
-} from './parser.js';
+import { describe, expect, it } from 'vitest';
+import { DEFAULT_REGION_EXTENSION_MAP } from './defaults.js';
+import { extractRegionFromFileContent } from './parser.js';
 
-describe('parseRegions', () => {
-  describe('JavaScript/TypeScript style', () => {
-    it('parses single region', () => {
-      const code = `
-const before = 1;
-// #region setup
-const x = 1;
-const y = 2;
-// #endregion setup
-const after = 2;
-`;
-      const regions = parseRegions(code, { extension: 'ts' });
+const TS_MAP = {
+  '.ts': DEFAULT_REGION_EXTENSION_MAP['.ts'],
+};
 
-      expect(regions.setup).toBeDefined();
-      expect(regions.setup.content).toBe('const x = 1;\nconst y = 2;');
-      expect(regions.setup.startLine).toBe(3);
-      expect(regions.setup.endLine).toBe(6);
+const PY_MAP = {
+  '.py': DEFAULT_REGION_EXTENSION_MAP['.py'],
+};
+
+describe('extractRegionFromFileContent', () => {
+  describe('extension not in map', () => {
+    it('returns empty hunks and original content for unknown extension', () => {
+      const content = 'hello\nworld';
+      const result = extractRegionFromFileContent(content, 'file.txt', {}, 'region', 'endregion');
+      expect(result.hunks).toEqual([]);
+      expect(result.parsed).toBe(content);
     });
+  });
 
-    it('parses multiple regions', () => {
-      const code = `
-// #region imports
-import { foo } from 'bar';
-// #endregion imports
-// #region main
-console.log('hello');
-// #endregion main
-`;
-      const regions = parseRegions(code, { extension: 'js' });
+  describe('TypeScript line comments', () => {
+    it('extracts a single region', () => {
+      const content = [
+        'const a = 1;',
+        '// region setup',
+        'const b = 2;',
+        '// endregion setup',
+        'const c = 3;',
+      ].join('\n');
 
-      expect(Object.keys(regions)).toEqual(['imports', 'main']);
-      expect(regions.imports.content).toBe("import { foo } from 'bar';");
-      expect(regions.main.content).toBe("console.log('hello');");
-    });
-
-    it('parses nested regions', () => {
-      const code = `
-// #region outer
-const a = 1;
-// #region inner
-const b = 2;
-// #endregion inner
-const c = 3;
-// #endregion outer
-`;
-      const regions = parseRegions(code, { extension: 'ts' });
-
-      expect(regions.outer.content).toBe(
-        'const a = 1;\nconst b = 2;\nconst c = 3;'
+      const { hunks, parsed } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
       );
-      expect(regions.inner.content).toBe('const b = 2;');
+
+      expect(hunks).toHaveLength(1);
+      expect(hunks[0].id).toBe('setup');
+      expect(hunks[0].content).toBe('const b = 2;');
+      expect(hunks[0].startLine).toBe(2);
+      expect(hunks[0].endLine).toBe(4);
+      expect(parsed).toBe('const a = 1;\nconst b = 2;\nconst c = 3;');
     });
 
-    it('throws on unclosed region', () => {
-      const code = `
-// #region unclosed
-const x = 1;
-`;
-      expect(() => parseRegions(code, { extension: 'ts' })).toThrow(
-        "Unclosed region 'unclosed'"
+    it('extracts multiple regions', () => {
+      const content = [
+        '// region alpha',
+        'const a = 1;',
+        '// endregion alpha',
+        '// region beta',
+        'const b = 2;',
+        '// endregion beta',
+      ].join('\n');
+
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
       );
+
+      expect(hunks).toHaveLength(2);
+      expect(hunks[0].id).toBe('alpha');
+      expect(hunks[1].id).toBe('beta');
     });
 
-    it('throws on mismatched region', () => {
-      const code = `
-// #region foo
-// #endregion bar
-`;
-      expect(() => parseRegions(code, { extension: 'ts' })).toThrow(
-        "Mismatched region: opened 'foo'"
+    it('strips region marker lines from parsed output', () => {
+      const content = [
+        '// region example',
+        'const x = 42;',
+        '// endregion example',
+      ].join('\n');
+
+      const { parsed } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
       );
+
+      expect(parsed).toBe('const x = 42;');
+      expect(parsed).not.toContain('region');
     });
 
-    it('throws on unexpected endregion', () => {
-      const code = `
-// #endregion orphan
-`;
-      expect(() => parseRegions(code, { extension: 'ts' })).toThrow(
-        "Unexpected #endregion 'orphan'"
+    it('handles endregion without an ID', () => {
+      const content = [
+        '// region myRegion',
+        'const x = 1;',
+        '// endregion',
+      ].join('\n');
+
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
       );
+
+      expect(hunks).toHaveLength(1);
+      expect(hunks[0].id).toBe('myRegion');
     });
-  });
 
-  describe('Python style', () => {
-    it('parses regions with hash comments', () => {
-      const code = `
-import os
-# #region setup
-db = create_connection()
-# #endregion setup
-`;
-      const regions = parseRegions(code, { extension: 'py' });
+    it('handles nested regions', () => {
+      const content = [
+        '// region outer',
+        'const a = 1;',
+        '// region inner',
+        'const b = 2;',
+        '// endregion inner',
+        'const c = 3;',
+        '// endregion outer',
+      ].join('\n');
 
-      expect(regions.setup.content).toBe('db = create_connection()');
-    });
-  });
-
-  describe('SQL style', () => {
-    it('parses regions with double-dash comments', () => {
-      const code = `
-SELECT * FROM users;
--- #region migration
-ALTER TABLE users ADD COLUMN email VARCHAR(255);
--- #endregion migration
-`;
-      const regions = parseRegions(code, { extension: 'sql' });
-
-      expect(regions.migration.content).toBe(
-        'ALTER TABLE users ADD COLUMN email VARCHAR(255);'
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
       );
+
+      expect(hunks).toHaveLength(2);
+      const outer = hunks.find(h => h.id === 'outer')!;
+      const inner = hunks.find(h => h.id === 'inner')!;
+      expect(outer.content).toContain('const a = 1;');
+      expect(outer.content).toContain('const b = 2;');
+      expect(inner.content).toBe('const b = 2;');
     });
   });
 
-  describe('HTML style', () => {
-    it('parses regions with HTML comments', () => {
-      const code = `
-<html>
-<!-- #region header -->
-<head><title>Test</title></head>
-<!-- #endregion header -->
-</html>
-`;
-      const regions = parseRegions(code, { extension: 'html' });
+  describe('TypeScript block comments', () => {
+    it('extracts region from block comment syntax', () => {
+      const content = [
+        '/* region blockExample */',
+        'const x = 1;',
+        '/* endregion blockExample */',
+      ].join('\n');
 
-      expect(regions.header.content).toBe('<head><title>Test</title></head>');
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
+      );
+
+      expect(hunks).toHaveLength(1);
+      expect(hunks[0].id).toBe('blockExample');
     });
   });
 
-  describe('CSS style', () => {
-    it('parses regions with block comments', () => {
-      const code = `
-body { margin: 0; }
-/* #region theme */
-.dark { background: black; }
-/* #endregion theme */
-`;
-      const regions = parseRegions(code, { extension: 'css' });
+  describe('Python hash comments', () => {
+    it('extracts region from Python hash comment syntax', () => {
+      const content = [
+        '# region setup',
+        'x = 1',
+        '# endregion setup',
+      ].join('\n');
 
-      expect(regions.theme.content).toBe('.dark { background: black; }');
+      const { hunks, parsed } = extractRegionFromFileContent(
+        content, 'script.py', PY_MAP, 'region', 'endregion'
+      );
+
+      expect(hunks).toHaveLength(1);
+      expect(hunks[0].id).toBe('setup');
+      expect(hunks[0].content).toBe('x = 1');
+      expect(parsed).toBe('x = 1');
+    });
+
+    it('does not match TypeScript patterns for .py files', () => {
+      const content = [
+        '// region tsStyle',
+        'x = 1',
+        '// endregion tsStyle',
+      ].join('\n');
+
+      const { hunks } = extractRegionFromFileContent(
+        content, 'script.py', PY_MAP, 'region', 'endregion'
+      );
+
+      // // comments are not Python style — no match
+      expect(hunks).toHaveLength(0);
     });
   });
-});
 
-describe('extractRegion', () => {
-  it('extracts specific region', () => {
-    const code = `
-// #region setup
-const x = 1;
-// #endregion setup
-// #region main
-const y = 2;
-// #endregion main
-`;
-    const setup = extractRegion(code, 'setup', { extension: 'ts' });
-    expect(setup).toBe('const x = 1;');
-  });
+  describe('custom startTag / endTag', () => {
+    it('respects custom tags', () => {
+      const customMap = { '.ts': DEFAULT_REGION_EXTENSION_MAP['.ts'] };
+      const content = [
+        '// mark setup',
+        'const x = 1;',
+        '// unmark setup',
+      ].join('\n');
 
-  it('throws with helpful message when region not found', () => {
-    const code = `
-// #region existing
-code();
-// #endregion existing
-`;
-    expect(() => extractRegion(code, 'missing', { extension: 'ts' })).toThrow(
-      "Region 'missing' not found. Available regions: existing"
-    );
-  });
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', customMap, 'mark', 'unmark'
+      );
 
-  it('provides hint when no regions exist', () => {
-    const code = `const x = 1;`;
-    expect(() => extractRegion(code, 'missing', { extension: 'ts' })).toThrow(
-      'No regions found in code'
-    );
-  });
-});
-
-describe('stripRegionMarkers', () => {
-  it('removes all region markers', () => {
-    const code = `
-const before = 1;
-// #region setup
-const x = 1;
-// #endregion setup
-const after = 2;
-`;
-    const stripped = stripRegionMarkers(code, { extension: 'ts' });
-
-    expect(stripped).not.toContain('#region');
-    expect(stripped).not.toContain('#endregion');
-    expect(stripped).toContain('const x = 1;');
-    expect(stripped).toContain('const before = 1;');
-    expect(stripped).toContain('const after = 2;');
-  });
-
-  it('handles multiple language styles', () => {
-    const pyCode = `
-# #region test
-code()
-# #endregion test
-`;
-    const stripped = stripRegionMarkers(pyCode, { extension: 'py' });
-    expect(stripped.trim()).toBe('code()');
-  });
-});
-
-describe('listRegions', () => {
-  it('returns all region IDs', () => {
-    const code = `
-// #region a
-// #endregion a
-// #region b
-// #endregion b
-// #region c
-// #endregion c
-`;
-    const ids = listRegions(code, { extension: 'ts' });
-    expect(ids).toEqual(['a', 'b', 'c']);
-  });
-
-  it('returns empty array when no regions', () => {
-    const code = `const x = 1;`;
-    const ids = listRegions(code, { extension: 'ts' });
-    expect(ids).toEqual([]);
+      expect(hunks).toHaveLength(1);
+      expect(hunks[0].id).toBe('setup');
+    });
   });
 });

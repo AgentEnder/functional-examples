@@ -1,238 +1,138 @@
-/**
- * Region parsing implementation
- */
+import type {
+  FileContentsParser,
+  FileParseContext,
+  ParsedRegion,
+} from '../types/index.js';
+import path from 'node:path';
 
-import type { RegionMap, RegionOptions } from './types.js';
-import { getLanguageConfig } from './languages.js';
+interface RegionParseResult {
+  hunks: ParsedRegion[];
+  parsed: string;
+}
 
-/**
- * Create regex patterns for region markers based on comment syntax
- */
-function createRegionPatterns(
-  lineComment?: string,
-  blockComment?: [string, string]
-): { start: RegExp; end: RegExp } {
-  const patterns: string[] = [];
-
-  // Line comment pattern: // #region name
-  if (lineComment) {
-    const escaped = escapeRegex(lineComment);
-    patterns.push(`^\\s*${escaped}\\s*#region\\s+(\\S+)\\s*$`);
-  }
-
-  // Block comment pattern: <!-- #region name -->
-  if (blockComment) {
-    const [start, end] = blockComment.map(escapeRegex);
-    patterns.push(`^\\s*${start}\\s*#region\\s+(\\S+)\\s*${end}\\s*$`);
-  }
-
-  // Combine patterns
-  const startPattern =
-    patterns.length > 0
-      ? new RegExp(patterns.join('|'))
-      : /^\s*\/\/\s*#region\s+(\S+)\s*$/;
-
-  // Create end patterns similarly
-  const endPatterns: string[] = [];
-
-  if (lineComment) {
-    const escaped = escapeRegex(lineComment);
-    endPatterns.push(`^\\s*${escaped}\\s*#endregion\\s+(\\S+)\\s*$`);
-  }
-
-  if (blockComment) {
-    const [start, end] = blockComment.map(escapeRegex);
-    endPatterns.push(`^\\s*${start}\\s*#endregion\\s+(\\S+)\\s*${end}\\s*$`);
-  }
-
-  const endPattern =
-    endPatterns.length > 0
-      ? new RegExp(endPatterns.join('|'))
-      : /^\s*\/\/\s*#endregion\s+(\S+)\s*$/;
-
-  return { start: startPattern, end: endPattern };
+interface StackEntry {
+  id: string;
+  startLine: number;
+  lines: string[];
 }
 
 /**
- * Escape special regex characters
+ * Build the end-pattern regex for a given pattern string and endTag.
+ * Makes the ID capture group optional, since `// endregion` (no ID) is valid.
+ * Convention: patterns must use `\s+(\w+)` for the ID portion.
  */
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function buildEndRegex(pattern: string, endTag: string): RegExp {
+  const withToken = pattern.replace('{token}', endTag);
+  // Make the space+ID portion optional for end markers
+  const withOptional = withToken.replace('\\s+(\\w+)', '(?:\\s+(\\w+))?');
+  return new RegExp(withOptional);
 }
 
 /**
- * Extract the region ID from a match result.
- * Handles multiple capture groups from combined patterns.
- */
-function extractRegionId(match: RegExpMatchArray): string {
-  // Find the first non-undefined capture group
-  for (let i = 1; i < match.length; i++) {
-    if (match[i] !== undefined) {
-      return match[i];
-    }
-  }
-  throw new Error('No region ID captured');
-}
-
-/**
- * Parse all #region/#endregion pairs from code.
- * Supports nested regions and language-specific comment syntax.
+ * Extract region hunks from file content using the provided extension map.
  *
- * @param code - The source code to parse
- * @param options - Options including file extension for language detection
- * @returns Map of region IDs to their content
- * @throws Error on unclosed or mismatched regions
+ * Not exported from barrel files — used directly in tests and by createGenericRegionParser.
  *
- * @example
- * ```typescript
- * const regions = parseRegions(tsCode, { extension: 'ts' });
- * const setupCode = regions['setup']?.content;
- * ```
+ * @param content - File content to parse (should be post-frontmatter-strip if applicable)
+ * @param fileName - File name (used to derive extension for map lookup)
+ * @param extensionMap - Map of extension → array of regex pattern strings with {token}
+ * @param startTag - Token substituted for region start markers
+ * @param endTag - Token substituted for region end markers
+ * @returns Extracted hunks and content with region marker lines stripped
  */
-export function parseRegions(
-  code: string,
-  options: RegionOptions = {}
-): RegionMap {
-  const config = getLanguageConfig(options.extension ?? 'ts');
-  const { start: REGION_START, end: REGION_END } = createRegionPatterns(
-    config.lineComment,
-    config.blockComment
-  );
+export function extractRegionFromFileContent(
+  content: string,
+  fileName: string,
+  extensionMap: Record<string, string[]>,
+  startTag: string,
+  endTag: string,
+): RegionParseResult {
+  const ext = path.extname(fileName);
+  const patterns = extensionMap[ext];
 
-  const lines = code.split('\n');
-  const regions: RegionMap = {};
-  const stack: Array<{ id: string; startLine: number; startIndex: number }> =
-    [];
+  if (!patterns || patterns.length === 0) {
+    return { hunks: [], parsed: content };
+  }
+
+  const startRegexes = patterns.map(p => new RegExp(p.replace('{token}', startTag)));
+  const endRegexes = patterns.map(p => buildEndRegex(p, endTag));
+
+  const lines = content.split('\n');
+  const outputLines: string[] = [];
+  const hunks: ParsedRegion[] = [];
+  const stack: StackEntry[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    const lineNum = i + 1;
 
-    const startMatch = line.match(REGION_START);
-    if (startMatch) {
-      const id = extractRegionId(startMatch);
-      stack.push({ id, startLine: i + 1, startIndex: i });
-      continue;
+    // Try each start pattern
+    let startId: string | undefined;
+    for (const regex of startRegexes) {
+      const m = line.match(regex);
+      if (m?.[1]) {
+        startId = m[1];
+        break;
+      }
     }
 
-    const endMatch = line.match(REGION_END);
-    if (endMatch) {
-      const endId = extractRegionId(endMatch);
-      const openRegion = stack.pop();
+    if (startId !== undefined) {
+      stack.push({ id: startId, startLine: lineNum, lines: [] });
+      continue; // strip marker line from output
+    }
 
-      if (!openRegion) {
-        throw new Error(`Unexpected #endregion '${endId}' at line ${i + 1}`);
+    // Try each end pattern
+    let isEndMarker = false;
+    for (const regex of endRegexes) {
+      if (regex.test(line)) {
+        isEndMarker = true;
+        break;
       }
+    }
 
-      if (openRegion.id !== endId) {
-        throw new Error(
-          `Mismatched region: opened '${openRegion.id}' at line ${
-            openRegion.startLine
-          }, closed '${endId}' at line ${i + 1}`
-        );
+    if (isEndMarker) {
+      const entry = stack.pop();
+      if (entry) {
+        hunks.push({
+          id: entry.id,
+          content: entry.lines.join('\n'),
+          startLine: entry.startLine,
+          endLine: lineNum,
+        });
       }
+      continue; // strip marker line from output
+    }
 
-      // Extract content between markers (exclusive)
-      const contentLines = lines.slice(openRegion.startIndex + 1, i);
-      // Strip nested region markers from content
-      const content = stripRegionMarkers(contentLines.join('\n'), options);
-
-      regions[openRegion.id] = {
-        startLine: openRegion.startLine,
-        endLine: i + 1,
-        content: content.trim(),
-      };
+    // Regular line — add to output and to any open regions
+    outputLines.push(line);
+    for (const entry of stack) {
+      entry.lines.push(line);
     }
   }
 
-  if (stack.length > 0) {
-    const unclosed = stack[stack.length - 1];
-    throw new Error(
-      `Unclosed region '${unclosed.id}' starting at line ${unclosed.startLine}`
-    );
-  }
-
-  return regions;
+  return { hunks, parsed: outputLines.join('\n') };
 }
 
 /**
- * Extract a specific region's content by ID.
- *
- * @param code - The source code to parse
- * @param regionId - The ID of the region to extract
- * @param options - Options including file extension for language detection
- * @returns The region's content
- * @throws Error if region not found
- *
- * @example
- * ```typescript
- * const setupCode = extractRegion(code, 'setup', { extension: 'py' });
- * ```
+ * Create a FileContentsParser that extracts region hunks for any extension
+ * present in the provided extension map. Used by the scanner for all files.
  */
-export function extractRegion(
-  code: string,
-  regionId: string,
-  options: RegionOptions = {}
-): string {
-  const regions = parseRegions(code, options);
-
-  if (!(regionId in regions)) {
-    const available = Object.keys(regions);
-    const hint =
-      available.length > 0
-        ? ` Available regions: ${available.join(', ')}`
-        : ' No regions found in code.';
-    throw new Error(`Region '${regionId}' not found.${hint}`);
-  }
-
-  return regions[regionId].content;
-}
-
-/**
- * Remove all region marker lines from code.
- *
- * @param code - The source code to clean
- * @param options - Options including file extension for language detection
- * @returns Code with all region markers removed
- *
- * @example
- * ```typescript
- * const cleanCode = stripRegionMarkers(code, { extension: 'ts' });
- * ```
- */
-export function stripRegionMarkers(
-  code: string,
-  options: RegionOptions = {}
-): string {
-  const config = getLanguageConfig(options.extension ?? 'ts');
-  const { start: REGION_START, end: REGION_END } = createRegionPatterns(
-    config.lineComment,
-    config.blockComment
-  );
-
-  const lines = code.split('\n');
-  const filtered = lines.filter(
-    (line) => !REGION_START.test(line) && !REGION_END.test(line)
-  );
-  return filtered.join('\n');
-}
-
-/**
- * List all region IDs found in code.
- *
- * @param code - The source code to scan
- * @param options - Options including file extension for language detection
- * @returns Array of region IDs
- *
- * @example
- * ```typescript
- * const regionIds = listRegions(code, { extension: 'ts' });
- * // ['setup', 'main', 'cleanup']
- * ```
- */
-export function listRegions(
-  code: string,
-  options: RegionOptions = {}
-): string[] {
-  const regions = parseRegions(code, options);
-  return Object.keys(regions);
+export function createGenericRegionParser(
+  extensionMap: Record<string, string[]>,
+  startTag: string,
+  endTag: string,
+): FileContentsParser {
+  return {
+    name: 'core-region-parser',
+    parse(context: FileParseContext): FileParseContext {
+      const { hunks, parsed } = extractRegionFromFileContent(
+        context.parsed,
+        context.filePath,
+        extensionMap,
+        startTag,
+        endTag,
+      );
+      return { ...context, parsed, hunks };
+    },
+  };
 }
