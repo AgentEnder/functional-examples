@@ -235,6 +235,11 @@ export interface FileParseContext {
   metadata: Record<string, unknown>;
   /** Absolute path to the file */
   filePath: string;
+  /**
+   * Resolved region config from ResolvedConfig.region.
+   * Always populated by createInitialContext using defaults if not configured.
+   */
+  regionConfig: Required<Pick<RegionConfig, 'startTag' | 'endTag'>>;
 }
 
 /**
@@ -300,6 +305,27 @@ export interface PluginValidators<TMetadata = Record<string, unknown>> {
 // ============================================================================
 // Configuration Types (defined here to avoid circular dependencies)
 // ============================================================================
+
+/**
+ * Configuration for region marker parsing.
+ */
+export interface RegionConfig {
+  /** Token that opens a region. Default: 'region' */
+  startTag?: string;
+  /** Token that closes a region. Default: 'endregion' */
+  endTag?: string;
+  /**
+   * Map of file extension to an array of regex pattern strings.
+   * `{token}` is substituted with startTag or endTag at parse time.
+   * Each pattern must contain exactly one capturing group `(\w+)` for the region ID.
+   * Multiple patterns per extension support multiple comment styles (e.g. line + block).
+   * User entries are merged over the built-in DEFAULT_REGION_EXTENSION_MAP (user wins).
+   *
+   * @example
+   * { '.py': ['#\\s*{token}\\s+(\\w+)'] }
+   */
+  fileExtensionMap?: Record<string, string[]>;
+}
 
 /**
  * Scan configuration options.
@@ -507,6 +533,9 @@ export interface Config {
   /** Configuration for schema/type generation */
   generate?: GenerateConfig;
 
+  /** Region marker configuration */
+  region?: RegionConfig;
+
   /**
    * Root path used for scanning + more
    */
@@ -540,6 +569,11 @@ export interface ResolvedConfig<TMetadata = ExampleMetadata>
   scan: Required<ScanConfig>;
   /** Config validation errors (options validation failures) */
   validationErrors: ConfigValidationError[];
+  /**
+   * Fully resolved region config with defaults applied and extension maps merged.
+   * Always present — defaults to startTag:'region', endTag:'endregion'.
+   */
+  region: Required<RegionConfig>;
   /** Root Path of Config File */
   root: string;
 }
