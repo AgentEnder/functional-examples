@@ -79,6 +79,11 @@ describe('scan()', () => {
       pathMappings: [],
       scan: { include: ['*'], exclude: [], root: tmpDir },
       validationErrors: [],
+      region: {
+        startTag: 'region',
+        endTag: 'endregion',
+        fileExtensionMap: {},
+      },
     };
 
     const result = await scan({ config });
@@ -110,6 +115,11 @@ describe('scan()', () => {
       pathMappings: [],
       scan: { include: ['*'], exclude: [], root: tmpDir },
       validationErrors: [],
+      region: {
+        startTag: 'region',
+        endTag: 'endregion',
+        fileExtensionMap: {},
+      },
     };
 
     const result = await scan({ config });

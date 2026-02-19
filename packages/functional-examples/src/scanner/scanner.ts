@@ -7,6 +7,7 @@ import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { createInitialContext, runParsePipeline } from '../plugins/pipeline.js';
+import { createGenericRegionParser } from '../regions/parser.js';
 import { validateExampleMetadata } from '../plugins/validation.js';
 import { createSchemaValidator } from '../schema/validator.js';
 import {
@@ -157,18 +158,36 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
   }
 
   // Step 8: Process file contents through parser pipelines
+  const regionConfig = {
+    startTag: config.region.startTag,
+    endTag: config.region.endTag,
+  };
+  const genericRegionParser = createGenericRegionParser(
+    config.region.fileExtensionMap,
+    config.region.startTag,
+    config.region.endTag,
+  );
+
   for (const example of scannedExamples) {
     for (const file of example.files) {
       const ext = path.extname(file.absolutePath);
-      const parsers = registry.getParsersForExtension(ext);
+      const pluginParsers = registry.getParsersForExtension(ext);
+      const hasRegionPatterns = ext in config.region.fileExtensionMap;
+      const parsers = hasRegionPatterns
+        ? [...pluginParsers, genericRegionParser]
+        : pluginParsers;
 
       if (parsers.length > 0) {
-        // Load file content if not already loaded
         if (file.raw === undefined) {
           file.raw = await fs.readFile(file.absolutePath, 'utf-8');
         }
 
-        const ctx = createInitialContext(file.absolutePath, file.raw);
+        const ctx = createInitialContext(
+          file.absolutePath,
+          file.raw,
+          regionConfig,
+          file.parsed, // use extractor-set parsed (e.g. frontmatter-stripped) if present
+        );
         const result = await runParsePipeline(ctx, parsers);
         file.parsed = result.parsed;
         file.hunks = result.hunks;

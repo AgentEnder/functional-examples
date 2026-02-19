@@ -1,24 +1,22 @@
+import type { RegionConfig } from '@functional-examples/devkit';
 import type { FileContentsParser, FileParseContext } from '../types/index.js';
-
-const DEFAULT_REGION_TAG = {
-  startTag: 'region',
-  endTag: 'endregion',
-} as const;
 
 /**
  * Create the initial parse context for a file.
  */
 export function createInitialContext(
   filePath: string,
-  content: string
+  raw: string,
+  regionConfig: Required<Pick<RegionConfig, 'startTag' | 'endTag'>>,
+  parsed?: string,
 ): FileParseContext {
   return {
-    raw: content,
-    parsed: content,
+    raw,
+    parsed: parsed ?? raw,
     hunks: [],
     metadata: {},
     filePath,
-    regionConfig: DEFAULT_REGION_TAG,
+    regionConfig,
   };
 }
 

@@ -37,6 +37,11 @@ function buildConfig<TMetadata = Record<string, unknown>>(
     pathMappings: [],
     scan: { include: [], exclude: [], root },
     validationErrors: [],
+    region: {
+      startTag: 'region',
+      endTag: 'endregion',
+      fileExtensionMap: {},
+    },
     ...overrides,
     // Ensure registry is always built from the provided plugins
   } as ResolvedConfig<TMetadata>;

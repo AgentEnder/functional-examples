@@ -4,7 +4,7 @@ import type { FileContentsParser } from '../types/index.js';
 
 describe('createInitialContext', () => {
   it('should create context with raw content copied to parsed', () => {
-    const ctx = createInitialContext('/path/to/file.ts', 'const x = 1;');
+    const ctx = createInitialContext('/path/to/file.ts', 'const x = 1;', { startTag: 'region', endTag: 'endregion' });
 
     expect(ctx).toEqual({
       raw: 'const x = 1;',
@@ -37,7 +37,7 @@ describe('runParsePipeline', () => {
       },
     };
 
-    const initial = createInitialContext('/test.ts', 'code');
+    const initial = createInitialContext('/test.ts', 'code', { startTag: 'region', endTag: 'endregion' });
     const result = await runParsePipeline(initial, [parser1, parser2]);
 
     expect(calls).toEqual(['parser1', 'parser2']);
@@ -53,14 +53,14 @@ describe('runParsePipeline', () => {
       },
     };
 
-    const initial = createInitialContext('/test.ts', 'hello');
+    const initial = createInitialContext('/test.ts', 'hello', { startTag: 'region', endTag: 'endregion' });
     const result = await runParsePipeline(initial, [asyncParser]);
 
     expect(result.parsed).toBe('HELLO');
   });
 
   it('should return initial context when no parsers provided', async () => {
-    const initial = createInitialContext('/test.ts', 'code');
+    const initial = createInitialContext('/test.ts', 'code', { startTag: 'region', endTag: 'endregion' });
     const result = await runParsePipeline(initial, []);
 
     expect(result).toEqual(initial);
@@ -83,7 +83,7 @@ describe('runParsePipeline', () => {
       }),
     };
 
-    const initial = createInitialContext('/test.ts', 'code');
+    const initial = createInitialContext('/test.ts', 'code', { startTag: 'region', endTag: 'endregion' });
     const result = await runParsePipeline(initial, [parser1, parser2]);
 
     expect(result.hunks).toHaveLength(2);
@@ -116,7 +116,7 @@ describe('runParsePipeline', () => {
       },
     };
 
-    const initial = createInitialContext('/test.ts', 'code');
+    const initial = createInitialContext('/test.ts', 'code', { startTag: 'region', endTag: 'endregion' });
     await runParsePipeline(initial, [parser1, parser2]);
 
     // Both parsers should receive empty hunks
