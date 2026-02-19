@@ -107,8 +107,9 @@ describe('extractRegionFromFileContent', () => {
       );
 
       expect(hunks).toHaveLength(2);
-      const outer = hunks.find(h => h.id === 'outer')!;
-      const inner = hunks.find(h => h.id === 'inner')!;
+      const outer = hunks.find(h => h.id === 'outer');
+      const inner = hunks.find(h => h.id === 'inner');
+      if (!outer || !inner) throw new Error('Expected both hunks');
       expect(outer.content).toContain('const a = 1;');
       expect(outer.content).toContain('const b = 2;');
       expect(inner.content).toBe('const b = 2;');

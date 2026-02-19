@@ -132,7 +132,7 @@ async function parseContent(
     'functional-examples'
   );
 
-  const ctx = createInitialContext(filePath, content);
+  const ctx = createInitialContext(filePath, content, { startTag: 'region', endTag: 'endregion' });
   const result = await runParsePipeline(ctx, parsers);
   return result.parsed;
 }
