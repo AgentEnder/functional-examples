@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/documentation",
-  "version": "0.0.0-alpha.5",
+  "version": "0.0.1",
   "type": "module",
   "description": "Documentation generation plugin for functional-examples",
   "publishConfig": {
@@ -26,7 +26,7 @@
     "extract-docs": "typedoc --options typedoc.json"
   },
   "peerDependencies": {
-    "functional-examples": "0.0.0-alpha.5"
+    "functional-examples": "0.0.1"
   },
   "peerDependenciesMeta": {
     "yaml": {
