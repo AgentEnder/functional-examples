@@ -8,12 +8,12 @@ import { createIniPlugin } from './src/ini-plugin.js';
  * - An extractor that discovers `meta.ini` files
  * - A parser that strips INI comments from content
  */
-const config: Config = {
+const config = {
   plugins: [createIniPlugin()],
   scan: {
     include: ['src/**/*'],
     exclude: ['**/node_modules/**'],
   },
-};
+} satisfies Config;
 
 export default config;

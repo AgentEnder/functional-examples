@@ -1,6 +1,20 @@
 {
   "type": "object",
   "properties": {
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to include in the example bundle"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for search and filtering"
+    },
     "id": {
       "type": "string",
       "description": "Unique identifier for the example"
@@ -22,13 +36,6 @@
         "advanced"
       ],
       "description": "Example category for filtering"
-    },
-    "tags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Tags for search and filtering"
     }
   },
   "required": [

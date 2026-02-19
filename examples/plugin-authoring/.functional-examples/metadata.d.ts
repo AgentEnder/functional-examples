@@ -8,8 +8,9 @@
  * Include this file in your tsconfig.json to enable type checking.
  */
 
-// Import required to make this an augmentation rather than a replacement
-import '@functional-examples/devkit';
+// export {} makes this file a TypeScript module so the augmentation below
+// applies to the ambient module rather than replacing it.
+export {};
 
 declare module '@functional-examples/devkit' {
   interface ExampleMetadataRegistry {

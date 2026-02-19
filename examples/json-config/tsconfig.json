@@ -4,5 +4,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["*.ts", "examples/**/*.ts", ".functional-examples/*.d.ts"]
+  "include": [".functional-examples/*.d.ts"]
 }

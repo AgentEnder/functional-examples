@@ -8,8 +8,9 @@
  * Include this file in your tsconfig.json to enable type checking.
  */
 
-// Import required to make this an augmentation rather than a replacement
-import '@functional-examples/devkit';
+// export {} makes this file a TypeScript module so the augmentation below
+// applies to the ambient module rather than replacing it.
+export {};
 
 declare module '@functional-examples/devkit' {
   interface ExampleMetadataRegistry {
@@ -27,6 +28,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           command: string;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         };
         assertions?: unknown;
       } | {
@@ -42,6 +51,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           assertions?: unknown;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         }>;
       } | Array<{
         name: string;
@@ -50,6 +67,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           command: string;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         };
         assertions?: unknown;
       } | {
@@ -65,6 +90,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           assertions?: unknown;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         }>;
       }>;
       tags?: Array<string>;

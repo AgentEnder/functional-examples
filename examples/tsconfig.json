@@ -6,5 +6,5 @@
     "outDir": "../dist/tsc/examples"
   },
   "include": ["**/*.ts", "../.functional-examples/*.d.ts"],
-  "exclude": ["**/node_modules/**", "**/dist/**"]
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/.functional-examples/**"]
 }

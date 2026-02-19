@@ -8,8 +8,8 @@
  * Include this file in your tsconfig.json to enable type checking.
  */
 
-// Import required to make this an augmentation rather than a replacement
-import '@functional-examples/devkit';
+// PluginReference is imported so it is in scope inside augmentation blocks.
+import type { PluginReference } from '@functional-examples/devkit';
 
 declare module '@functional-examples/devkit' {
   interface ExampleMetadataRegistry {
@@ -21,6 +21,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           command: string;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         };
         assertions?: unknown;
       } | {
@@ -36,6 +44,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           assertions?: unknown;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         }>;
       } | Array<{
         name: string;
@@ -44,6 +60,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           command: string;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         };
         assertions?: unknown;
       } | {
@@ -59,6 +83,14 @@ declare module '@functional-examples/devkit' {
           env?: Record<string, string>;
           timeout?: number;
           assertions?: unknown;
+          maintainVTSequences?: boolean;
+          outputSnapshot?: {
+            path: string;
+            stdout?: boolean;
+            stderr?: boolean;
+            exitCode?: boolean;
+            ansi?: boolean;
+          };
         }>;
       }>;
       tags?: Array<string>;
@@ -66,5 +98,16 @@ declare module '@functional-examples/devkit' {
       title: string;
       description?: string;
     };
+  }
+
+  interface PluginOptionsRegistry {
+    plugins:
+      | "@functional-examples/javascript"
+      | ["@functional-examples/javascript", { skipFrontmatter?: boolean; skipRegions?: boolean; regionTag?: {
+        start?: string;
+        end?: string;
+      }; skipExtraction?: boolean }]
+      | "@functional-examples/test"
+      | PluginReference;
   }
 }
