@@ -140,6 +140,19 @@ describe('createGuideRenderer', () => {
       ).toThrow('no file "missing.ts"');
     });
 
+    it('should expose custom helpers by name in templates', () => {
+      const examples = [makeExample()];
+      const renderer = createGuideRenderer(examples, {
+        customHelpers: {
+          shout: (s: unknown) => String(s).toUpperCase(),
+        },
+      });
+
+      const result = renderer.render('<%= shout("hello") %>');
+
+      expect(result).toBe('HELLO');
+    });
+
     it('should throw for unknown regions within an example', () => {
       const examples = [makeExample()];
       const renderer = createGuideRenderer(examples);

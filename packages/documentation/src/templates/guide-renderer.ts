@@ -46,6 +46,18 @@ export interface ExampleAccessor {
 }
 
 /**
+ * Options for createGuideRenderer.
+ */
+export interface GuideRendererOptions {
+  /**
+   * Additional helper functions exposed in guide templates by their key name.
+   * Each key becomes a variable available directly in the template:
+   * `<%= myHelper('arg') %>`
+   */
+  customHelpers?: Record<string, unknown>;
+}
+
+/**
  * Create a guide renderer bound to a set of scanned examples.
  *
  * Guide templates can reference any example by ID:
@@ -63,7 +75,10 @@ export interface ExampleAccessor {
  * const html = await renderer.renderFile('docs/guides/getting-started.md');
  * ```
  */
-export function createGuideRenderer(examples: ScannedExample[]): GuideRenderer {
+export function createGuideRenderer(
+  examples: ScannedExample[],
+  options: GuideRendererOptions = {}
+): GuideRenderer {
   // Build lookup map: example ID → ScannedExample
   const examplesById = new Map(examples.map((ex) => [ex.id, ex]));
 
@@ -111,12 +126,16 @@ export function createGuideRenderer(examples: ScannedExample[]): GuideRenderer {
     };
   }
 
+  const { customHelpers = {} } = options;
+  const customVarBindings = Object.keys(customHelpers)
+    .map((k) => `var ${k} = it.custom.${k};`)
+    .join(' ');
+
   // Separate Eta instance for guide templates with injected helper names
   const guideEta = new Eta({
     autoEscape: false,
     autoTrim: false,
-    functionHeader:
-      'var example = it.example, examples = it.examples, helpers = it.helpers;',
+    functionHeader: `var example = it.example, examples = it.examples, helpers = it.helpers; ${customVarBindings}`,
   });
 
   function render(markdown: string): string {
@@ -125,6 +144,7 @@ export function createGuideRenderer(examples: ScannedExample[]): GuideRenderer {
         example: exampleAccessor,
         examples,
         helpers: templateHelpers,
+        custom: customHelpers,
       })
       .replaceAll('\\%', '%');
   }

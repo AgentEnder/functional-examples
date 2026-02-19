@@ -81,4 +81,4 @@ export { templateHelpers } from './templates/helpers.js';
 export { ConsumptionTracker } from './templates/consumption-tracker.js';
 export { createProseHelpers, fencedBlock } from './templates/prose-helpers.js';
 export { createGuideRenderer } from './templates/guide-renderer.js';
-export type { GuideRenderer, ExampleAccessor } from './templates/guide-renderer.js';
+export type { GuideRenderer, GuideRendererOptions, ExampleAccessor } from './templates/guide-renderer.js';

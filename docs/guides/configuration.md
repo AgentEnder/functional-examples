@@ -100,6 +100,29 @@ And one that fails because it's missing required fields:
 
 <%= example('metadata-validation').file('src/missing-fields.ts') %>
 
+## Region Config
+
+functional-examples can extract `#region` / `#endregion` hunks from source files without any plugin. The `region` config block controls the marker keywords and which file extensions are recognised.
+
+```typescript
+export default {
+  region: {
+    startTag: 'region',    // default
+    endTag: 'endregion',   // default
+    fileExtensionMap: {
+      // override or extend the built-in map
+      '.vue': [/\/\/\s*{token}\s+(\w+)/],
+    },
+  },
+};
+```
+
+`fileExtensionMap` values can be `RegExp` literals (recommended in TypeScript configs) or pattern strings — the `{token}` placeholder is replaced with the configured `startTag` or `endTag` at scan time, and the first capturing group captures the region ID.
+
+User-supplied entries are merged over the defaults; the defaults cover these extensions out of the box:
+
+<%= sourceRegion('packages/functional-examples/src/regions/defaults.ts', 'default-extension-map') %>
+
 ## Config Resolution
 
 When you call `scan()` or the CLI, functional-examples:

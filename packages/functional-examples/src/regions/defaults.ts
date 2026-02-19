@@ -1,3 +1,4 @@
+// prettier-ignore-start
 /**
  * Default region marker patterns for common file extensions.
  *
@@ -7,7 +8,8 @@
  *
  * Multiple patterns per extension support multiple comment styles.
  */
-export const DEFAULT_REGION_EXTENSION_MAP: Record<string, RegExp[]> = {
+// region default-extension-map
+export const DEFAULT_REGION_EXTENSION_MAP: Record<string, (string | RegExp)[]> = {
   // JavaScript / TypeScript family — line comment and block comment
   '.ts':   [/\/\/\s*{token}\s+(\w+)/, /\/\*\s*{token}\s+(\w+)\s*\*\//],
   '.tsx':  [/\/\/\s*{token}\s+(\w+)/, /\/\*\s*{token}\s+(\w+)\s*\*\//],
@@ -36,3 +38,4 @@ export const DEFAULT_REGION_EXTENSION_MAP: Record<string, RegExp[]> = {
   '.swift':[/\/\/\s*{token}\s+(\w+)/],
   '.cs':   [/\/\/\s*{token}\s+(\w+)/],
 };
+// endregion default-extension-map

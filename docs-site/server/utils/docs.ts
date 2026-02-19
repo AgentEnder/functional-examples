@@ -1,6 +1,7 @@
 import type { ScannedExample } from '@functional-examples/devkit';
 import { createGuideRenderer } from '@functional-examples/documentation';
 import matter from 'gray-matter';
+import { readFileSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, extname, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
@@ -137,6 +138,51 @@ export async function scanDocs(
 }
 
 /**
+ * Extract a named region from a workspace-relative source file and return it
+ * as a fenced code block. Uses `// region <id>` / `// endregion` markers.
+ *
+ * Intended for use as a guide template custom helper:
+ * `<%= sourceRegion('packages/foo/src/bar.ts', 'my-region') %>`
+ */
+function makeSourceRegionHelper(root: string) {
+  return function sourceRegion(relPath: string, regionId: string): string {
+    const absPath = join(root, relPath);
+    let content: string;
+    try {
+      content = readFileSync(absPath, 'utf-8');
+    } catch {
+      return `<!-- sourceRegion: could not read ${relPath} -->`;
+    }
+
+    const lines = content.split('\n');
+    const startRe = /\/\/\s*region\s+(\w+)/;
+    const endRe = /\/\/\s*endregion/;
+    const regionLines: string[] = [];
+    let inside = false;
+
+    for (const line of lines) {
+      if (!inside) {
+        const m = line.match(startRe);
+        if (m?.[1] === regionId) {
+          inside = true;
+        }
+      } else {
+        if (endRe.test(line)) break;
+        regionLines.push(line);
+      }
+    }
+
+    if (regionLines.length === 0) {
+      return `<!-- sourceRegion: region "${regionId}" not found in ${relPath} -->`;
+    }
+
+    const dotIdx = relPath.lastIndexOf('.');
+    const lang = dotIdx === -1 ? '' : relPath.slice(dotIdx + 1);
+    return `\`\`\`${lang}\n${regionLines.join('\n')}\n\`\`\``;
+  };
+}
+
+/**
  * Hydrate guide pages by expanding Eta `<%= %>` example references
  * and rendering the resulting markdown to HTML.
  *
@@ -148,7 +194,10 @@ export async function hydrateGuides(
   docs: DocPage[],
   examples: ScannedExample[]
 ): Promise<DocPage[]> {
-  const renderer = createGuideRenderer(examples);
+  const root = workspaceRoot();
+  const renderer = createGuideRenderer(examples, {
+    customHelpers: { sourceRegion: makeSourceRegionHelper(root) },
+  });
 
   const hydrated: DocPage[] = [];
   for (const doc of docs) {
