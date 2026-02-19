@@ -113,6 +113,34 @@ describe('extractRegionFromFileContent', () => {
       expect(outer.content).toContain('const b = 2;');
       expect(inner.content).toBe('const b = 2;');
     });
+
+    it('ignores end-marker ID — always pops the innermost open region', () => {
+      // The parser is stack-based and does not validate that the end-marker ID
+      // matches the most-recently-opened region. This is intentional and matches
+      // VS Code folding behavior.
+      const content = [
+        '// region alpha',
+        'const a = 1;',
+        '// region beta',
+        'const b = 2;',
+        '// endregion alpha', // mismatched — closes beta (top of stack)
+        'const c = 3;',
+        '// endregion beta',  // mismatched — closes alpha
+      ].join('\n');
+
+      const { hunks } = extractRegionFromFileContent(
+        content, 'main.ts', TS_MAP, 'region', 'endregion'
+      );
+
+      expect(hunks).toHaveLength(2);
+      // beta was on top of stack, so it gets closed first
+      expect(hunks[0].id).toBe('beta');
+      expect(hunks[0].content).toBe('const b = 2;');
+      // alpha closes second, containing everything between its open and its close
+      expect(hunks[1].id).toBe('alpha');
+      expect(hunks[1].content).toContain('const a = 1;');
+      expect(hunks[1].content).toContain('const b = 2;');
+    });
   });
 
   describe('TypeScript block comments', () => {
