@@ -121,8 +121,14 @@ export async function loadTypedocContextInternal(
  */
 export async function loadTypedocContext(
   context: Partial<GlobalContextServer>,
-  options: LoadTypedocContextOptions = context.config.typedoc
+  options: LoadTypedocContextOptions | undefined = context.config?.typedoc
 ): Promise<TypedocContext> {
+  if (!options) {
+    throw new Error(
+      'No options provided for loadTypedocContext. ' +
+        'Make sure to pass options or set config.typedoc in your Vike config.'
+    );
+  }
   // Fast path: already resolved and stored on global context
   const alreadyLoaded = context[GLOBAL_KEY];
   if (alreadyLoaded) {
