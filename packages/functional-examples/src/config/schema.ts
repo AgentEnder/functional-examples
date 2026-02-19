@@ -41,7 +41,7 @@ export const ScanConfigSchema = z.object({
 export const RegionConfigSchema = z.object({
   startTag: z.string().min(1).optional(),
   endTag: z.string().min(1).optional(),
-  fileExtensionMap: z.record(z.string(), z.array(z.string())).optional(),
+  fileExtensionMap: z.record(z.string(), z.array(z.union([z.string(), z.instanceof(RegExp)]))).optional(),
 });
 
 export const ConfigSchema = () =>

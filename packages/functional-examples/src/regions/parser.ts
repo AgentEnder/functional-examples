@@ -17,13 +17,26 @@ interface StackEntry {
 }
 
 /**
- * Build the end-pattern regex for a given pattern string and endTag.
- * Makes the ID capture group optional, since `// endregion` (no ID) is valid.
- * Convention: patterns must use `\s+(\w+)` for the ID portion.
+ * Get the pattern source string from a string or RegExp entry.
  */
-function buildEndRegex(pattern: string, endTag: string): RegExp {
-  const withToken = pattern.replace('{token}', endTag);
-  // Make the space+ID portion optional for end markers
+function patternSource(pattern: string | RegExp): string {
+  return typeof pattern === 'string' ? pattern : pattern.source;
+}
+
+/**
+ * Build the start-pattern regex by substituting {token} with startTag.
+ */
+function buildStartRegex(pattern: string | RegExp, startTag: string): RegExp {
+  return new RegExp(patternSource(pattern).replace('{token}', startTag));
+}
+
+/**
+ * Build the end-pattern regex by substituting {token} with endTag and
+ * making the ID capture group optional (since `// endregion` with no ID is valid).
+ * Convention: patterns use `\s+(\w+)` for the ID portion.
+ */
+function buildEndRegex(pattern: string | RegExp, endTag: string): RegExp {
+  const withToken = patternSource(pattern).replace('{token}', endTag);
   const withOptional = withToken.replace('\\s+(\\w+)', '(?:\\s+(\\w+))?');
   return new RegExp(withOptional);
 }
@@ -43,7 +56,7 @@ function buildEndRegex(pattern: string, endTag: string): RegExp {
 export function extractRegionFromFileContent(
   content: string,
   fileName: string,
-  extensionMap: Record<string, string[]>,
+  extensionMap: Record<string, (string | RegExp)[]>,
   startTag: string,
   endTag: string,
 ): RegionParseResult {
@@ -54,7 +67,7 @@ export function extractRegionFromFileContent(
     return { hunks: [], parsed: content };
   }
 
-  const startRegexes = patterns.map(p => new RegExp(p.replace('{token}', startTag)));
+  const startRegexes = patterns.map(p => buildStartRegex(p, startTag));
   const endRegexes = patterns.map(p => buildEndRegex(p, endTag));
 
   const lines = content.split('\n');
@@ -118,7 +131,7 @@ export function extractRegionFromFileContent(
  * present in the provided extension map. Used by the scanner for all files.
  */
 export function createGenericRegionParser(
-  extensionMap: Record<string, string[]>,
+  extensionMap: Record<string, (string | RegExp)[]>,
   startTag: string,
   endTag: string,
 ): FileContentsParser {

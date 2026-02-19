@@ -322,9 +322,9 @@ export interface RegionConfig {
    * User entries are merged over the built-in DEFAULT_REGION_EXTENSION_MAP (user wins).
    *
    * @example
-   * { '.py': ['#\\s*{token}\\s+(\\w+)'] }
+   * { '.py': [/#\s*{token}\s+(\w+)/] }
    */
-  fileExtensionMap?: Record<string, string[]>;
+  fileExtensionMap?: Record<string, (string | RegExp)[]>;
 }
 
 /**
