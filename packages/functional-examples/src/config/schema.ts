@@ -37,10 +37,18 @@ export const ScanConfigSchema = z.object({
   fileExtensions: z.array(z.string().min(1)).optional(),
 });
 
+
+export const RegionConfigSchema = z.object({
+  startTag: z.string().min(1).optional(),
+  endTag: z.string().min(1).optional(),
+  fileExtensionMap: z.record(z.string(), z.array(z.string())).optional(),
+});
+
 export const ConfigSchema = () =>
   z.object({
     extractors: z.array(ExtractorOrReferenceSchema).optional(),
     scan: ScanConfigSchema.optional(),
+    region: RegionConfigSchema.optional(),
     pathMappings: z
       .array(
         z.object({

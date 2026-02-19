@@ -12,6 +12,7 @@ describe('createInitialContext', () => {
       hunks: [],
       metadata: {},
       filePath: '/path/to/file.ts',
+      regionConfig: { startTag: 'region', endTag: 'endregion' },
     });
   });
 });

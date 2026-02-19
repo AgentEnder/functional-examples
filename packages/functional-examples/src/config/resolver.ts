@@ -20,6 +20,9 @@ import type { ConfigWithRoot } from './types.js';
 // Re-export for backward compatibility
 export type { ConfigValidationError, ResolvedConfig } from '../types/index.js';
 
+import { DEFAULT_REGION_EXTENSION_MAP } from '../regions/defaults.js';
+import type { RegionConfig } from '@functional-examples/devkit';
+
 /**
  * Known plugin packages that can be auto-detected when no plugins are specified.
  * Each entry maps to a package that exports a `createXxxPlugin()` factory function.
@@ -36,6 +39,15 @@ const DEFAULT_SCAN: Omit<Required<ScanConfig>, 'include'> = {
   exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
   root: '.',
 };
+
+
+/**
+ * Default region tag configuration
+ */
+const DEFAULT_REGION_TAG = {
+  startTag: 'region',
+  endTag: 'endregion',
+} as const;
 
 /**
  * Resolve a configuration to actual plugin and extractor instances.
@@ -119,8 +131,18 @@ export async function resolveConfig<TMetadata = ExampleMetadata>(
     ? config.scan.include
     : await getDefaultIncludePattern(scanRoot);
 
+  const resolvedRegion: Required<RegionConfig> = {
+    startTag: config.region?.startTag ?? DEFAULT_REGION_TAG.startTag,
+    endTag: config.region?.endTag ?? DEFAULT_REGION_TAG.endTag,
+    fileExtensionMap: {
+      ...DEFAULT_REGION_EXTENSION_MAP,
+      ...(config.region?.fileExtensionMap ?? {}),
+    },
+  };
+
   return {
     ...config,
+    region: resolvedRegion,
     extractors,
     plugins,
     registry,

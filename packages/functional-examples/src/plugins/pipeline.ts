@@ -1,5 +1,10 @@
 import type { FileContentsParser, FileParseContext } from '../types/index.js';
 
+const DEFAULT_REGION_TAG = {
+  startTag: 'region',
+  endTag: 'endregion',
+} as const;
+
 /**
  * Create the initial parse context for a file.
  */
@@ -13,6 +18,7 @@ export function createInitialContext(
     hunks: [],
     metadata: {},
     filePath,
+    regionConfig: DEFAULT_REGION_TAG,
   };
 }
 

@@ -31,6 +31,7 @@ export type {
   PluginSchemas,
   PluginValidatorEntry,
   PluginValidators,
+  RegionConfig,
   ResolvedConfig,
   ScanConfig,
   ScannedExample,
