@@ -30,7 +30,7 @@ describe('getCommandNamespace', () => {
 });
 
 describe('resolvePluginCommands', () => {
-  const mockConfig = {} as ResolvedConfig<unknown>;
+  const mockConfig = {} as ResolvedConfig;
 
   it('returns empty array when no commands', async () => {
     const plugin: Plugin = { name: 'test' };
@@ -71,7 +71,7 @@ describe('resolvePluginCommands', () => {
 });
 
 describe('loadPluginCommands', () => {
-  const mockConfig = {} as ResolvedConfig<unknown>;
+  const mockConfig = {} as ResolvedConfig;
 
   it('returns empty array for empty plugins array', async () => {
     const result = await loadPluginCommands([], mockConfig);
@@ -142,7 +142,7 @@ describe('loadPluginCommands', () => {
         commands: commandsFn,
       },
     ];
-    const testConfig = { foo: 'bar' } as unknown as ResolvedConfig<unknown>;
+    const testConfig = { foo: 'bar' } as unknown as ResolvedConfig;
 
     await loadPluginCommands(plugins, testConfig);
 

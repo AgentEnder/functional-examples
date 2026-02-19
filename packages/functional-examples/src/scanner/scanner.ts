@@ -127,7 +127,7 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
   const examplesById = new Map(scannedExamples.map((ex) => [ex.id, ex]));
 
   // Step 7: Initialize error accumulator (displayPath -> source -> messages[])
-  const errorsByPath = new DefaultMap<string, Map<string, string[]>>(
+  const errorsByPath = new DefaultMap<string, DefaultMap<string, string[]>>(
     () => new DefaultMap<string, string[]>(() => [])
   );
 

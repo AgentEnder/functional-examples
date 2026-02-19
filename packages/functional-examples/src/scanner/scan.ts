@@ -58,7 +58,7 @@ export async function scan<TMetadata = Record<string, unknown>>(
     );
   }
 
-  const rawConfig = await loadConfig<TMetadata>(configPath);
+  const rawConfig = await loadConfig(configPath);
   const resolved = await resolveConfig<TMetadata>(rawConfig);
   return scanExamples<TMetadata>(resolved);
 }

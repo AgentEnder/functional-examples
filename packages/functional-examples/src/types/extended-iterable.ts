@@ -9,10 +9,7 @@ const DONE: IteratorResult<never> = { done: true, value: undefined as never };
 
 class MapIterator<T, U> implements Iterator<U> {
   private r: IteratorResult<U> = { done: false, value: undefined as U };
-  constructor(
-    private source: Iterator<T>,
-    private fn: (val: T) => U
-  ) {}
+  constructor(private source: Iterator<T>, private fn: (val: T) => U) {}
   next(): IteratorResult<U> {
     const result = this.source.next();
     if (result.done) return DONE;
@@ -26,10 +23,7 @@ class MapIterator<T, U> implements Iterator<U> {
 
 class FilterIterator<T> implements Iterator<T> {
   private r: IteratorResult<T> = { done: false, value: undefined as T };
-  constructor(
-    private source: Iterator<T>,
-    private fn: (val: T) => boolean
-  ) {}
+  constructor(private source: Iterator<T>, private fn: (val: T) => boolean) {}
   next(): IteratorResult<T> {
     while (true) {
       const result = this.source.next();
@@ -48,10 +42,7 @@ class FilterIterator<T> implements Iterator<T> {
 class TakeIterator<T> implements Iterator<T> {
   private r: IteratorResult<T> = { done: false, value: undefined as T };
   private count = 0;
-  constructor(
-    private source: Iterator<T>,
-    private n: number
-  ) {}
+  constructor(private source: Iterator<T>, private n: number) {}
   next(): IteratorResult<T> {
     if (this.count >= this.n) return DONE;
     const result = this.source.next();
@@ -103,10 +94,7 @@ class FlatIterator<T> implements Iterator<T> {
 
 class PrefixIterator<T> implements Iterator<T> {
   private prefixIt: Iterator<T> | null;
-  constructor(
-    prefix: Iterable<T>,
-    private source: Iterator<T>
-  ) {
+  constructor(prefix: Iterable<T>, private source: Iterator<T>) {
     this.prefixIt = prefix[Symbol.iterator]();
   }
   next(): IteratorResult<T> {
@@ -159,10 +147,7 @@ class AsyncFilterIterator<T> implements AsyncIterator<T> {
 
 class AsyncTakeIterator<T> implements AsyncIterator<T> {
   private count = 0;
-  constructor(
-    private source: AsyncIterator<T>,
-    private n: number
-  ) {}
+  constructor(private source: AsyncIterator<T>, private n: number) {}
   async next(): Promise<IteratorResult<T>> {
     if (this.count >= this.n) return DONE;
     const result = await this.source.next();
@@ -450,7 +435,9 @@ export class ExtendedIterable<T> implements Iterable<T> {
 
   // Internal: create from a factory directly, skipping the iterable wrapper
   private static _from<T>(factory: () => Iterator<T>): ExtendedIterable<T> {
-    const inst = Object.create(ExtendedIterable.prototype) as ExtendedIterable<T>;
+    const inst = Object.create(
+      ExtendedIterable.prototype
+    ) as ExtendedIterable<T>;
     inst._iterFn = factory;
     return inst;
   }
@@ -487,8 +474,7 @@ export class ExtendedIterable<T> implements Iterable<T> {
   ): ExtendedIterable<T> | ExtendedIterable<T2> {
     const parentIter = this._iterFn;
     return ExtendedIterable._from<T>(
-      () =>
-        new FilterIterator(parentIter(), predicate as (val: T) => boolean)
+      () => new FilterIterator(parentIter(), predicate as (val: T) => boolean)
     ) as ExtendedIterable<T> | ExtendedIterable<T2>;
   }
 
@@ -580,13 +566,10 @@ export class ExtendedIterable<T> implements Iterable<T> {
    */
   reduce(fn: (acc: T, val: T) => T): T;
   reduce<U>(fn: (acc: U, val: T) => U, initialValue: U): U;
-  reduce<U>(
-    fn: (acc: T | U, val: T) => T | U,
-    ...rest: [] | [U]
-  ): T | U {
+  reduce<U>(fn: (acc: T | U, val: T) => T | U, ...rest: [] | [U]): T | U {
     const it = this[Symbol.iterator]();
     let acc: T | U;
-    if (rest.length > 0) {
+    if (rest.length > 0 && rest[0] !== undefined) {
       acc = rest[0];
     } else {
       const first = it.next();
@@ -705,8 +688,8 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   map<T2>(fn: (val: T) => T2 | Promise<T2>): AsyncExtendedIterable<T2> {
     const source = this.asyncIterable;
     return new AsyncExtendedIterable<T2>(
-      asyncIterableFrom(() =>
-        new AsyncMapIterator(source[Symbol.asyncIterator](), fn)
+      asyncIterableFrom(
+        () => new AsyncMapIterator(source[Symbol.asyncIterator](), fn)
       )
     );
   }
@@ -726,11 +709,12 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   ): AsyncExtendedIterable<T> | AsyncExtendedIterable<T2> {
     const source = this.asyncIterable;
     return new AsyncExtendedIterable<T>(
-      asyncIterableFrom(() =>
-        new AsyncFilterIterator(
-          source[Symbol.asyncIterator](),
-          predicate as (val: T) => boolean
-        )
+      asyncIterableFrom(
+        () =>
+          new AsyncFilterIterator(
+            source[Symbol.asyncIterator](),
+            predicate as (val: T) => boolean
+          )
       )
     ) as AsyncExtendedIterable<T> | AsyncExtendedIterable<T2>;
   }
@@ -751,7 +735,7 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   ): Promise<T | U> {
     const it = this[Symbol.asyncIterator]();
     let acc: T | U;
-    if (rest.length > 0) {
+    if (rest.length > 0 && rest[0] !== undefined) {
       acc = rest[0];
     } else {
       const first = await it.next();
@@ -792,8 +776,8 @@ export class AsyncExtendedIterable<T> implements AsyncIterable<T> {
   take(n: number): AsyncExtendedIterable<T> {
     const source = this.asyncIterable;
     return new AsyncExtendedIterable<T>(
-      asyncIterableFrom(() =>
-        new AsyncTakeIterator(source[Symbol.asyncIterator](), n)
+      asyncIterableFrom(
+        () => new AsyncTakeIterator(source[Symbol.asyncIterator](), n)
       )
     );
   }
@@ -945,8 +929,13 @@ async function* asSettledGen<T>(
     }
 
     while (queue.length > 0 && remaining > 0) {
-      yield queue.shift();
-      remaining--;
+      const result = queue.shift();
+      if (result) {
+        yield result;
+        remaining--;
+      } else {
+        throw new Error('Unexpected empty queue');
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { ValidationResult } from '../types/index.js';
 import {
   validatePluginOptions,
   validateExampleMetadata,
@@ -99,7 +100,7 @@ describe('validateExampleMetadata', () => {
     );
 
     const context: MetadataValidationContext = {
-      validators: [{ pluginName: 'validator', validate: validator }],
+      validators: [{ pluginName: 'validator', validate: validator as (value: unknown) => ValidationResult }],
       examples: [
         { id: 'valid', metadata: { required: true } },
         { id: 'invalid', metadata: {} },

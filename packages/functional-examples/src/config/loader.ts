@@ -45,25 +45,23 @@ export async function findConfigFile(
   return null;
 }
 
-export async function loadConfig<TMetadata = Record<string, unknown>>(
+export async function loadConfig(
   configPath: string
-): Promise<ConfigWithRoot<TMetadata>> {
+): Promise<ConfigWithRoot> {
   const ext = path.extname(configPath);
 
   if (ext === '.json' || ext === '.jsonc') {
-    return loadJsonConfig<TMetadata>(configPath);
+    return loadJsonConfig(configPath);
   }
 
-  return loadTsConfig<TMetadata>(configPath);
+  return loadTsConfig(configPath);
 }
 
-async function loadJsonConfig<TMetadata>(
-  configPath: string
-): Promise<ConfigWithRoot<TMetadata>> {
+async function loadJsonConfig(configPath: string): Promise<ConfigWithRoot> {
   const { readFile } = await import('node:fs/promises');
   const content = await readFile(configPath, 'utf-8');
 
-  const config: Config<TMetadata> = await parseJson(content, configPath);
+  const config: Config = await parseJson(content, configPath);
   const configDir = dirname(configPath);
   const root = config.root ? path.resolve(configDir, config.root) : configDir;
 
@@ -73,9 +71,7 @@ async function loadJsonConfig<TMetadata>(
   };
 }
 
-async function loadTsConfig<TMetadata>(
-  configPath: string
-): Promise<ConfigWithRoot<TMetadata>> {
+async function loadTsConfig(configPath: string): Promise<ConfigWithRoot> {
   const { createJiti } = await import('jiti');
   // Use config file path as base for module resolution
   // This ensures workspace packages can be resolved from the config's location
@@ -86,8 +82,9 @@ async function loadTsConfig<TMetadata>(
   const module = await jiti.import(configPath);
 
   // Handle default export or direct config
-  const config: Config<TMetadata> =
-    (module as { default?: Config<TMetadata> }).default ?? module;
+  const config = (
+    (module as { default?: Config }).default ?? module
+  ) as Config;
   const configDir = dirname(configPath);
   const root = config.root ? path.resolve(configDir, config.root) : configDir;
 

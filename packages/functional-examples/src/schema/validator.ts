@@ -1,10 +1,10 @@
 import AjvDefault from 'ajv';
+import type { ValidationError, ValidationResult } from '../types/index.js';
 import type { JSONSchema } from './merger.js';
-import type { ValidationResult, ValidationError } from '../types/index.js';
 
 // Handle both ESM and CJS default exports
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Ajv = (AjvDefault as any).default ?? AjvDefault;
+const Ajv = ((AjvDefault as any).default ?? AjvDefault) as typeof AjvDefault;
 
 /**
  * Create a validator function from a JSON Schema using AJV.
@@ -12,7 +12,7 @@ const Ajv = (AjvDefault as any).default ?? AjvDefault;
 export function createSchemaValidator(
   schema: JSONSchema
 ): (value: unknown) => ValidationResult {
-  const ajv = new Ajv({ allErrors: true });
+  const ajv = new Ajv.Ajv({ allErrors: true });
   const validate = ajv.compile(schema);
 
   return (value: unknown): ValidationResult => {

@@ -3,14 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { BaseMetadata } from '../types/index.js';
 import { findConfigFile, validateConfig, mergeConfigs } from './index.js';
 import type { Config } from './types.js';
-
-interface CustomMetadata extends BaseMetadata {
-  tags: string[];
-  category: string;
-}
 
 describe('Config System', () => {
   describe('findConfigFile', () => {
@@ -31,7 +25,7 @@ describe('Config System', () => {
 
   describe('validateConfig', () => {
     it('should pass valid config with plugins', () => {
-      const config: Config<CustomMetadata> = {
+      const config: Config = {
         plugins: [
           {
             name: 'test-plugin',
@@ -56,7 +50,7 @@ describe('Config System', () => {
     });
 
     it('should allow empty plugins (for auto-detection)', () => {
-      const config: Config<CustomMetadata> = {
+      const config: Config = {
         plugins: [],
       };
 
@@ -66,7 +60,7 @@ describe('Config System', () => {
     });
 
     it('should pass config with only scan options', () => {
-      const config: Config<CustomMetadata> = {
+      const config: Config = {
         scan: {
           include: ['**/*.ts'],
           exclude: ['**/dist/**'],
@@ -78,7 +72,7 @@ describe('Config System', () => {
     });
 
     it('should validate scan include patterns', () => {
-      const config: Config<CustomMetadata> = {
+      const config: Config = {
         scan: {
           include: [''],
         },
@@ -94,7 +88,7 @@ describe('Config System', () => {
     });
 
     it('should validate scan exclude patterns', () => {
-      const config: Config<CustomMetadata> = {
+      const config: Config = {
         scan: {
           exclude: ['', 'valid'],
         },
@@ -112,10 +106,10 @@ describe('Config System', () => {
 
   describe('mergeConfigs', () => {
     it('should deep merge scan config', () => {
-      const config1: Partial<Config<CustomMetadata>> = {
+      const config1: Partial<Config> = {
         scan: { include: ['**/*.ts'] },
       };
-      const config2: Partial<Config<CustomMetadata>> = {
+      const config2: Partial<Config> = {
         scan: { exclude: ['**/test/**'] },
       };
 
@@ -128,7 +122,7 @@ describe('Config System', () => {
     });
 
     it('should provide defaults for scan config', () => {
-      const config: Partial<Config<CustomMetadata>> = {};
+      const config: Partial<Config> = {};
       const merged = mergeConfigs(config);
 
       expect(merged.scan).toEqual({

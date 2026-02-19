@@ -8,6 +8,7 @@ import { validatePluginOptions } from '../plugins/validation.js';
 import { getDefaultIncludePattern } from '../scanner/candidates.js';
 import type {
   ConfigValidationError,
+  ExampleMetadata,
   Extractor,
   Plugin,
   PluginReference,
@@ -56,8 +57,8 @@ const DEFAULT_SCAN: Omit<Required<ScanConfig>, 'include'> = {
  * const result = await scanExamples(config);
  * ```
  */
-export async function resolveConfig<TMetadata = Record<string, unknown>>(
-  config: ConfigWithRoot<TMetadata>
+export async function resolveConfig<TMetadata = ExampleMetadata>(
+  config: ConfigWithRoot
 ): Promise<ResolvedConfig<TMetadata>> {
   const validationErrors: ConfigValidationError[] = [];
 
@@ -151,14 +152,14 @@ async function resolvePluginEntries<TMetadata = Record<string, unknown>>(
       // String reference: "@functional-examples/yaml-manifest"
       const plugin = await loadPluginFromPackage(entry);
       if (plugin) {
-        plugins.push(plugin as Plugin<TMetadata>);
+        plugins.push({ ...plugin, _packageName: entry } as Plugin<TMetadata>);
       }
     } else if (Array.isArray(entry) && entry.length >= 1) {
       // Tuple reference: ["@functional-examples/javascript", { regionTag: "#_" }]
       const [packageName, options] = entry as [string, Record<string, unknown>?];
       const plugin = await loadPluginFromPackage(packageName, options);
       if (plugin) {
-        plugins.push(plugin as Plugin<TMetadata>);
+        plugins.push({ ...plugin, _packageName: packageName } as Plugin<TMetadata>);
       }
     }
   }
@@ -179,7 +180,7 @@ async function autoDetectPlugins<
     try {
       const plugin = await loadPluginFromPackage(packageName);
       if (plugin) {
-        plugins.push(plugin as Plugin<TMetadata>);
+        plugins.push({ ...plugin, _packageName: packageName } as Plugin<TMetadata>);
       }
     } catch {
       // Package not installed, skip silently

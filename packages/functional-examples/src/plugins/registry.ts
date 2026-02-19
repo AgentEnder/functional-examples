@@ -1,7 +1,7 @@
 import type {
-  Plugin,
   Extractor,
   FileContentsParser,
+  Plugin,
   ValidationResult,
 } from '../types/index.js';
 
@@ -18,6 +18,8 @@ export interface PluginValidator<T = unknown> {
  */
 export interface PluginSchemaEntry {
   pluginName: string;
+  /** Package name this plugin was loaded from (set for string/tuple refs) */
+  packageName?: string;
   options?: string;
   metadata?: string;
 }
@@ -99,11 +101,16 @@ export class PluginRegistry {
   /**
    * Get all metadata validators from registered plugins.
    */
-  getMetadataValidators(): PluginValidator[] {
+  getMetadataValidators(): PluginValidator<unknown>[] {
     return this.plugins.flatMap((p) => {
       const validator = p.validators?.metadata;
       if (!validator) return [];
-      return [{ pluginName: p.name, validate: validator }];
+      return [
+        {
+          pluginName: p.name,
+          validate: validator as (value: unknown) => ValidationResult,
+        },
+      ];
     });
   }
 
@@ -117,6 +124,7 @@ export class PluginRegistry {
       return [
         {
           pluginName: p.name,
+          packageName: p._packageName,
           options: schemas.options,
           metadata: schemas.metadata,
         },

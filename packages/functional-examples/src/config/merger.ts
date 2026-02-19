@@ -8,8 +8,8 @@ import type { Config, ExtractorConfigOrFunction, ScanConfig } from './types.js';
 /**
  * Merged configuration with all required fields
  */
-export interface MergedConfig<TMetadata = Record<string, unknown>> {
-  extractors: ExtractorConfigOrFunction<TMetadata>[];
+export interface MergedConfig {
+  extractors: ExtractorConfigOrFunction[];
   scan: Required<ScanConfig>;
   pathMappings: PathMapping[];
 }
@@ -26,16 +26,16 @@ export interface MergedConfig<TMetadata = Record<string, unknown>> {
  * );
  * ```
  */
-export function mergeConfigs<TMetadata = Record<string, unknown>>(
-  ...configs: Array<Partial<Config<TMetadata>> | null | undefined>
-): MergedConfig<TMetadata> {
+export function mergeConfigs(
+  ...configs: Array<Partial<Config> | null | undefined>
+): MergedConfig {
   const defaults: Required<ScanConfig> = {
     include: ['**/*'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
     root: '.',
   };
 
-  const mergedExtractors: ExtractorConfigOrFunction<TMetadata>[] = [];
+  const mergedExtractors: ExtractorConfigOrFunction[] = [];
   const mergedPathMappings: PathMapping[] = [];
   const mergedScan: Partial<ScanConfig> = {};
 

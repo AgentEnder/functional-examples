@@ -350,6 +350,8 @@ export interface PluginValidatorEntry<T = unknown> {
  */
 export interface PluginSchemaEntry {
   pluginName: string;
+  /** Package name this plugin was loaded from (set for string/tuple refs) */
+  packageName?: string;
   options?: string;
   metadata?: string;
 }
@@ -435,13 +437,48 @@ export interface GenerateConfig {
  * - A string: `"@functional-examples/yaml-manifest"`
  * - A tuple: `["@functional-examples/javascript", { "regionTag": "#_" }]`
  */
-export type PluginReference =
-  | string
-  | [string, Record<string, unknown>];
+export type PluginReference = string | [string, Record<string, unknown>];
 
-export interface Config<TMetadata = Record<string, unknown>> {
+/**
+ * Augmentable registry for typed plugin references.
+ *
+ * Run `functional-examples generate` to create a declaration file that
+ * augments this interface, providing type-safe plugin references with
+ * autocomplete for plugin options.
+ *
+ * @example Manual augmentation (or use `generate` command):
+ * ```typescript
+ * declare module '@functional-examples/devkit' {
+ *   interface PluginOptionsRegistry {
+ *     plugins:
+ *       | '@functional-examples/yaml-manifest'
+ *       | '@functional-examples/javascript'
+ *       | ['@functional-examples/javascript', { skipFrontmatter?: boolean }]
+ *       | import('@functional-examples/devkit').PluginReference;
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface PluginOptionsRegistry {}
+
+/**
+ * Resolved plugin reference type.
+ *
+ * If `PluginOptionsRegistry` has been augmented with a `plugins` property
+ * (via `functional-examples generate`), this resolves to that typed union.
+ * Otherwise, falls back to the generic `PluginReference`.
+ */
+export type TypedPluginReference = PluginOptionsRegistry extends {
+  plugins: infer T;
+}
+  ? T
+  : PluginReference;
+
+export interface Config {
   /** Plugins to use for scanning and parsing (recommended) */
-  plugins?: (Plugin<TMetadata> | PluginReference)[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins?: (Plugin<any> | TypedPluginReference)[];
   /** Scan options */
   scan?: ScanConfig;
   /** Path mappings for conflict resolution */
@@ -479,8 +516,7 @@ export interface Config<TMetadata = Record<string, unknown>> {
 /**
  * Full configuration (alias for BaseConfig)
  */
-export type ConfigWithRoot<TMetadata = Record<string, unknown>> =
-  Config<TMetadata> & { root: string };
+export type ConfigWithRoot = Config & { root: string };
 
 // ============================================================================
 // Resolved Configuration Types
@@ -490,8 +526,8 @@ export type ConfigWithRoot<TMetadata = Record<string, unknown>> =
  * Resolved configuration with actual extractor instances.
  * This is the runtime-ready configuration after all plugins are loaded.
  */
-export interface ResolvedConfig<TMetadata = Record<string, unknown>>
-  extends ConfigWithRoot<TMetadata> {
+export interface ResolvedConfig<TMetadata = ExampleMetadata>
+  extends ConfigWithRoot {
   /** Resolved extractor instances */
   extractors: Extractor<TMetadata>[];
   /** Resolved plugins */
@@ -516,7 +552,7 @@ export interface ResolvedConfig<TMetadata = Record<string, unknown>>
  * Plugin commands can be a static array or a function that receives
  * the resolved config and returns commands (sync or async).
  */
-export type PluginCommands<TMetadata = Record<string, unknown>> =
+export type PluginCommands<TMetadata = ExampleMetadata> =
   | CLI[]
   | ((config: ResolvedConfig<TMetadata>) => CLI[] | Promise<CLI[]>);
 
@@ -528,7 +564,7 @@ export type PluginCommands<TMetadata = Record<string, unknown>> =
  * Plugin containing optional extractors, parsers, schemas, and validators.
  * Auto-registers for declared file extensions.
  */
-export interface Plugin<TMetadata = Record<string, unknown>> {
+export interface Plugin<TMetadata = ExampleMetadata> {
   /** Unique plugin name */
   readonly name: string;
 
@@ -566,4 +602,12 @@ export interface Plugin<TMetadata = Record<string, unknown>> {
    * @internal
    */
   readonly _options?: unknown;
+
+  /**
+   * Package name this plugin was loaded from (e.g., "@functional-examples/javascript").
+   * Set automatically during resolution when a string/tuple reference is used.
+   * Used by the `generate` command to emit typed plugin reference types.
+   * @internal
+   */
+  readonly _packageName?: string;
 }
