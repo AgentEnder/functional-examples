@@ -74,6 +74,8 @@ const BLOCK_COMMENT_END = /^[ \t]*---\s*\*\/\s*$/;
 interface FrontmatterResult {
   /** Parsed YAML metadata */
   metadata: Record<string, unknown>;
+  /** 0-indexed line number of the last frontmatter line */
+  endLine: number;
 }
 
 /**
@@ -116,7 +118,7 @@ async function extractLineCommentFrontmatter(
     ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
-  return { metadata };
+  return { metadata, endLine: endIndex };
 }
 
 /**
@@ -154,7 +156,7 @@ async function extractBlockCommentFrontmatter(
     ? ((await parseYaml(yamlContent)) as Record<string, unknown>) ?? {}
     : {};
 
-  return { metadata };
+  return { metadata, endLine: endIndex };
 }
 
 /**
@@ -162,18 +164,13 @@ async function extractBlockCommentFrontmatter(
  */
 async function extractFrontmatter(
   content: string
-): Promise<Record<string, unknown> | null> {
+): Promise<FrontmatterResult | null> {
   const lines = content.split('\n');
 
-  const result =
+  return (
     (await extractLineCommentFrontmatter(lines)) ??
-    (await extractBlockCommentFrontmatter(lines));
-
-  if (!result) {
-    return null;
-  }
-
-  return result.metadata;
+    (await extractBlockCommentFrontmatter(lines))
+  );
 }
 
 /**
@@ -542,20 +539,22 @@ export function createJavaScriptExtractor(): Extractor {
       return null;
     }
 
-    const metadata = await extractFrontmatter(content);
-    if (!metadata || !hasValidMetadata(metadata)) {
+    const frontmatter = await extractFrontmatter(content);
+    if (!frontmatter || !hasValidMetadata(frontmatter.metadata)) {
       return null;
     }
 
-    const { id, title, description, ...restMetadata } = metadata;
+    const { id, title, description, ...restMetadata } = frontmatter.metadata;
     const relativePath = path.relative(rootPath, absolutePath);
+    const lines = content.split('\n');
+    const parsed = lines.slice(frontmatter.endLine + 1).join('\n').trimStart();
 
     return {
       id,
       title,
       description: typeof description === 'string' ? description : undefined,
       rootPath: absolutePath,
-      files: [{ absolutePath, relativePath, raw: content }],
+      files: [{ absolutePath, relativePath, raw: content, parsed }],
       metadata: restMetadata,
       extractorName: EXTRACTOR_NAME,
     };
