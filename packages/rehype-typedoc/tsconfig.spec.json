@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "types": ["vitest/globals", "node"]
+    "declaration": false,
+    "types": ["vitest/globals", "node"],
+    "tsBuildInfoFile": "../../dist/tsc/rehype-typedoc.spec.tsbuildinfo"
   },
   "include": ["src/**/*.ts"]
 }
