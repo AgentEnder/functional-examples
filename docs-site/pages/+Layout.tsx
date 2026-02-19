@@ -71,13 +71,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               API
             </HeaderLink>
 
-            {/* Divider + external links */}
-            <span className="h-4 border-l border-bp-line-dim/30" />
+          </nav>
+
+          {/* Search + external links + mobile menu */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:block">
+              <PagefindSearch />
+            </div>
+            <span className="hidden md:block h-4 border-l border-bp-line-dim/30" />
             <a
               href="https://github.com/AgentEnder/functional-examples"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-bp-line-dim hover:text-bp-line transition-colors"
+              className="hidden md:block text-bp-line-dim hover:text-bp-line transition-colors"
               aria-label="GitHub"
             >
               <SiGithub className="w-5 h-5" />
@@ -86,18 +92,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               href="https://www.npmjs.com/package/functional-examples"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-bp-line-dim hover:text-bp-line transition-colors"
+              className="hidden md:block text-bp-line-dim hover:text-bp-line transition-colors"
               aria-label="NPM"
             >
               <SiNpm className="w-5 h-5" />
             </a>
-          </nav>
-
-          {/* Search + mobile menu */}
-          <div className="flex items-center gap-3">
-            <div className="hidden md:block">
-              <PagefindSearch />
-            </div>
             {isMobile && (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -111,38 +110,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {/* Mobile sidebar — rendered on all pages so the hamburger works on the hero too */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside
+        className={`
+          lg:hidden fixed left-0 top-16 bottom-0 w-72 z-40
+          bg-bp-paper border-r border-bp-line-dim/20
+          transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          overflow-y-auto
+        `}
+      >
+        <NavContent
+          navigation={navigation}
+          activeCheck={isActive}
+          onItemClick={() => setSidebarOpen(false)}
+        />
+      </aside>
+
       {/* Main layout — grows to fill remaining viewport height */}
       {isLandingPage ? (
         <main className="grow">{children}</main>
       ) : (
         <div className="relative flex grow">
-          {isMobile && sidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/40 z-30"
-              onClick={() => setSidebarOpen(false)}
-            />
-          )}
-
           {/* Desktop sidebar */}
           <aside className="hidden lg:block shrink-0 w-64 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto border-r border-bp-line-dim/15 bg-bp-paper/80">
             <NavContent navigation={navigation} activeCheck={isActive} />
-          </aside>
-
-          {/* Mobile sidebar */}
-          <aside
-            className={`
-              lg:hidden fixed left-0 top-16 bottom-0 w-72 z-40
-              bg-bp-paper border-r border-bp-line-dim/20
-              transition-transform duration-300 ease-in-out
-              ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-              overflow-y-auto
-            `}
-          >
-            <NavContent
-              navigation={navigation}
-              activeCheck={isActive}
-              onItemClick={() => setSidebarOpen(false)}
-            />
           </aside>
 
           {/* Content */}

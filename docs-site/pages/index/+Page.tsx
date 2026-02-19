@@ -1,3 +1,4 @@
+import { SiGithub, SiNpm } from '@icons-pack/react-simple-icons';
 import { useEffect, useRef, useState } from 'react';
 import { BlueprintFrame, CornerMark } from '../../components/BlueprintFrame';
 import { CodeBlock } from '../../components/CodeBlock';
@@ -51,7 +52,7 @@ function HeroSection() {
         </p>
 
         <div
-          className="flex items-center justify-center gap-6 mb-16 opacity-0 animate-fade-in"
+          className="grid grid-cols-2 place-items-center gap-x-6 gap-y-4 mb-16 mx-auto w-fit opacity-0 animate-fade-in"
           style={{ animationDelay: '700ms' }}
         >
           <Link
@@ -108,6 +109,26 @@ function HeroSection() {
             />
             VIEW EXAMPLES
           </Link>
+          <a
+            href="https://github.com/AgentEnder/functional-examples"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs font-heading tracking-widest"
+            aria-label="GitHub"
+          >
+            <SiGithub className="w-4 h-4" />
+            GITHUB
+          </a>
+          <a
+            href="https://www.npmjs.com/package/functional-examples"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs font-heading tracking-widest"
+            aria-label="NPM"
+          >
+            <SiNpm className="w-4 h-4" />
+            NPM
+          </a>
         </div>
       </div>
 
