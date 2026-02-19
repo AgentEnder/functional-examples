@@ -11,7 +11,6 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/vitest.config.ts',
-      '**/*.d.ts',
     ],
   },
   {
@@ -36,7 +35,7 @@ export default [
     },
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.mts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

@@ -9,7 +9,10 @@
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json"
     ],
-    "sharedGlobals": ["{workspaceRoot}/.github/workflows/*.yml"]
+    "sharedGlobals": [
+      "{workspaceRoot}/.github/workflows/*.yml",
+      "{workspaceRoot}/tsconfig.base.json"
+    ]
   },
   "release": {
     "projects": ["packages/*", "!rehype-typedoc", "!vike-plugin-typedoc"],

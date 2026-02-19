@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "tsBuildInfoFile": "../../dist/devkit.spec.tsbuildinfo"
   },
   "include": ["src/**/*.ts"]
 }

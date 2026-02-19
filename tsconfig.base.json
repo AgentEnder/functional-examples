@@ -10,6 +10,7 @@
     "lib": ["ES2022"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "strict": true
   }
 }
