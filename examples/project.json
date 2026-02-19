@@ -31,6 +31,23 @@
         "cwd": "{workspaceRoot}"
       },
       "dependsOn": ["^build"]
+    },
+    "generate": {
+      "command": "tsx scripts/regenerate-examples.mts",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      },
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "command": "tsx scripts/typecheck-examples.mts",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      },
+      "dependsOn": ["generate"]
+    },
+    "e2e": {
+      "dependsOn": ["test", "typecheck"]
     }
   }
 }

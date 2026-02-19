@@ -184,7 +184,7 @@ async function main() {
           stdio: 'inherit',
         });
         console.log(`  [${stepNum}] ✓ PASS\n`);
-      } catch (error) {
+      } catch {
         console.error(`  [${stepNum}] ✗ FAIL\n`);
         failedSteps++;
         // Continue to next step instead of exiting
