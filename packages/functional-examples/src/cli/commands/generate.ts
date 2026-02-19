@@ -10,7 +10,7 @@ import {
   mergeConfigSchema,
   mergeMetadataSchemas,
 } from '../../schema/merger.js';
-import { generateMetadataTypes } from '../../schema/typegen.js';
+import { generateTypes } from '../../schema/typegen.js';
 
 const DEFAULT_OUTPUT_DIR = '.functional-examples';
 
@@ -54,12 +54,11 @@ export const generateCommand = cli('generate', {
         pluginSchemas,
       });
 
-      // Generate metadata types from merged schema
-      const metadataTypes = generateMetadataTypes({
-        mergedSchema: mergedMetadataSchema,
-      });
       const typesPath = path.join(outputDir, 'metadata.d.ts');
-      await writeFile(typesPath, metadataTypes);
+      await writeFile(
+        typesPath,
+        generateTypes({ mergedSchema: mergedMetadataSchema, pluginSchemas })
+      );
       console.log(`✓ Generated ${typesPath}`);
 
       // Also output the merged metadata schema for reference

@@ -6,9 +6,6 @@ export {
   type MergeMetadataSchemasOptions,
 } from './merger.js';
 
-export {
-  generateMetadataTypes,
-  type GenerateMetadataTypesOptions,
-} from './typegen.js';
+export { generateTypes, type GenerateTypesOptions } from './typegen.js';
 
 export { createSchemaValidator } from './validator.js';

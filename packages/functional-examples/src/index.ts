@@ -105,13 +105,13 @@ export type {
 export {
   mergeConfigSchema,
   mergeMetadataSchemas,
-  generateMetadataTypes,
+  generateTypes,
 } from './schema/index.js';
 export type {
   JSONSchema,
   MergeConfigSchemaOptions,
   MergeMetadataSchemasOptions,
-  GenerateMetadataTypesOptions,
+  GenerateTypesOptions,
 } from './schema/index.js';
 
 // Config types for metadata schema
