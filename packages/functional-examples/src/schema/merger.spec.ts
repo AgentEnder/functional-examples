@@ -62,7 +62,7 @@ describe('mergeConfigSchema', () => {
     const anyOf = pluginsSchema.items?.anyOf ?? [];
 
     // Should include string const for each plugin
-    const stringRefs = anyOf.filter((item: any) => item.const);
+    const stringRefs = anyOf.filter((item) => (item as Record<string, unknown>).const);
     expect(stringRefs).toHaveLength(2);
     expect(stringRefs).toContainEqual({
       const: '@functional-examples/javascript',
@@ -87,16 +87,17 @@ describe('mergeConfigSchema', () => {
     const anyOf = pluginsSchema.items?.anyOf ?? [];
 
     // Plugin without options still gets a string const entry
-    const stringRefs = anyOf.filter((item: any) => item.const);
+    const stringRefs = anyOf.filter((item) => (item as Record<string, unknown>).const);
     expect(stringRefs).toContainEqual({
       const: '@functional-examples/test',
       description: 'Use the default options for @functional-examples/test',
     });
 
     // But no tuple entry for plugin without options
-    const testTuple = anyOf.find((item: any) =>
-      item.type === 'array' && item.prefixItems?.[0]?.const === '@functional-examples/test'
-    );
+    const testTuple = anyOf.find((item) => {
+      const s = item as Record<string, unknown>;
+      return s['type'] === 'array' && (s['prefixItems'] as Array<Record<string, unknown>>)?.[0]?.['const'] === '@functional-examples/test';
+    });
     expect(testTuple).toBeUndefined();
   });
 
@@ -118,14 +119,16 @@ describe('mergeConfigSchema', () => {
     const anyOf = pluginsSchema.items?.anyOf ?? [];
 
     // Should include tuple schema with const name + options ref
-    const tupleRefs = anyOf.filter((item: any) =>
-      item.type === 'array' && item.prefixItems?.[0]?.const
-    );
+    const tupleRefs = anyOf.filter((item) => {
+      const s = item as Record<string, unknown>;
+      return s['type'] === 'array' && (s['prefixItems'] as Array<Record<string, unknown>>)?.[0]?.['const'];
+    });
     expect(tupleRefs.length).toBeGreaterThan(0);
 
-    const jsTuple = tupleRefs.find((item: any) =>
-      item.prefixItems[0].const === '@functional-examples/javascript'
-    ) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
+    const jsTuple = tupleRefs.find((item) => {
+      const s = item as Record<string, unknown>;
+      return (s['prefixItems'] as Array<Record<string, unknown>>)?.[0]?.['const'] === '@functional-examples/javascript';
+    }) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
     expect(jsTuple).toBeDefined();
     expect(jsTuple?.prefixItems).toHaveLength(2);
     expect(jsTuple?.prefixItems?.[0]).toEqual({ const: '@functional-examples/javascript' });
@@ -146,9 +149,10 @@ describe('mergeConfigSchema', () => {
     const anyOf = pluginsSchema.items?.anyOf ?? [];
 
     // Should include generic string fallback
-    const genericString = anyOf.find((item: any) =>
-      item.type === 'string' && item.description?.includes('Unknown')
-    );
+    const genericString = anyOf.find((item) => {
+      const s = item as Record<string, unknown>;
+      return s['type'] === 'string' && (s['description'] as string | undefined)?.includes('Unknown');
+    });
     expect(genericString).toBeDefined();
     expect(genericString).toEqual({
       type: 'string',
@@ -156,11 +160,11 @@ describe('mergeConfigSchema', () => {
     });
 
     // Should include generic tuple fallback
-    const genericTuple = anyOf.find((item: any) =>
-      item.type === 'array' &&
-      item.prefixItems?.[0]?.type === 'string' &&
-      item.prefixItems?.[1]?.type === 'object'
-    ) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
+    const genericTuple = anyOf.find((item) => {
+      const s = item as Record<string, unknown>;
+      const prefixItems = s['prefixItems'] as Array<Record<string, unknown>> | undefined;
+      return s['type'] === 'array' && prefixItems?.[0]?.['type'] === 'string' && prefixItems?.[1]?.['type'] === 'object';
+    }) as { prefixItems?: unknown[]; minItems?: number; maxItems?: number } | undefined;
     expect(genericTuple).toBeDefined();
     expect(genericTuple?.prefixItems).toHaveLength(2);
     expect(genericTuple?.minItems).toBe(1);

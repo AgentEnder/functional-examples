@@ -9,6 +9,7 @@ export default [
       '**/node_modules/**',
       '**/.nx/**',
       '**/dist/**',
+      '**/dist-spec/**',
       '**/build/**',
       '**/vitest.config.ts',
     ],
