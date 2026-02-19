@@ -1,10 +1,7 @@
 import type {
   Plugin,
-  FileContentsParser,
   ValidationResult,
 } from '@functional-examples/devkit';
-import { createJavaScriptParser, type RegionTagConfig } from './parser.js';
-import { createFrontmatterParser } from './frontmatter.js';
 import { createJavaScriptExtractor } from './extractor.js';
 
 export const JAVASCRIPT_EXTENSIONS = [
@@ -19,20 +16,12 @@ export const JAVASCRIPT_EXTENSIONS = [
   '.json',
 ] as const;
 
-export { createJavaScriptParser, type RegionTagConfig } from './parser.js';
-export { createFrontmatterParser } from './frontmatter.js';
 export { createJavaScriptExtractor } from './extractor.js';
 
 /**
  * Options for the JavaScript plugin.
  */
 export interface JavaScriptPluginOptions {
-  /** Skip frontmatter extraction (default: false) */
-  skipFrontmatter?: boolean;
-  /** Skip region extraction (default: false) */
-  skipRegions?: boolean;
-  /** Custom region tag markers (default: { start: '#region', end: '#endregion' }) */
-  regionTag?: RegionTagConfig;
   /** Skip file extraction/discovery — only contribute parsing (default: false) */
   skipExtraction?: boolean;
 }
@@ -43,22 +32,6 @@ export interface JavaScriptPluginOptions {
 const OPTIONS_SCHEMA = JSON.stringify({
   type: 'object',
   properties: {
-    skipFrontmatter: {
-      type: 'boolean',
-      description: 'Skip frontmatter parsing',
-    },
-    skipRegions: {
-      type: 'boolean',
-      description: 'Skip region parsing',
-    },
-    regionTag: {
-      type: 'object',
-      description: 'Custom region tag markers',
-      properties: {
-        start: { type: 'string' },
-        end: { type: 'string' },
-      },
-    },
     skipExtraction: {
       type: 'boolean',
       description: 'Skip file extraction/discovery',
@@ -107,12 +80,7 @@ function validateMetadata(metadata: Record<string, unknown>): ValidationResult {
  *
  * This plugin:
  * - Handles .js, .jsx, .mjs, .cjs, .ts, .tsx, .mts, .cts files
- * - Extracts YAML frontmatter from line/block comments
- * - Extracts code regions from #region/#endregion markers
  * - Provides a single-file extractor for discovering examples
- *
- * Parsers are listed in pipeline order: frontmatter first, then regions.
- * The core's runParsePipeline handles hunk accumulation across parsers.
  *
  * @param options - Optional plugin configuration
  * @returns A configured JavaScript plugin
@@ -120,26 +88,12 @@ function validateMetadata(metadata: Record<string, unknown>): ValidationResult {
 export function createJavaScriptPlugin(
   options?: JavaScriptPluginOptions
 ): Plugin {
-  const {
-    skipFrontmatter = false,
-    skipRegions = false,
-    regionTag,
-    skipExtraction = false,
-  } = options ?? {};
-
-  const parsers: FileContentsParser[] = [];
-  if (!skipFrontmatter) {
-    parsers.push(createFrontmatterParser());
-  }
-  if (!skipRegions) {
-    parsers.push(createJavaScriptParser(regionTag));
-  }
+  const { skipExtraction = false } = options ?? {};
 
   return {
     name: 'javascript',
     extensions: [...JAVASCRIPT_EXTENSIONS],
     extractor: skipExtraction ? undefined : createJavaScriptExtractor(),
-    fileContentsParsers: parsers,
     schemas: {
       options: OPTIONS_SCHEMA,
       metadata: METADATA_SCHEMA,
