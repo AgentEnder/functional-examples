@@ -1,9 +1,11 @@
-import { cli } from 'cli-forge';
 import type { Example, ResolvedConfig } from '@functional-examples/devkit';
+import { cli } from 'cli-forge';
+import { cacheKey, createTestCache } from '../cache.js';
 import { normalizeTests, runTest } from '../runner.js';
 import type { TestCase } from '../schema.js';
 import { TestMetadata, testMetadataSchema } from '../schema.js';
 import type { ResolvedTestPluginOptions } from '../types.js';
+import { typedFilter } from '../utils.js';
 
 function isCI(): boolean {
   return !!(
@@ -21,6 +23,24 @@ function hasTests(
 ): example is Example & { metadata: { test: TestCase | TestCase[] } } {
   const result = testMetadataSchema.safeParse(example.metadata);
   return result.success && result.data.test !== undefined;
+}
+
+type TestableExample = Example & { metadata: { test: TestCase | TestCase[] } };
+
+function filterToFailedTests(
+  examples: TestableExample[],
+  failedKeys: Set<string>
+): TestableExample[] {
+  const result: TestableExample[] = [];
+  for (const example of examples) {
+    const tests = normalizeTests(example.metadata.test).filter((t) =>
+      failedKeys.has(cacheKey(example.id, t.name))
+    );
+    if (tests.length > 0) {
+      result.push({ ...example, metadata: { ...example.metadata, test: tests } });
+    }
+  }
+  return result;
 }
 
 export function createTestCommand(
@@ -70,6 +90,11 @@ export function createTestCommand(
           alias: ['u'],
           description: 'Update snapshot files with actual content',
           default: false,
+        })
+        .option('onlyFailed', {
+          type: 'boolean',
+          description: 'Only run tests that failed in the previous run',
+          default: false,
         }),
     handler: async (args) => {
       const formatName = args.format ?? (isCI() ? ciReporter : defaultReporter);
@@ -83,6 +108,25 @@ export function createTestCommand(
 
       const reporter = reporterFactory();
 
+      const cache = createTestCache();
+
+      if (args.verbose) {
+        if (cache) {
+          console.log(`Cache: ${cache.path}`);
+          const summary = cache.statusSummary();
+          const total = summary.passed + summary.failed + summary['not-started'];
+          if (total > 0) {
+            console.log(
+              `Cache status: ${total} entries — ${summary.passed} passed, ${summary.failed} failed, ${summary['not-started']} not-started`
+            );
+          } else {
+            console.log('Cache status: empty (first run)');
+          }
+        } else {
+          console.log('Cache: unavailable (no node_modules found)');
+        }
+      }
+
       // Scan for examples
       const { scanExamples } = await import('functional-examples');
       const { examples, errors } = await scanExamples<TestMetadata>(config);
@@ -95,7 +139,15 @@ export function createTestCommand(
       }
 
       // Filter to examples with tests
-      let testableExamples = examples.filter(hasTests);
+      let testableExamples = typedFilter(examples, hasTests);
+
+      if (args.verbose) {
+        const testCount = testableExamples.reduce(
+          (sum, e) => sum + normalizeTests(e.metadata.test).length,
+          0
+        );
+        console.log(`Found ${testCount} test${testCount !== 1 ? 's' : ''} across ${testableExamples.length} example${testableExamples.length !== 1 ? 's' : ''}`);
+      }
 
       // Apply filter pattern
       if (args.filter) {
@@ -105,10 +157,38 @@ export function createTestCommand(
             e.id.toLowerCase().includes(pattern) ||
             e.rootPath.toLowerCase().includes(pattern)
         );
+        if (args.verbose) {
+          const testCount = testableExamples.reduce(
+            (sum, e) => sum + normalizeTests(e.metadata.test).length,
+            0
+          );
+          console.log(`After --filter: ${testCount} test${testCount !== 1 ? 's' : ''} across ${testableExamples.length} example${testableExamples.length !== 1 ? 's' : ''}`);
+        }
+      }
+
+      if (args.onlyFailed) {
+        if (!cache) {
+          console.error(
+            'No cache found — cannot use --only-failed without a previous run'
+          );
+          process.exit(1);
+        }
+        testableExamples = filterToFailedTests(testableExamples, cache.nonPassedKeys());
+        if (args.verbose) {
+          const testCount = testableExamples.reduce(
+            (sum, e) => sum + normalizeTests(e.metadata.test).length,
+            0
+          );
+          console.log(`After --only-failed: ${testCount} test${testCount !== 1 ? 's' : ''} to re-run`);
+        }
       }
 
       if (testableExamples.length === 0) {
-        console.log('No examples with tests found');
+        console.log(
+          args.onlyFailed
+            ? 'No previously failed tests found'
+            : 'No examples with tests found'
+        );
         process.exit(0);
       }
 
@@ -117,7 +197,22 @@ export function createTestCommand(
       let passed = 0;
       let failed = 0;
 
+      // Mark every test as not-started before the run begins. If the run is
+      // interrupted (bail, crash, Ctrl-C) those tests remain as not-started
+      // and --only-failed will correctly include them next time.
+      if (cache) {
+        for (const example of testableExamples) {
+          for (const testCase of normalizeTests(example.metadata.test)) {
+            cache.record(example.id, testCase.name, 'not-started');
+          }
+        }
+      }
+
       for (const example of testableExamples) {
+        if (!example.metadata.test) {
+          continue;
+        }
+
         const tests = normalizeTests(example.metadata.test);
 
         for (const testCase of tests) {
@@ -127,6 +222,7 @@ export function createTestCommand(
             updateSnapshots: args['update-snapshots'],
           });
 
+          cache?.record(example.id, testCase.name, result.passed ? 'passed' : 'failed');
           await reporter.report(result, args.verbose);
 
           if (result.passed) {

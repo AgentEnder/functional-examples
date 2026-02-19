@@ -1,9 +1,42 @@
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { stat } from 'fs/promises';
 import { dirname, extname, isAbsolute, join } from 'path';
 import type { ResolvedConfig } from '@functional-examples/devkit';
-import type { TestCase, TestAssertions, OptionsTestCase, StepsTestCase } from './schema.js';
+import type { TestCase, TestAssertions, OptionsTestCase, StepsTestCase, OutputSnapshot } from './schema.js';
 import type { TestResult } from './reporters/types.js';
+
+const REGEX_LITERAL = /^\/(.+)\/([gimsuy]*)$/s;
+const DEFAULT_FLAGS = 's';
+
+/**
+ * Strips ANSI/VT escape sequences from a string.
+ *
+ * Covers:
+ * - CSI sequences: ESC [ <params> <final-byte>  (colors, cursor movement, etc.)
+ * - OSC sequences: ESC ] <content> BEL-or-ST
+ * - Other two-character ESC sequences: ESC <byte in 0x40–0x5F>
+ */
+const VT_STRIP_RE =
+  /\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))/g;
+
+export function stripVT(s: string): string {
+  return s.replace(VT_STRIP_RE, '');
+}
+
+/**
+ * Build a RegExp from a pattern string. If the string is a regex literal
+ * (/pattern/flags), the embedded flags are used as-is. Otherwise the
+ * DEFAULT_FLAGS are applied so that `.` matches newlines across multi-line
+ * command output.
+ */
+export function buildRegex(pattern: string): RegExp {
+  const match = REGEX_LITERAL.exec(pattern);
+  if (match) {
+    return new RegExp(match[1], match[2]);
+  }
+  return new RegExp(pattern, DEFAULT_FLAGS);
+}
 
 interface ExecuteOptions {
   cwd: string;
@@ -15,6 +48,8 @@ interface ExecuteResult {
   exitCode: number;
   stdout: string;
   stderr: string;
+  /** stdout and stderr merged in arrival order */
+  interleaved: string;
 }
 
 /**
@@ -33,13 +68,18 @@ async function executeCommand(
 
     let stdout = '';
     let stderr = '';
+    let interleaved = '';
 
     proc.stdout.on('data', (data) => {
-      stdout += data.toString();
+      const s = data.toString();
+      stdout += s;
+      interleaved += s;
     });
 
     proc.stderr.on('data', (data) => {
-      stderr += data.toString();
+      const s = data.toString();
+      stderr += s;
+      interleaved += s;
     });
 
     const timer = setTimeout(() => {
@@ -53,6 +93,7 @@ async function executeCommand(
         exitCode: code ?? 1,
         stdout,
         stderr,
+        interleaved,
       });
     });
 
@@ -158,15 +199,93 @@ async function checkSnapshotAssertions(
 }
 
 /**
- * Check assertions against actual output
+ * Build the text content for an output snapshot file.
+ *
+ * Format:
+ * ```
+ * === exit code ===
+ * 0
+ *
+ * === stdout ===
+ * Hello, world!
+ *
+ * === stderr ===
+ * (empty)
+ * ```
+ */
+function buildOutputSnapshotContent(
+  snap: OutputSnapshot,
+  actual: ExecuteResult
+): string {
+  const includeExitCode = snap.exitCode !== false;
+  const includeStdout = snap.stdout !== false;
+  const includeStderr = snap.stderr !== false;
+
+  const prepare = (s: string) => (snap.ansi ? s : stripVT(s));
+
+  const sections: string[] = [];
+
+  if (includeExitCode) {
+    sections.push(`=== exit code ===\n${actual.exitCode}`);
+  }
+  if (includeStdout) {
+    const content = prepare(actual.stdout).trimEnd();
+    sections.push(`=== stdout ===\n${content || '(empty)'}`);
+  }
+  if (includeStderr) {
+    const content = prepare(actual.stderr).trimEnd();
+    sections.push(`=== stderr ===\n${content || '(empty)'}`);
+  }
+
+  return sections.join('\n\n') + '\n';
+}
+
+/**
+ * Check (or create/update) an output snapshot — compares command stdout/stderr/exitCode
+ * against a stored snapshot file.
+ */
+async function checkOutputSnapshot(
+  snap: OutputSnapshot,
+  actual: ExecuteResult,
+  examplePath: string,
+  updateSnapshots: boolean
+): Promise<string[]> {
+  const snapshotPath = resolveAssertionPath(examplePath, snap.path);
+  const content = buildOutputSnapshotContent(snap, actual);
+
+  if (!existsSync(snapshotPath) || updateSnapshots) {
+    mkdirSync(dirname(snapshotPath), { recursive: true });
+    writeFileSync(snapshotPath, content, 'utf-8');
+    return [];
+  }
+
+  const stored = readFileSync(snapshotPath, 'utf-8');
+  if (content !== stored) {
+    return [
+      `Output snapshot mismatch (snapshot: "${snap.path}"). ` +
+        `Run with --update-snapshots to update.`,
+    ];
+  }
+  return [];
+}
+
+/**
+ * Check assertions against actual output.
+ *
+ * @param maintainVTSequences - When true, skip stripping ANSI/VT escape
+ *   sequences from stdout/stderr before running `contains`/`matches` checks.
  */
 function checkAssertions(
   assertions: TestAssertions | undefined,
   actual: ExecuteResult,
-  cwd: string
+  cwd: string,
+  maintainVTSequences?: boolean
 ): string[] {
   const failures: string[] = [];
   if (!assertions) return failures;
+
+  const prepareOutput = (s: string) =>
+    maintainVTSequences ? s : stripVT(s);
 
   if (assertions.exitCode !== undefined && actual.exitCode !== assertions.exitCode) {
     failures.push(
@@ -174,7 +293,10 @@ function checkAssertions(
     );
   }
 
-  if (assertions.stdout?.contains && !actual.stdout.includes(assertions.stdout.contains)) {
+  const stdout = prepareOutput(actual.stdout);
+  const stderr = prepareOutput(actual.stderr);
+
+  if (assertions.stdout?.contains && !stdout.includes(assertions.stdout.contains)) {
     failures.push(
       `Expected stdout to contain "${assertions.stdout.contains}"`
     );
@@ -182,10 +304,10 @@ function checkAssertions(
 
   if (assertions.stdout?.matches) {
     try {
-      const regex = new RegExp(assertions.stdout.matches);
-      if (!regex.test(actual.stdout)) {
+      const regex = buildRegex(assertions.stdout.matches);
+      if (!regex.test(stdout)) {
         failures.push(
-          `Expected stdout to match /${assertions.stdout.matches}/`
+          `Expected stdout to match ${regex}`
         );
       }
     } catch {
@@ -193,7 +315,7 @@ function checkAssertions(
     }
   }
 
-  if (assertions.stderr?.contains && !actual.stderr.includes(assertions.stderr.contains)) {
+  if (assertions.stderr?.contains && !stderr.includes(assertions.stderr.contains)) {
     failures.push(
       `Expected stderr to contain "${assertions.stderr.contains}"`
     );
@@ -201,10 +323,10 @@ function checkAssertions(
 
   if (assertions.stderr?.matches) {
     try {
-      const regex = new RegExp(assertions.stderr.matches);
-      if (!regex.test(actual.stderr)) {
+      const regex = buildRegex(assertions.stderr.matches);
+      if (!regex.test(stderr)) {
         failures.push(
-          `Expected stderr to match /${assertions.stderr.matches}/`
+          `Expected stderr to match ${regex}`
         );
       }
     } catch {
@@ -232,10 +354,10 @@ function checkAssertions(
 
       if (fileAssertion.matches) {
         try {
-          const regex = new RegExp(fileAssertion.matches);
+          const regex = buildRegex(fileAssertion.matches);
           if (!regex.test(content)) {
             failures.push(
-              `Expected file "${fileAssertion.path}" to match /${fileAssertion.matches}/`
+              `Expected file "${fileAssertion.path}" to match ${regex}`
             );
           }
         } catch {
@@ -259,13 +381,18 @@ function checkAssertions(
 
   // Negation wrapper — inverts pass/fail of inner assertions
   if (assertions.not) {
-    const innerFailures = checkAssertions(assertions.not, actual, cwd);
+    const innerFailures = checkAssertions(assertions.not, actual, cwd, maintainVTSequences);
     if (innerFailures.length === 0) {
       failures.push('Expected NOT: all negated assertions passed but should have failed');
     }
   }
 
   return failures;
+}
+
+/** Returns true if all failures are exit-code-only (used by reporters) */
+function isExitCodeOnlyFailure(failures: string[]): boolean {
+  return failures.length > 0 && failures.every((f) => f.startsWith('Expected exit code'));
 }
 
 export interface RunTestOptions {
@@ -308,9 +435,18 @@ async function runSteps(
 
       lastActual = actual;
 
+      if (step.outputSnapshot) {
+        await checkOutputSnapshot(
+          step.outputSnapshot,
+          actual,
+          examplePath,
+          options.updateSnapshots ?? false
+        );
+      }
+
       // Use explicit assertions if provided, otherwise assert exitCode 0
       const assertions = step.assertions ?? { exitCode: 0 };
-      const failures = checkAssertions(assertions, actual, cwd);
+      const failures = checkAssertions(assertions, actual, cwd, step.maintainVTSequences);
       const snapshotFailures = await checkSnapshotAssertions(
         assertions,
         cwd,
@@ -326,7 +462,13 @@ async function runSteps(
           passed: false,
           duration: Date.now() - startTime,
           error: failures.map((f) => `Step ${i + 1}: ${f}`).join('\n'),
-          actual,
+          exitCodeFailure: isExitCodeOnlyFailure(failures),
+          actual: {
+            exitCode: actual.exitCode,
+            stdout: actual.stdout,
+            stderr: actual.stderr,
+            interleaved: actual.interleaved,
+          },
         };
       }
     } catch (err) {
@@ -345,8 +487,24 @@ async function runSteps(
     test: testCase.name,
     passed: true,
     duration: Date.now() - startTime,
-    actual: lastActual,
+    actual: lastActual
+      ? {
+          exitCode: lastActual.exitCode,
+          stdout: lastActual.stdout,
+          stderr: lastActual.stderr,
+          interleaved: lastActual.interleaved,
+        }
+      : undefined,
   };
+}
+
+/**
+ * Resolve the directory for an example path.
+ * Single-file examples use the file's parent directory as the working root.
+ */
+async function resolveExampleDir(examplePath: string): Promise<string> {
+  const s = await stat(examplePath);
+  return s.isFile() ? dirname(examplePath) : examplePath;
 }
 
 /**
@@ -359,15 +517,17 @@ export async function runTest(
   testCase: TestCase,
   options: RunTestOptions
 ): Promise<TestResult> {
+  const exampleDir = await resolveExampleDir(examplePath);
+
   if ('steps' in testCase) {
-    return runSteps(exampleId, examplePath, testCase as StepsTestCase, options);
+    return runSteps(exampleId, exampleDir, testCase as StepsTestCase, options);
   }
 
   const tc = testCase as OptionsTestCase;
   const startTime = Date.now();
   const cwd = tc.options.cwd
-    ? join(examplePath, tc.options.cwd)
-    : examplePath;
+    ? join(exampleDir, tc.options.cwd)
+    : exampleDir;
 
   try {
     const actual = await executeCommand(tc.options.command, {
@@ -376,11 +536,21 @@ export async function runTest(
       timeout: tc.options.timeout ?? options.timeout,
     });
 
-    const failures = checkAssertions(tc.assertions, actual, cwd);
+    if (tc.options.outputSnapshot) {
+      await checkOutputSnapshot(
+        tc.options.outputSnapshot,
+        actual,
+        exampleDir,
+        options.updateSnapshots ?? false
+      );
+    }
+
+    const assertions = tc.assertions ?? { exitCode: 0 };
+    const failures = checkAssertions(assertions, actual, cwd, tc.options.maintainVTSequences);
     const snapshotFailures = await checkSnapshotAssertions(
-      tc.assertions,
+      assertions,
       cwd,
-      examplePath,
+      exampleDir,
       options
     );
     failures.push(...snapshotFailures);
@@ -391,7 +561,13 @@ export async function runTest(
       passed: failures.length === 0,
       duration: Date.now() - startTime,
       error: failures.length > 0 ? failures.join('\n') : undefined,
-      actual,
+      exitCodeFailure: failures.length > 0 ? isExitCodeOnlyFailure(failures) : undefined,
+      actual: {
+        exitCode: actual.exitCode,
+        stdout: actual.stdout,
+        stderr: actual.stderr,
+        interleaved: actual.interleaved,
+      },
     };
   } catch (err) {
     return {

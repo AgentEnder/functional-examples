@@ -2,8 +2,45 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { runTest, normalizeTests } from './runner.js';
+import { runTest, normalizeTests, buildRegex } from './runner.js';
 import type { TestCase } from './schema.js';
+
+describe('buildRegex', () => {
+  it('applies s flag by default so . matches newlines', () => {
+    const re = buildRegex('Hello.*World');
+    expect(re.flags).toContain('s');
+    expect(re.test('Hello\nWorld')).toBe(true);
+  });
+
+  it('plain pattern matches multi-line stdout (the ArgumentsOf bug)', () => {
+    const re = buildRegex('Hello, John!.*You are 42 years old\\.');
+    expect(re.test('Hello, John!\nYou are 42 years old.\n')).toBe(true);
+  });
+
+  it('regex literal preserves its explicit flags and does not add defaults', () => {
+    const re = buildRegex('/hello/i');
+    expect(re.flags).toBe('i');
+    expect(re.source).toBe('hello');
+  });
+
+  it('regex literal with no flags uses empty flags (not s)', () => {
+    const re = buildRegex('/Hello.*World/');
+    expect(re.flags).toBe('');
+    expect(re.test('Hello\nWorld')).toBe(false);
+  });
+
+  it('regex literal with s flag matches newlines', () => {
+    const re = buildRegex('/Hello.*World/s');
+    expect(re.test('Hello\nWorld')).toBe(true);
+  });
+
+  it('regex literal with multiple flags preserves all of them', () => {
+    const re = buildRegex('/hello.*world/si');
+    expect(re.flags).toContain('s');
+    expect(re.flags).toContain('i');
+    expect(re.test('Hello\nWorld')).toBe(true);
+  });
+});
 
 describe('normalizeTests', () => {
   it('wraps single test in array', () => {
@@ -39,6 +76,21 @@ describe('runTest', () => {
     expect(result.example).toBe('test-example');
     expect(result.test).toBe('simple echo');
     expect(result.actual?.stdout).toContain('hello');
+  });
+
+  it('fails when command exits non-zero with no assertions (defaults to exitCode 0)', async () => {
+    const result = await runTest(
+      'test-example',
+      process.cwd(),
+      {
+        name: 'implicit exit 0',
+        options: { command: 'exit 1' },
+      },
+      { timeout: 5000 }
+    );
+
+    expect(result.passed).toBe(false);
+    expect(result.error).toContain('Expected exit code 0');
   });
 
   it('passes with matching exit code', async () => {

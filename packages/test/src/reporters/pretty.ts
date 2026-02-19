@@ -17,6 +17,19 @@ function countTests(examples: Example[]): number {
   }, 0);
 }
 
+/** Indent each line of a string by a fixed prefix */
+function indent(s: string, prefix: string): string {
+  return s
+    .split('\n')
+    .map((line) => `${prefix}${line}`)
+    .join('\n');
+}
+
+/** Write a block of raw command output, preserving color codes */
+function writeOutputBlock(content: string): void {
+  process.stdout.write(indent(content.trimEnd(), '       ') + '\n\n');
+}
+
 export function createPrettyReporter(): Reporter {
   return {
     start(examples) {
@@ -33,21 +46,31 @@ export function createPrettyReporter(): Reporter {
       console.log(`${status} ${result.example} > ${result.test} ${duration}`);
 
       if (!result.passed && result.error) {
-        const indented = result.error
-          .split('\n')
-          .map((line) => `       ${line}`)
-          .join('\n');
-        console.log(indented);
         if (result.actual) {
-          console.log(`       ${DIM}Exit code: ${result.actual.exitCode}${RESET}`);
+          if (result.exitCodeFailure) {
+            // Exit-code failures: show interleaved output between the failure
+            // label and the reason, so the user sees what the command printed
+            // before reading the assertion message.
+            if (result.actual.interleaved) {
+              process.stdout.write(indent(result.actual.interleaved.trimEnd(), '       ') + '\n\n');
+            }
+          } else {
+            // Other failures: show stdout and stderr separately.
+            if (result.actual.stdout) {
+              writeOutputBlock(result.actual.stdout);
+            }
+            if (result.actual.stderr) {
+              writeOutputBlock(result.actual.stderr);
+            }
+          }
         }
+
+        const indented = indent(result.error, '       ');
+        console.log(indented + '\n');
       }
 
-      if (verbose && result.passed && result.actual) {
-        if (result.actual.stdout) {
-          const truncated = result.actual.stdout.slice(0, 200);
-          console.log(`       ${DIM}stdout: ${truncated}${RESET}`);
-        }
+      if (verbose && result.passed && result.actual?.stdout) {
+        writeOutputBlock(result.actual.stdout);
       }
     },
 

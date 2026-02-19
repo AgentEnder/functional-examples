@@ -1,8 +1,9 @@
-import { cli } from 'cli-forge';
 import type { Example, ResolvedConfig } from '@functional-examples/devkit';
+import { cli } from 'cli-forge';
 import { normalizeTests } from '../runner.js';
 import type { TestCase } from '../schema.js';
 import { TestMetadata, testMetadataSchema } from '../schema.js';
+import { typedFilter } from '../utils.js';
 
 function hasTests(
   example: Example
@@ -32,7 +33,7 @@ export function createListCommand(config: ResolvedConfig) {
       const { scanExamples } = await import('functional-examples');
       const { examples } = await scanExamples<TestMetadata>(config);
 
-      const testableExamples = examples.filter(hasTests);
+      const testableExamples = typedFilter(examples, hasTests);
 
       const testList = testableExamples.flatMap((example) => {
         const tests = normalizeTests(example.metadata.test);

@@ -37,6 +37,7 @@
     "@types/node": "catalog:",
     "functional-examples": "workspace:*",
     "typescript": "catalog:",
+    "tap-parser": "catalog:",
     "vitest": "catalog:"
   },
   "license": "MIT",

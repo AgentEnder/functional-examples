@@ -14,11 +14,19 @@ export interface TestResult {
   duration: number;
   /** Error message if failed */
   error?: string;
+  /**
+   * True when the only assertion that failed was an exit code check.
+   * Reporters use this to display interleaved output (which gives more context
+   * about what went wrong) rather than separate stdout/stderr blocks.
+   */
+  exitCodeFailure?: boolean;
   /** Actual command output */
   actual?: {
     exitCode: number;
     stdout: string;
     stderr: string;
+    /** stdout and stderr merged in arrival order */
+    interleaved: string;
   };
 }
 

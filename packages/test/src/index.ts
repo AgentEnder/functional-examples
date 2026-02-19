@@ -1,5 +1,5 @@
-import type { CLI } from 'cli-forge';
 import type { Plugin, ValidationResult } from '@functional-examples/devkit';
+import type { CLI } from 'cli-forge';
 import { z } from 'zod';
 import { createTestCommands } from './commands/index.js';
 import { resolveReporters } from './reporters/resolve.js';
@@ -50,9 +50,9 @@ function validateTestMetadata(metadata: unknown): ValidationResult {
     success: false,
     errors: [
       {
+        ...result.error,
         path: '',
         message: z.prettifyError(result.error),
-        ...result.error,
       },
     ],
   };
