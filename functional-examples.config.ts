@@ -37,11 +37,11 @@ const config: Config = {
     endTag: '#_endregion',
     fileExtensionMap: {
       // Hash-comment files not in the default map
-      '.bash': [/#\s*{token}\s+(\w+)/],
-      '.yml':  [/#\s*{token}\s+(\w+)/],
-      '.yaml': [/#\s*{token}\s+(\w+)/],
+      '.bash': [/#\s*{token}\s+([\w-]+)/],
+      '.yml':  [/#\s*{token}\s+([\w-]+)/],
+      '.yaml': [/#\s*{token}\s+([\w-]+)/],
       // JSON: `"#_region name": true` key markers (valid JSON, ignored at runtime)
-      '.json': [/"{token}\s+(\w+)":\s*.+/],
+      '.json': [/"{token}\s+([\w-]+)":\s*.+/],
     },
   },
 };
