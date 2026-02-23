@@ -7,7 +7,7 @@
 //   - sample
 // ---
 
-// #_region setup
+// #region setup
 import { readFileSync } from 'node:fs';
 
 /**
@@ -17,10 +17,10 @@ export function loadConfig(path: string): Record<string, unknown> {
   const content = readFileSync(path, 'utf-8');
   return JSON.parse(content);
 }
-// #_endregion setup
+// #endregion setup
 
-// #_region usage
+// #region usage
 // Load configuration from a JSON file
 const config = loadConfig('config.json');
 console.log('Loaded config:', config);
-// #_endregion usage
+// #endregion usage
