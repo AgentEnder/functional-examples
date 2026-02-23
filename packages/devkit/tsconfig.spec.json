@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
+    "outDir": "../../dist/devkit-spec",
     "types": ["vitest/globals", "node"],
     "tsBuildInfoFile": "../../dist/devkit.spec.tsbuildinfo"
   },

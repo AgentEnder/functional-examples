@@ -286,7 +286,7 @@ describe('renderItemTemplate', () => {
     assertDefined(mdTemplate);
     const example = makeExample({
       files: [
-        {
+        new ExampleFile({
           absolutePath: '/tmp/test/main.ts',
           relativePath: 'main.ts',
           raw: '// full file',
@@ -299,7 +299,7 @@ describe('renderItemTemplate', () => {
               endLine: 3,
             },
           ],
-        },
+        }),
       ],
     });
 
@@ -325,7 +325,7 @@ describe('renderItemTemplate', () => {
         },
       },
       files: [
-        {
+        new ExampleFile({
           absolutePath: '/tmp/test/main.ts',
           relativePath: 'main.ts',
           raw: '// code',
@@ -337,7 +337,7 @@ describe('renderItemTemplate', () => {
               endLine: 3,
             },
           ],
-        },
+        }),
       ],
     });
 
@@ -357,11 +357,11 @@ describe('renderItemTemplate', () => {
     assertDefined(mdTemplate);
     const example = makeExample({
       files: [
-        {
+        new ExampleFile({
           absolutePath: '/tmp/test/data.json',
           relativePath: 'data.json',
           raw: '{"key": "value"}',
-        },
+        }),
       ],
     });
 
@@ -377,18 +377,18 @@ describe('renderItemTemplate', () => {
     assertDefined(mdTemplate);
     const example = makeExample({
       files: [
-        {
+        new ExampleFile({
           absolutePath: '/tmp/test/index.ts',
           relativePath: 'index.ts',
           raw: 'const x = 1;',
           parsed: 'const x = 1;',
-        },
-        {
+        }),
+        new ExampleFile({
           absolutePath: '/tmp/test/README.md',
           relativePath: 'README.md',
           raw: '# Readme\n\nSome explanation.',
           parsed: 'Some explanation.',
-        },
+        }),
       ],
     });
 
