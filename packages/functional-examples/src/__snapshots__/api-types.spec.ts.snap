@@ -1,0 +1,304 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`public API types > matches typedoc export snapshot 1`] = `
+"interface BaseMetadata
+  description?: string
+  id: string
+  title: string
+
+interface Config
+  generate?: GenerateConfig
+  metadata?: JSONSchemaObject
+  pathMappings?: PathMapping[]
+  plugins?: Plugin<any> | PluginReference[]
+  region?: RegionConfig
+  root?: string
+  scan?: ScanConfig
+
+interface ConfigValidationError
+  fix?: string
+  location?: string
+  message: string
+  path: string
+
+function createInitialContext
+  (filePath: string, raw: string, regionConfig: Required<Pick<RegionConfig, "startTag" | "endTag">>, parsed?: string) => FileParseContext
+
+interface Example<TMetadata = ExampleMetadata>
+  description?: string
+  extractorName: string
+  files: ExampleFile[]
+  id: string
+  metadata: TMetadata
+  rootPath: string
+  title: string
+
+class ExampleFile
+  readonly absolutePath: string
+  new (data: { absolutePath: string; hunks?: ParsedRegion[]; parsed?: string; raw?: string; relativePath: string }) => ExampleFile
+  hunks?: ParsedRegion[]
+  parsed?: string
+  raw?: string
+  region(id: string) => ParsedRegion | undefined
+  readonly relativePath: string
+
+type ExampleMetadata
+  = ExampleMetadataRegistry extends { metadata: inferred } ? T : Record<string, unknown>
+
+interface ExampleMetadataRegistry
+
+interface Extractor<TMetadata = Record<string, unknown>>
+  extract(candidates: Dirent<string>[], options: ExtractorOptions) => Promise<ExtractorResult<TMetadata>>
+  readonly name: string
+
+interface ExtractorConfig
+  module: string
+  name: string
+  options?: Record<string, unknown>
+
+type ExtractorConfigOrFunction<TMetadata = Record<string, unknown>>
+  = ExtractorReference | Extractor<TMetadata>
+
+interface ExtractorError
+  cause?: Error
+  message: string
+  path: string
+
+type ExtractorFactory<TOptions = Record<string, unknown>, TMetadata = Record<string, unknown>>
+  = (options?: TOptions) => Extractor<TMetadata>
+
+interface ExtractorOptions
+  exclude?: string[]
+  rootPath: string
+  signal?: AbortSignal
+
+type ExtractorReference
+  = string | ExtractorConfig
+
+interface ExtractorResult<TMetadata = Record<string, unknown>>
+  claimedFiles: Set<string>
+  errors: ExtractorError[]
+  examples: Example<TMetadata>[]
+
+interface FileConflict
+  claimants: string[]
+  filePath: string
+  resolution?: "path-mapping" | "error"
+  winner?: string
+
+interface FileContentsParser
+  readonly name: string
+  parse(context: FileParseContext) => FileParseContext | Promise<FileParseContext>
+
+interface FileParseContext
+  filePath: string
+  hunks: ParsedRegion[]
+  metadata: Record<string, unknown>
+  parsed: string
+  raw: string
+  regionConfig: Required<Pick<RegionConfig, "startTag" | "endTag">>
+
+function findConfigFile
+  (cwd: string) => Promise<string | null>
+
+interface GenerateConfig
+  outputDir?: string
+
+function generateTypes
+  (options: GenerateTypesOptions) => string
+
+interface GenerateTypesOptions
+  mergedSchema?: JSONSchema
+  pluginSchemas?: PluginSchemaEntry[]
+
+interface JSONSchema
+  $defs?: Record<string, JSONSchema>
+  $ref?: string
+  $schema?: string
+  anyOf?: JSONSchema[]
+  description?: string
+  items?: JSONSchema
+  properties?: Record<string, JSONSchema>
+  required?: string[]
+  type?: string
+
+interface JSONSchemaObject
+  const?: unknown
+  description?: string
+  enum?: unknown[]
+  items?: JSONSchemaObject
+  properties?: Record<string, JSONSchemaObject>
+  required?: string[]
+  type?: string
+
+function loadConfig
+  (configPath: string) => Promise<ConfigWithRoot>
+
+function mergeConfigs
+  (...configs: Partial<Config> | null | undefined[]) => MergedConfig
+
+function mergeConfigSchema
+  (options: MergeConfigSchemaOptions) => JSONSchema
+
+interface MergeConfigSchemaOptions
+  pluginSchemas: PluginSchemaEntry[]
+
+function mergeMetadataSchemas
+  (options: MergeMetadataSchemasOptions) => JSONSchema
+
+interface MergeMetadataSchemasOptions
+  configSchema?: JSONSchema
+  pluginSchemas: PluginSchemaEntry[]
+
+interface MetadataValidationContext
+  examples: ExampleForValidation[]
+  validators: PluginValidator<unknown>[]
+
+interface MetadataValidationError
+  exampleId: string
+  message: string
+  path: string
+  pluginName: string
+
+interface MetadataValidationResult
+  errors: MetadataValidationError[]
+  success: boolean
+
+interface OptionsValidationError
+  message: string
+  path: string
+  pluginName: string
+
+interface OptionsValidationResult
+  errors: OptionsValidationError[]
+  success: boolean
+
+interface ParsedRegion
+  content: string
+  endLine: number
+  id: string
+  startLine: number
+
+interface PathMapping
+  extractor: string
+  pattern: string
+
+interface Plugin<TMetadata = ExampleMetadata>
+  readonly commands?: PluginCommands<TMetadata>
+  readonly extensions?: string[]
+  readonly extractor?: Extractor<TMetadata>
+  readonly fileContentsParsers?: FileContentsParser[]
+  readonly name: string
+  readonly schemas?: PluginSchemas
+  readonly validators?: PluginValidators<TMetadata>
+
+type PluginCommands<TMetadata = ExampleMetadata>
+  = CLI[] | (config: ResolvedConfig<TMetadata>) => CLI[] | Promise<CLI[]>
+
+interface PluginOptionsValidationContext
+  pluginOptions: Map<string, unknown>
+  validators: PluginValidator<unknown>[]
+
+class PluginRegistry
+  new () => PluginRegistry
+  getExtractors() => Extractor<Record<string, unknown>>[]
+  getMetadataValidators() => PluginValidator<unknown>[]
+  getOptionsValidators() => PluginValidator<unknown>[]
+  getParsersForExtension(extension: string) => FileContentsParser[]
+  getPlugins() => readonly Plugin<Record<string, unknown>>[]
+  getPluginsForExtension(extension: string) => Plugin<Record<string, unknown>>[]
+  getSchemas() => PluginSchemaEntry[]
+  register(plugin: Plugin) => void
+
+interface PluginSchemaEntry
+  metadata?: string
+  options?: string
+  packageName?: string
+  pluginName: string
+
+interface PluginSchemas
+  metadata?: string
+  options?: string
+
+interface PluginValidator<T = unknown>
+  pluginName: string
+  validate: (value: T) => ValidationResult
+
+interface PluginValidators<TMetadata = Record<string, unknown>>
+  metadata?: (metadata: TMetadata) => ValidationResult
+  options?: (options: unknown) => ValidationResult
+
+function readExampleFile
+  (filePath: string) => Promise<string>
+
+function readExampleFiles
+  (directory: string, files: string[]) => Promise<ExampleFile[]>
+
+function resolveConfig
+  <TMetadata = Record<string, unknown>>(config: ConfigWithRoot) => Promise<ResolvedConfig<TMetadata>>
+
+interface ResolvedConfig<TMetadata = ExampleMetadata>
+  extractors: Extractor<TMetadata>[]
+  generate?: GenerateConfig
+  metadata?: JSONSchemaObject
+  pathMappings: PathMapping[]
+  plugins: Plugin<TMetadata>[]
+  region: Required<RegionConfig>
+  registry: PluginRegistryInterface
+  root: string
+  scan: Required<ScanConfig>
+  validationErrors: ConfigValidationError[]
+
+function runParsePipeline
+  (context: FileParseContext, parsers: FileContentsParser[]) => Promise<FileParseContext>
+
+function scan
+  <TMetadata = Record<string, unknown>>(options?: ScanOptions<TMetadata>) => Promise<ScanResult<TMetadata>>
+
+interface ScanConfig
+  exclude?: string[]
+  include?: string[]
+  root?: string
+
+function scanExamples
+  <TMetadata = Record<string, unknown>>(config: ResolvedConfig<TMetadata>) => Promise<ScanResult<TMetadata>>
+
+class ScannedExample<TMetadata = ExampleMetadata>
+  new <TMetadata = Record<string, unknown>>(data: Example<TMetadata> & { displayPath: string }) => ScannedExample<TMetadata>
+  readonly description?: string
+  readonly displayPath: string
+  readonly extractorName: string
+  file(relativePath: string) => ExampleFile
+  readonly files: ExampleFile[]
+  readonly id: string
+  readonly metadata: TMetadata
+  readonly rootPath: string
+  readonly title: string
+
+interface ScanOptions<T = Record<string, unknown>>
+  config?: ResolvedConfig<T>
+  root?: string
+
+interface ScanResult<TMetadata = Record<string, unknown>>
+  conflicts: FileConflict[]
+  errors: ExtractorError[]
+  examples: ScannedExample<TMetadata>[]
+  stats: { conflictsDetected: number; conflictsResolved: number; durationMs: number; examplesFound: number; filesClaimed: number }
+
+function validateConfig
+  (config: unknown) => ConfigValidationError[]
+
+function validateExampleMetadata
+  (context: MetadataValidationContext) => MetadataValidationResult
+
+function validatePluginOptions
+  (context: PluginOptionsValidationContext) => OptionsValidationResult
+
+interface ValidationError
+  message: string
+  path: string
+
+interface ValidationResult
+  errors: ValidationError[]
+  success: boolean"
+`;

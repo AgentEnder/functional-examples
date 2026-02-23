@@ -4,9 +4,7 @@ Test runner plugin for functional-examples.
 
 ## Installation
 
-```bash
-npm install @functional-examples/test
-```
+<%= example('devkit-readme').file('snippets/install-test.sh') %>
 
 ## Overview
 
@@ -14,18 +12,7 @@ This plugin provides test execution capabilities for functional-examples. It let
 
 ## Usage
 
-```typescript
-import { createTestPlugin } from '@functional-examples/test';
-import type { Config } from 'functional-examples';
-
-const config: Config = {
-  plugins: [
-    createTestPlugin(),
-  ],
-};
-
-export default config;
-```
+<%= example('test-plugin-example').file('functional-examples.config.json') %>
 
 ## Features
 

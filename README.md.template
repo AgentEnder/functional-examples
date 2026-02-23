@@ -21,27 +21,13 @@ This monorepo contains the core `functional-examples` library and related toolin
 
 ## Quick Start
 
-```bash
-npm install functional-examples
-```
+<%= example('devkit-readme').file('snippets/install-functional-examples.sh') %>
 
 <%= example('basic-usage').file('scan.ts') %>
 
 ## Development
 
-```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm nx run-many -t build
-
-# Run tests
-pnpm nx run-many -t test
-
-# Lint
-pnpm nx run-many -t lint
-```
+<%= example('devkit-readme').file('snippets/monorepo-dev.sh') %>
 
 ## License
 

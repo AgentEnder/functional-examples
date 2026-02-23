@@ -6,55 +6,57 @@ Plugin development kit for functional-examples — shared types and utilities.
 
 ```bash
 npm install @functional-examples/devkit
+
 ```
 
 ## Overview
 
-The devkit provides the foundational types and utility modules used by `functional-examples` and its plugins. It's organized into sub-entries so consumers only pull in what they need.
+The devkit provides the foundational types and utility modules used by `functional-examples` and its plugins.
 
-## Sub-Entries
+## Usage
 
 ### Types (root)
 
 ```typescript
-import type { Plugin, Extractor, Config, Example } from '@functional-examples/devkit';
+import type {
+  Config,
+  Example,
+  Extractor,
+  Plugin,
+} from '@functional-examples/devkit';
+
 ```
 
 Core type definitions: `Plugin`, `Extractor`, `ExtractorResult`, `Config`, `Example`, `ExampleFile`, and more.
 
-### JSON Parsing (`devkit/json`)
+### Utilities (root)
 
 ```typescript
-import { parseJson, tryParseJson, JsonParseError } from '@functional-examples/devkit/json';
+import {
+  createMatcher,
+  glob,
+  isMatch,
+  JsonParseError,
+  parseJson,
+  parseYaml,
+  tryParseJson,
+  tryParseYaml,
+  YamlParseError,
+} from '@functional-examples/devkit';
+
 ```
 
-Async JSON parser with fallback support for JSONC and JSON5 formats. Requires optional peer dependencies `jsonc-parser` and/or `json5` for extended format support.
-
-### Glob Matching (`devkit/glob`)
-
-```typescript
-import { glob, isMatch, createMatcher } from '@functional-examples/devkit/glob';
-```
-
-File globbing and pattern matching via `tinyglobby` and `picomatch`. Requires peer dependencies `tinyglobby` and `picomatch`.
-
-### YAML Parsing (`devkit/yaml`)
-
-```typescript
-import { parseYaml, tryParseYaml, YamlParseError } from '@functional-examples/devkit/yaml';
-```
-
-Synchronous YAML parser. Requires peer dependency `yaml`.
+Includes JSON parsing (`parseJson`, `tryParseJson`, `JsonParseError`), YAML parsing (`parseYaml`, `tryParseYaml`, `YamlParseError`), and glob helpers (`glob`, `isMatch`, `createMatcher`) from the root import.
 
 ## Peer Dependencies
 
-Each sub-entry declares its own peer dependencies:
+The utility helpers rely on optional peer dependencies:
 
-| Sub-entry | Required peers |
-|-----------|---------------|
-| `devkit/glob` | `tinyglobby`, `picomatch` |
-| `devkit/yaml` | `yaml` |
-| `devkit/json` | none (built-in JSON.parse); `jsonc-parser` and/or `json5` for extended formats |
+| Utility area | Optional peers |
+|--------------|----------------|
+| Glob helpers | `tinyglobby`, `picomatch` |
+| YAML parser | `yaml` |
+| JSON parser | `jsonc-parser` and/or `json5` for extended formats |
 
 ## License
 

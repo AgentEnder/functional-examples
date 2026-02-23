@@ -1,0 +1,6 @@
+examples/
+  my-example/
+    meta.yml
+    main.ts
+    utils.ts
+    README.md

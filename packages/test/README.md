@@ -6,6 +6,7 @@ Test runner plugin for functional-examples.
 
 ```bash
 npm install @functional-examples/test
+
 ```
 
 ## Overview
@@ -14,17 +15,19 @@ This plugin provides test execution capabilities for functional-examples. It let
 
 ## Usage
 
-```typescript
-import { createTestPlugin } from '@functional-examples/test';
-import type { Config } from 'functional-examples';
-
-const config: Config = {
-  plugins: [
-    createTestPlugin(),
+```json
+{
+  "$schema": "./.functional-examples/schema.json",
+  "plugins": [
+    "@functional-examples/javascript",
+    "@functional-examples/test"
   ],
-};
+  "scan": {
+    "include": ["examples/**/*.js", "examples/**/package.json"],
+    "exclude": ["**/node_modules/**"]
+  },
+}
 
-export default config;
 ```
 
 ## Features

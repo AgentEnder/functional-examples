@@ -6,6 +6,7 @@ Documentation generation plugin for functional-examples.
 
 ```bash
 npm install @functional-examples/documentation
+
 ```
 
 ## Overview
@@ -16,18 +17,33 @@ This plugin generates documentation from your scanned examples using customizabl
 
 ```typescript
 import { createDocumentationPlugin } from '@functional-examples/documentation';
+import { createJavaScriptPlugin } from '@functional-examples/javascript';
 import type { Config } from 'functional-examples';
 
+/**
+ * Configuration demonstrating the documentation plugin.
+ *
+ * The documentation plugin:
+ * - Adds the `generate` CLI command
+ * - Enables template-based doc generation
+ * - Provides prose helpers (file(), region(), fencedBlock())
+ */
 const config: Config = {
   plugins: [
+    createJavaScriptPlugin(),
     createDocumentationPlugin({
-      outputDir: './docs/examples',
+      outputDir: 'generated-docs',
       format: 'markdown',
     }),
   ],
+  scan: {
+    include: ['src/**/*'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
+  },
 };
 
 export default config;
+
 ```
 
 ## Features
@@ -47,13 +63,15 @@ Inside prose files (README.md in examples), use:
 ```markdown
 <%= file('utils.ts') %>       <% /* Embed a file as a fenced code block */ %>
 <%= region('setup') %>        <% /* Embed a code region */ %>
+
 ```
 
 Inside guide documents, reference any example:
 
 ```markdown
 <%= example('basic-usage').file('scan.ts') %>
-<%= example('basic-usage').region('config-setup') %>
+<%= example('basic-usage').region('scan') %>
+
 ```
 
 ## License

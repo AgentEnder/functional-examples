@@ -17,6 +17,7 @@ npm install functional-examples
 pnpm add functional-examples
 # or
 yarn add functional-examples
+
 ```
 
 ## Quick Start
@@ -25,16 +26,13 @@ yarn add functional-examples
 
 ```typescript
 /**
- * Basic example: Scanning for examples in a directory
+ * Basic example: Scanning for examples programmatically
  */
-import { resolveConfig, scanExamples } from 'functional-examples';
+import { scan } from 'functional-examples';
 
 async function main() {
-  // Resolve config (auto-detects installed plugins)
-  const config = await resolveConfig({ root: './examples' });
-
-  // Scan for examples
-  const result = await scanExamples(config);
+  // scan() auto-discovers config and plugins
+  const result = await scan();
 
   console.log(`Found ${result.examples.length} examples:`);
   for (const example of result.examples) {
@@ -57,44 +55,55 @@ main().catch(console.error);
 
 ### Directory-based (meta.yml)
 
-```
-examples/
-  my-example/
-    meta.yml
-    main.ts
-    helper.ts
+```yaml
+id: basic-usage
+title: Basic Usage
+description: |
+  Demonstrates scanning for examples in a directory
+  using the functional-examples library.
+tags:
+  - getting-started
+  - api
+
 ```
 
-**meta.yml:**
-```yaml
-id: my-example
-title: My Example
-description: Demonstrates something useful
-```
+This `meta.yml` defines metadata for one example directory.
 
 ### File-based (YAML frontmatter)
 
 ```typescript
 // ---
-// title: My Example
-// description: A single-file example
+// id: hello
+// title: Hello World
+// description: A minimal example
 // ---
 
-console.log('Hello, world!');
+export function hello() {
+  return 'Hello from functional-examples!';
+}
+
 ```
 
 ## Region Markers
 
-Mark regions in your code for extraction:
-
 ```typescript
-// #region setup
-const db = createDatabase();
-// #endregion setup
+/**
+ * ---
+ * id: region-markers
+ * title: Region Markers Demo
+ * ---
+ */
 
-// #region main
-await db.query('SELECT * FROM users');
-// #endregion main
+import { scan } from 'functional-examples';
+
+// #region setup
+const result = await scan();
+// #endregion
+
+// #region execution
+console.log(result.examples);
+// #endregion
+
 ```
 
 Supports 30+ languages with automatic comment syntax detection.
@@ -111,6 +120,7 @@ Supports 30+ languages with automatic comment syntax detection.
  * 3. Claims files and returns Example objects
  */
 import {
+  ExampleFile,
   type Example,
   type Extractor,
   type ExtractorResult,
@@ -128,6 +138,7 @@ export interface TomlMetadata {
   title: string;
   description?: string;
   author?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -190,7 +201,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
             title: metadata.title,
             description: metadata.description,
             rootPath: exampleDir,
-            files: files.map((f) => ({
+            files: files.map((f) => new ExampleFile({
               absolutePath: f,
               relativePath: path.relative(exampleDir, f),
             })),
@@ -263,27 +274,35 @@ function collectExampleFiles(root: string) {
 
 ### Scanner
 
-- `scanExamples(directory, options?)` - Scan a directory for examples
-- `ExampleScanner` - Class for customized scanning
+- `scan(options?)` - Discover config and scan in one call
+- `scanExamples(resolvedConfig)` - Scan with a pre-resolved config
 
-### Extractors
+### Configuration
 
-- `createDefaultRegistry()` - Create registry with built-in extractors
-- `YamlFrontmatterExtractor` - Single-file YAML frontmatter
-- `MetaYmlExtractor` - Directory-based meta.yml
+- `findConfigFile(root?)`
+- `loadConfig(configPath)`
+- `resolveConfig(config)`
+- `validateConfig(config)`
+- `mergeConfigs(...configs)`
 
-### Regions
+### Plugins and Validation
 
-- `parseRegions(code, options?)` - Parse all regions
-- `extractRegion(code, regionId, options?)` - Extract single region
-- `stripRegionMarkers(code, options?)` - Remove all markers
-- `listRegions(code, options?)` - List region IDs
-- `LANGUAGE_CONFIGS` - Language comment syntax mappings
+- `PluginRegistry`
+- `createInitialContext(context)`
+- `runParsePipeline(context, parsers)`
+- `validatePluginOptions(context)`
+- `validateExampleMetadata(context)`
 
 ### File Helpers
 
-- `readExampleFile(path, options?)` - Read file with optional region
-- `readExampleFiles(directory, files)` - Read multiple files
+- `readExampleFile(path, options?)`
+- `readExampleFiles(root, files)`
+
+### Schema Utilities
+
+- `mergeConfigSchema(...)`
+- `mergeMetadataSchemas(...)`
+- `generateTypes(...)`
 
 ## License
 

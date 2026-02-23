@@ -4,9 +4,7 @@ YAML manifest extractor plugin for multi-file examples in functional-examples.
 
 ## Installation
 
-```bash
-npm install @functional-examples/yaml-manifest
-```
+<%= example('devkit-readme').file('snippets/install-yaml-manifest.sh') %>
 
 ## Overview
 
@@ -14,31 +12,17 @@ This plugin enables directory-based example discovery using `meta.yml` manifest 
 
 ## Usage
 
-<%= example('yaml-manifest').file('functional-examples.config.ts') %>
+<%= example('yaml-manifest').file('functional-examples.config.json') %>
 
 ## Manifest Format
 
 Create a `meta.yml` file in each example directory:
 
-```yaml
-id: my-example
-title: My Example
-description: Demonstrates a multi-file pattern
-tags:
-  - tutorial
-  - typescript
-```
+<%= example('yaml-manifest').file('examples/basic-usage/meta.yml') %>
 
 ### Directory Structure
 
-```
-examples/
-  my-example/
-    meta.yml
-    main.ts
-    utils.ts
-    README.md
-```
+<%= example('devkit-readme').file('snippets/yaml-manifest-structure.txt') %>
 
 ## Features
 

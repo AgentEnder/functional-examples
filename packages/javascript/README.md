@@ -6,6 +6,7 @@ JavaScript/TypeScript extractor plugin for functional-examples.
 
 ```bash
 npm install @functional-examples/javascript
+
 ```
 
 ## Overview
@@ -36,7 +37,7 @@ import type { Config } from 'functional-examples';
 const config: Config = {
   plugins: [createJavaScriptPlugin()],
   scan: {
-    include: ['**/*'],
+    include: ['src/**/*'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
 };
@@ -53,14 +54,13 @@ The plugin detects YAML frontmatter in JS/TS comment blocks:
 
 ```typescript
 // ---
-// title: My Example
-// description: Demonstrates something useful
-// tags: [typescript, async]
+// id: getting-started
+// title: Getting Started
+// description: A simple example demonstrating frontmatter metadata extraction
+// tags:
+//   - beginner
+//   - tutorial
 // ---
-
-export async function main() {
-  console.log('Hello!');
-}
 ```
 
 ### Dependency Resolution

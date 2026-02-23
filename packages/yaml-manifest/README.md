@@ -6,6 +6,7 @@ YAML manifest extractor plugin for multi-file examples in functional-examples.
 
 ```bash
 npm install @functional-examples/yaml-manifest
+
 ```
 
 ## Overview
@@ -14,32 +15,14 @@ This plugin enables directory-based example discovery using `meta.yml` manifest 
 
 ## Usage
 
-```typescript
-import { createYamlManifestPlugin } from '@functional-examples/yaml-manifest';
-import type { Config } from 'functional-examples';
-
-/**
- * Configuration for the YAML manifest example.
- *
- * This example demonstrates directory-based example organization where
- * each example is a folder containing:
- * - meta.yml (or meta.yaml) with metadata
- * - Source files for the example
- *
- * Benefits of this approach:
- * - Multi-file examples are natural (just add more files)
- * - Metadata is separate from code (no frontmatter comments)
- * - Works with any file type (not just JS/TS)
- */
-const config: Config = {
-  plugins: [createYamlManifestPlugin()],
-  scan: {
-    include: ['**/*'],
-    exclude: ['**/node_modules/**', '**/dist/**'],
-  },
-};
-
-export default config;
+```json
+{
+  "$schema": "./.functional-examples/schema.json",
+  "scan": {
+    "include": ["examples/**/*"],
+    "exclude": ["**/node_modules/**", "**/dist/**"]
+  }
+}
 
 ```
 
@@ -48,23 +31,27 @@ export default config;
 Create a `meta.yml` file in each example directory:
 
 ```yaml
-id: my-example
-title: My Example
-description: Demonstrates a multi-file pattern
+id: basic-usage
+title: Basic Usage
+description: |
+  Demonstrates scanning for examples in a directory
+  using the functional-examples library.
 tags:
-  - tutorial
-  - typescript
+  - getting-started
+  - api
+
 ```
 
 ### Directory Structure
 
-```
+```txt
 examples/
   my-example/
     meta.yml
     main.ts
     utils.ts
     README.md
+
 ```
 
 ## Features

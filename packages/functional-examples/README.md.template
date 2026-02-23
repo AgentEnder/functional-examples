@@ -11,13 +11,7 @@ A language-agnostic library for treating code examples as first-class citizens.
 
 ## Installation
 
-```bash
-npm install functional-examples
-# or
-pnpm add functional-examples
-# or
-yarn add functional-examples
-```
+<%= example('devkit-readme').file('snippets/install-functional-examples.sh') %>
 
 ## Quick Start
 
@@ -29,45 +23,17 @@ yarn add functional-examples
 
 ### Directory-based (meta.yml)
 
-```
-examples/
-  my-example/
-    meta.yml
-    main.ts
-    helper.ts
-```
+<%= example('yaml-manifest').file('examples/basic-usage/meta.yml') %>
 
-**meta.yml:**
-```yaml
-id: my-example
-title: My Example
-description: Demonstrates something useful
-```
+This `meta.yml` defines metadata for one example directory.
 
 ### File-based (YAML frontmatter)
 
-```typescript
-// ---
-// title: My Example
-// description: A single-file example
-// ---
-
-console.log('Hello, world!');
-```
+<%= example('getting-started').file('src/hello.ts') %>
 
 ## Region Markers
 
-Mark regions in your code for extraction:
-
-```typescript
-// #region setup
-const db = createDatabase();
-// #endregion setup
-
-// #region main
-await db.query('SELECT * FROM users');
-// #endregion main
-```
+<%= example('region-markers').file('src/regions-demo.ts') %>
 
 Supports 30+ languages with automatic comment syntax detection.
 
@@ -79,27 +45,35 @@ Supports 30+ languages with automatic comment syntax detection.
 
 ### Scanner
 
-- `scanExamples(directory, options?)` - Scan a directory for examples
-- `ExampleScanner` - Class for customized scanning
+- `scan(options?)` - Discover config and scan in one call
+- `scanExamples(resolvedConfig)` - Scan with a pre-resolved config
 
-### Extractors
+### Configuration
 
-- `createDefaultRegistry()` - Create registry with built-in extractors
-- `YamlFrontmatterExtractor` - Single-file YAML frontmatter
-- `MetaYmlExtractor` - Directory-based meta.yml
+- `findConfigFile(root?)`
+- `loadConfig(configPath)`
+- `resolveConfig(config)`
+- `validateConfig(config)`
+- `mergeConfigs(...configs)`
 
-### Regions
+### Plugins and Validation
 
-- `parseRegions(code, options?)` - Parse all regions
-- `extractRegion(code, regionId, options?)` - Extract single region
-- `stripRegionMarkers(code, options?)` - Remove all markers
-- `listRegions(code, options?)` - List region IDs
-- `LANGUAGE_CONFIGS` - Language comment syntax mappings
+- `PluginRegistry`
+- `createInitialContext(context)`
+- `runParsePipeline(context, parsers)`
+- `validatePluginOptions(context)`
+- `validateExampleMetadata(context)`
 
 ### File Helpers
 
-- `readExampleFile(path, options?)` - Read file with optional region
-- `readExampleFiles(directory, files)` - Read multiple files
+- `readExampleFile(path, options?)`
+- `readExampleFiles(root, files)`
+
+### Schema Utilities
+
+- `mergeConfigSchema(...)`
+- `mergeMetadataSchemas(...)`
+- `generateTypes(...)`
 
 ## License
 

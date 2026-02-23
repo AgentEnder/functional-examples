@@ -23,20 +23,22 @@ This monorepo contains the core `functional-examples` library and related toolin
 
 ```bash
 npm install functional-examples
+# or
+pnpm add functional-examples
+# or
+yarn add functional-examples
+
 ```
 
 ```typescript
 /**
- * Basic example: Scanning for examples in a directory
+ * Basic example: Scanning for examples programmatically
  */
-import { resolveConfig, scanExamples } from 'functional-examples';
+import { scan } from 'functional-examples';
 
 async function main() {
-  // Resolve config (auto-detects installed plugins)
-  const config = await resolveConfig({ root: './examples' });
-
-  // Scan for examples
-  const result = await scanExamples(config);
+  // scan() auto-discovers config and plugins
+  const result = await scan();
 
   console.log(`Found ${result.examples.length} examples:`);
   for (const example of result.examples) {
@@ -69,6 +71,7 @@ pnpm nx run-many -t test
 
 # Lint
 pnpm nx run-many -t lint
+
 ```
 
 ## License
