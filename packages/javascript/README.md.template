@@ -24,7 +24,7 @@ This plugin adds JavaScript and TypeScript support to functional-examples:
 
 The plugin detects YAML frontmatter in JS/TS comment blocks:
 
-<%= example('javascript-plugin').region('frontmatter') %>
+<%= example('javascript-plugin').file('src/getting-started.ts') %>
 
 ### Dependency Resolution
 

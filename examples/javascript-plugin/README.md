@@ -16,7 +16,7 @@ npx functional-examples scan -f json
 
 Frontmatter is written as YAML inside comment blocks at the top of a file. Here's how `getting-started.ts` defines its metadata:
 
-<%= region('frontmatter') %>
+<%= file('src/getting-started.ts') %>
 
 Required fields: `id`, `title`. Optional: `description`, `tags`, and any custom fields.
 

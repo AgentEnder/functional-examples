@@ -228,9 +228,11 @@ export async function loadExamples(): Promise<LoadExamplesResult> {
         );
       }
     } catch (err) {
-      console.warn(
-        `[docs-site] Prose rendering failed for "${ex.id}":`,
-        (err as Error).message
+      throw new Error(
+        `[docs-site] Prose rendering failed for "${ex.id}": ${
+          (err as Error).message
+        }`,
+        { cause: err }
       );
     }
 
@@ -243,7 +245,7 @@ export async function loadExamples(): Promise<LoadExamplesResult> {
         displayPath: ex.displayPath,
         rootPath: ex.rootPath,
         files,
-        metadata: metadata as Record<string, unknown>,
+        metadata: metadata as { tags: string[] } & Record<string, unknown>,
         hasReadme: files.some(
           (f) => f.relativePath.toLowerCase() === 'readme.md'
         ),

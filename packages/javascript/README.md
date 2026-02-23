@@ -61,6 +61,21 @@ The plugin detects YAML frontmatter in JS/TS comment blocks:
 //   - beginner
 //   - tutorial
 // ---
+
+/**
+ * A simple greeting function.
+ *
+ * @param name - The name to greet
+ * @returns A greeting message
+ */
+export function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+
+// Example usage of the greet function
+const message = greet('World');
+console.log(message); // Output: Hello, World!
+
 ```
 
 ### Dependency Resolution

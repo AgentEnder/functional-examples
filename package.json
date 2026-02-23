@@ -53,7 +53,7 @@
         }
       },
       "hydrate-readmes": {
-        "command": "tsx scripts/hydrate-readmes.ts",
+        "command": "tsx scripts/hydrate-readmes.mts",
         "dependsOn": [
           "^build"
         ]
