@@ -1,9 +1,9 @@
+import path from 'node:path';
 import type {
   FileContentsParser,
   FileParseContext,
   ParsedRegion,
 } from '../types/index.js';
-import path from 'node:path';
 
 interface RegionParseResult {
   hunks: ParsedRegion[];
@@ -32,12 +32,14 @@ function buildStartRegex(pattern: string | RegExp, startTag: string): RegExp {
 
 /**
  * Build the end-pattern regex by substituting {token} with endTag and
- * making the ID capture group optional (since `// endregion` with no ID is valid).
- * Convention: patterns use `\s+(\w+)` for the ID portion.
+ * making the ID capture group optional (since `// #endregion` with no ID is valid).
+ * Supports both `\s+(\w+)` and `\s+([\w-]+)` style ID captures.
  */
 function buildEndRegex(pattern: string | RegExp, endTag: string): RegExp {
   const withToken = patternSource(pattern).replace('{token}', endTag);
-  const withOptional = withToken.replace('\\s+(\\w+)', '(?:\\s+(\\w+))?');
+  const withOptional = withToken
+    .replace('\\s+([\\w-]+)', '(?:\\s+([\\w-]+))?')
+    .replace('\\s+(\\w+)', '(?:\\s+(\\w+))?');
   return new RegExp(withOptional);
 }
 
@@ -58,7 +60,7 @@ export function extractRegionFromFileContent(
   fileName: string,
   extensionMap: Record<string, (string | RegExp)[]>,
   startTag: string,
-  endTag: string,
+  endTag: string
 ): RegionParseResult {
   const ext = path.extname(fileName);
   const patterns = extensionMap[ext];
@@ -67,8 +69,8 @@ export function extractRegionFromFileContent(
     return { hunks: [], parsed: content };
   }
 
-  const startRegexes = patterns.map(p => buildStartRegex(p, startTag));
-  const endRegexes = patterns.map(p => buildEndRegex(p, endTag));
+  const startRegexes = patterns.map((p) => buildStartRegex(p, startTag));
+  const endRegexes = patterns.map((p) => buildEndRegex(p, endTag));
 
   const lines = content.split('\n');
   const outputLines: string[] = [];
@@ -133,7 +135,7 @@ export function extractRegionFromFileContent(
 export function createGenericRegionParser(
   extensionMap: Record<string, (string | RegExp)[]>,
   startTag: string,
-  endTag: string,
+  endTag: string
 ): FileContentsParser {
   return {
     name: 'core-region-parser',
@@ -143,7 +145,7 @@ export function createGenericRegionParser(
         context.filePath,
         extensionMap,
         startTag,
-        endTag,
+        endTag
       );
       return { ...context, parsed, hunks };
     },

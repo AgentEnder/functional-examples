@@ -20,8 +20,8 @@ import type { ConfigWithRoot } from './types.js';
 // Re-export for backward compatibility
 export type { ConfigValidationError, ResolvedConfig } from '../types/index.js';
 
-import { DEFAULT_REGION_EXTENSION_MAP } from '../regions/defaults.js';
 import type { RegionConfig } from '@functional-examples/devkit';
+import { DEFAULT_REGION_EXTENSION_MAP } from '../regions/defaults.js';
 
 /**
  * Known plugin packages that can be auto-detected when no plugins are specified.
@@ -40,13 +40,12 @@ const DEFAULT_SCAN: Omit<Required<ScanConfig>, 'include'> = {
   root: '.',
 };
 
-
 /**
  * Default region tag configuration
  */
 const DEFAULT_REGION_TAG = {
-  startTag: 'region',
-  endTag: 'endregion',
+  startTag: '#region',
+  endTag: '#endregion',
 } as const;
 
 /**
@@ -178,10 +177,16 @@ async function resolvePluginEntries<TMetadata = Record<string, unknown>>(
       }
     } else if (Array.isArray(entry) && entry.length >= 1) {
       // Tuple reference: ["@functional-examples/javascript", { regionTag: "#_" }]
-      const [packageName, options] = entry as [string, Record<string, unknown>?];
+      const [packageName, options] = entry as [
+        string,
+        Record<string, unknown>?
+      ];
       const plugin = await loadPluginFromPackage(packageName, options);
       if (plugin) {
-        plugins.push({ ...plugin, _packageName: packageName } as Plugin<TMetadata>);
+        plugins.push({
+          ...plugin,
+          _packageName: packageName,
+        } as Plugin<TMetadata>);
       }
     }
   }
@@ -202,7 +207,10 @@ async function autoDetectPlugins<
     try {
       const plugin = await loadPluginFromPackage(packageName);
       if (plugin) {
-        plugins.push({ ...plugin, _packageName: packageName } as Plugin<TMetadata>);
+        plugins.push({
+          ...plugin,
+          _packageName: packageName,
+        } as Plugin<TMetadata>);
       }
     } catch {
       // Package not installed, skip silently
