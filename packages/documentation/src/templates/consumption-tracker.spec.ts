@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import type { ExampleFile } from '@functional-examples/devkit';
+import { ExampleFile } from '@functional-examples/devkit';
 import { ConsumptionTracker } from './consumption-tracker.js';
 
 function makeFile(relativePath: string): ExampleFile {
-  return {
+  return new ExampleFile({
     absolutePath: `/tmp/test/${relativePath}`,
     relativePath,
     raw: `// ${relativePath}`,
-  };
+  });
 }
 
 describe('ConsumptionTracker', () => {

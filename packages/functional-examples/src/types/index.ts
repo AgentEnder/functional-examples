@@ -5,6 +5,9 @@
  * for backwards compatibility.
  */
 
+// Re-export classes (value + type exports)
+export { ExampleFile, ScannedExample } from '@functional-examples/devkit';
+
 // Re-export all plugin-facing types from devkit
 export type {
   // Validation
@@ -18,9 +21,7 @@ export type {
 
   // Examples
   ParsedRegion,
-  ExampleFile,
   Example,
-  ScannedExample,
 
   // Extractors
   ExtractorError,

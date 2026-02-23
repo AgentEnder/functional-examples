@@ -1,6 +1,5 @@
 import type {
   Example,
-  ExampleFile,
   Extractor,
   ExtractorError,
   ExtractorOptions,
@@ -8,6 +7,7 @@ import type {
 } from '@functional-examples/devkit';
 import {
   createMatcher,
+  ExampleFile,
   glob,
   parseJson,
   parseYaml,
@@ -554,7 +554,7 @@ export function createJavaScriptExtractor(): Extractor {
       title,
       description: typeof description === 'string' ? description : undefined,
       rootPath: absolutePath,
-      files: [{ absolutePath, relativePath, raw: content, parsed }],
+      files: [new ExampleFile({ absolutePath, relativePath, raw: content, parsed })],
       metadata: restMetadata,
       extractorName: EXTRACTOR_NAME,
     };
@@ -620,11 +620,9 @@ export function createJavaScriptExtractor(): Extractor {
         }
 
         const relativePath = path.relative(exampleDir, filePath);
-        exampleFiles.push({
-          absolutePath: filePath,
-          relativePath,
-          raw,
-        });
+        exampleFiles.push(
+          new ExampleFile({ absolutePath: filePath, relativePath, raw })
+        );
       } catch {
         // Skip files that can't be read
       }

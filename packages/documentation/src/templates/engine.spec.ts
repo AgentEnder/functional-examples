@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import type { Example } from '@functional-examples/devkit';
+import { ExampleFile } from '@functional-examples/devkit';
 import {
   buildTemplateData,
   parseTemplateName,
@@ -24,12 +25,12 @@ function makeExample(overrides: Partial<Example> = {}): Example {
     description: 'A test example',
     rootPath: '/tmp/examples/test',
     files: [
-      {
+      new ExampleFile({
         absolutePath: '/tmp/examples/test/index.ts',
         relativePath: 'index.ts',
         raw: 'console.log("hello");',
         parsed: 'console.log("hello");',
-      },
+      }),
     ],
     metadata: { id: 'test-example', title: 'Test Example' },
     extractorName: 'test-extractor',

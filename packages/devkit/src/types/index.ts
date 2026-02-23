@@ -100,19 +100,36 @@ export interface ParsedRegion {
 /**
  * A file within an example, with optional processed content.
  */
-export interface ExampleFile {
+export class ExampleFile {
   /** Absolute path to the file */
-  absolutePath: string;
+  readonly absolutePath: string;
   /** Path relative to example root */
-  relativePath: string;
-  /** @deprecated Use absolutePath instead */
-  path?: string;
+  readonly relativePath: string;
   /** Raw file contents (may be lazy-loaded) */
   raw?: string;
   /** Parsed content with metadata/markers stripped */
   parsed?: string;
   /** Extracted code regions */
   hunks?: ParsedRegion[];
+
+  constructor(data: {
+    absolutePath: string;
+    relativePath: string;
+    raw?: string;
+    parsed?: string;
+    hunks?: ParsedRegion[];
+  }) {
+    this.absolutePath = data.absolutePath;
+    this.relativePath = data.relativePath;
+    this.raw = data.raw;
+    this.parsed = data.parsed;
+    this.hunks = data.hunks;
+  }
+
+  /** Find a region/hunk by ID. Returns undefined if not found. */
+  region(id: string): ParsedRegion | undefined {
+    return this.hunks?.find((h) => h.id === id);
+  }
 }
 
 /**
@@ -144,13 +161,37 @@ export interface Example<TMetadata = ExampleMetadata> {
  * An example after processing by the scanner.
  * Includes computed fields like displayPath that are added during scanning.
  */
-export interface ScannedExample<TMetadata = ExampleMetadata>
-  extends Example<TMetadata> {
+export class ScannedExample<TMetadata = ExampleMetadata>
+  implements Example<TMetadata>
+{
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly rootPath: string;
+  readonly files: ExampleFile[];
+  readonly metadata: TMetadata;
+  readonly extractorName: string;
   /**
    * Path relative to the config/scan root, useful for display in errors
    * and snapshots (avoids machine-specific absolute paths).
    */
-  displayPath: string;
+  readonly displayPath: string;
+
+  constructor(data: Example<TMetadata> & { displayPath: string }) {
+    this.id = data.id;
+    this.title = data.title;
+    this.description = data.description;
+    this.rootPath = data.rootPath;
+    this.files = data.files;
+    this.metadata = data.metadata;
+    this.extractorName = data.extractorName;
+    this.displayPath = data.displayPath;
+  }
+
+  /** Find a file by its path relative to the example root. */
+  file(relativePath: string): ExampleFile | undefined {
+    return this.files.find((f) => f.relativePath === relativePath);
+  }
 }
 
 /**

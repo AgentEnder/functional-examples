@@ -2,25 +2,26 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { ExampleFile, ScannedExample } from '@functional-examples/devkit';
+import { ExampleFile, ScannedExample } from '@functional-examples/devkit';
+import type { ParsedRegion } from '@functional-examples/devkit';
 import { createGuideRenderer } from './guide-renderer.js';
 
 function makeFile(
   relativePath: string,
   content: string,
-  hunks?: ExampleFile['hunks']
+  hunks?: ParsedRegion[]
 ): ExampleFile {
-  return {
+  return new ExampleFile({
     absolutePath: `/tmp/test/${relativePath}`,
     relativePath,
     raw: content,
     parsed: content,
     hunks,
-  };
+  });
 }
 
 function makeExample(overrides: Partial<ScannedExample> = {}): ScannedExample {
-  return {
+  return new ScannedExample({
     id: 'basic-usage',
     title: 'Basic Usage',
     description: 'A basic example',
@@ -33,7 +34,7 @@ function makeExample(overrides: Partial<ScannedExample> = {}): ScannedExample {
     metadata: { id: 'basic-usage', title: 'Basic Usage' },
     extractorName: 'test-extractor',
     ...overrides,
-  };
+  });
 }
 
 describe('createGuideRenderer', () => {

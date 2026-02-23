@@ -15,6 +15,7 @@ import type {
   FileParseContext,
   Plugin,
 } from 'functional-examples';
+import { ExampleFile } from 'functional-examples';
 import { readFile } from 'node:fs/promises';
 import { readdirSync, type Dirent } from 'node:fs';
 import path from 'node:path';
@@ -109,10 +110,9 @@ function createIniExtractor(): Extractor<IniMetadata> {
             title: metadata.title,
             description: metadata.description,
             rootPath: exampleDir,
-            files: files.map((f) => ({
-              absolutePath: f,
-              relativePath: path.relative(exampleDir, f),
-            })),
+            files: files.map(
+              (f) => new ExampleFile({ absolutePath: f, relativePath: path.relative(exampleDir, f) })
+            ),
             metadata,
             extractorName: 'ini-extractor',
           });

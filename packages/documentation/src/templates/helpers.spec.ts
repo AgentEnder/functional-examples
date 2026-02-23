@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ExampleFile } from '@functional-examples/devkit';
+import { ExampleFile } from '@functional-examples/devkit';
 import {
   langFromPath,
   region,
@@ -45,21 +45,21 @@ describe('langFromPath', () => {
 
 describe('region', () => {
   const files: ExampleFile[] = [
-    {
+    new ExampleFile({
       absolutePath: '/a.ts',
       relativePath: 'a.ts',
       hunks: [
         { id: 'setup', content: 'const x = 1;', startLine: 1, endLine: 3 },
         { id: 'main', content: 'console.log(x);', startLine: 5, endLine: 7 },
       ],
-    },
-    {
+    }),
+    new ExampleFile({
       absolutePath: '/b.ts',
       relativePath: 'b.ts',
       hunks: [
         { id: 'helper', content: 'function f() {}', startLine: 1, endLine: 3 },
       ],
-    },
+    }),
   ];
 
   it('should find a region by id', () => {
@@ -81,7 +81,7 @@ describe('region', () => {
 
   it('should handle files without hunks', () => {
     const noHunks: ExampleFile[] = [
-      { absolutePath: '/c.ts', relativePath: 'c.ts' },
+      new ExampleFile({ absolutePath: '/c.ts', relativePath: 'c.ts' }),
     ];
     expect(region(noHunks, 'any')).toBeUndefined();
   });
@@ -89,10 +89,10 @@ describe('region', () => {
 
 describe('filesByExt', () => {
   const files: ExampleFile[] = [
-    { absolutePath: '/a.ts', relativePath: 'a.ts' },
-    { absolutePath: '/b.js', relativePath: 'b.js' },
-    { absolutePath: '/c.ts', relativePath: 'c.ts' },
-    { absolutePath: '/d.json', relativePath: 'd.json' },
+    new ExampleFile({ absolutePath: '/a.ts', relativePath: 'a.ts' }),
+    new ExampleFile({ absolutePath: '/b.js', relativePath: 'b.js' }),
+    new ExampleFile({ absolutePath: '/c.ts', relativePath: 'c.ts' }),
+    new ExampleFile({ absolutePath: '/d.json', relativePath: 'd.json' }),
   ];
 
   it('should filter files by extension with dot', () => {
@@ -115,31 +115,31 @@ describe('filesByExt', () => {
 describe('isProseFile', () => {
   it('should return true for .md files', () => {
     expect(
-      isProseFile({ absolutePath: '/README.md', relativePath: 'README.md' })
+      isProseFile(new ExampleFile({ absolutePath: '/README.md', relativePath: 'README.md' }))
     ).toBe(true);
   });
 
   it('should return true for .mdx files', () => {
     expect(
-      isProseFile({ absolutePath: '/doc.mdx', relativePath: 'doc.mdx' })
+      isProseFile(new ExampleFile({ absolutePath: '/doc.mdx', relativePath: 'doc.mdx' }))
     ).toBe(true);
   });
 
   it('should return false for .ts files', () => {
     expect(
-      isProseFile({ absolutePath: '/index.ts', relativePath: 'index.ts' })
+      isProseFile(new ExampleFile({ absolutePath: '/index.ts', relativePath: 'index.ts' }))
     ).toBe(false);
   });
 
   it('should return false for files without extensions', () => {
     expect(
-      isProseFile({ absolutePath: '/Makefile', relativePath: 'Makefile' })
+      isProseFile(new ExampleFile({ absolutePath: '/Makefile', relativePath: 'Makefile' }))
     ).toBe(false);
   });
 
   it('should be case-insensitive', () => {
     expect(
-      isProseFile({ absolutePath: '/DOC.MD', relativePath: 'DOC.MD' })
+      isProseFile(new ExampleFile({ absolutePath: '/DOC.MD', relativePath: 'DOC.MD' }))
     ).toBe(true);
   });
 });

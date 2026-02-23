@@ -5,10 +5,10 @@
  */
 
 // Core Types
+export { ExampleFile, ScannedExample } from './types/index.js';
 export type {
   BaseMetadata,
   Example,
-  ExampleFile,
   ExampleMetadata,
   ExampleMetadataRegistry,
   Extractor,
@@ -16,7 +16,6 @@ export type {
   ExtractorError,
   ExtractorOptions,
   ExtractorResult,
-  ScannedExample,
 } from './types/index.js';
 
 // Plugin system types
@@ -45,16 +44,6 @@ export type {
   PathMapping,
   ScanResult,
 } from './scanner/index.js';
-
-// Regions
-export type { RegionInfo, RegionMap, RegionOptions } from './regions/index.js';
-export {
-  parseRegions,
-  extractRegion,
-  stripRegionMarkers,
-  listRegions,
-  LANGUAGE_CONFIGS,
-} from './regions/index.js';
 
 // File helpers
 export { readExampleFile, readExampleFiles } from './files/index.js';

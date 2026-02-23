@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import type { ExampleFile } from '@functional-examples/devkit';
+import { ExampleFile } from '@functional-examples/devkit';
+import type { ParsedRegion } from '@functional-examples/devkit';
 import { ConsumptionTracker } from './consumption-tracker.js';
 import { createProseHelpers } from './prose-helpers.js';
 
-function makeFile(relativePath: string, content: string, hunks?: ExampleFile['hunks']): ExampleFile {
-  return {
+function makeFile(relativePath: string, content: string, hunks?: ParsedRegion[]): ExampleFile {
+  return new ExampleFile({
     absolutePath: `/tmp/test/${relativePath}`,
     relativePath,
     raw: content,
     parsed: content,
     hunks,
-  };
+  });
 }
 
 describe('createProseHelpers', () => {
@@ -46,11 +47,11 @@ describe('createProseHelpers', () => {
     });
 
     it('should use raw content when parsed is not available', () => {
-      const file: ExampleFile = {
+      const file = new ExampleFile({
         absolutePath: '/tmp/test/data.json',
         relativePath: 'data.json',
         raw: '{"key": "value"}',
-      };
+      });
       const tracker = new ConsumptionTracker();
       const helpers = createProseHelpers([file], tracker);
 

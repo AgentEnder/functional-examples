@@ -18,7 +18,7 @@ import {
   type ExtractorError,
   type ExtractorResult,
   type ResolvedConfig,
-  type ScannedExample,
+  ScannedExample,
 } from '../types/index.js';
 import { resolveCandidates } from './candidates.js';
 import type { FileConflict, PathMapping, ScanResult } from './types.js';
@@ -117,11 +117,12 @@ export async function scanExamples<TMetadata = Record<string, unknown>>(
 
   // Step 6: Convert to ScannedExample (compute displayPath)
   const scannedExamples: ScannedExample<TMetadata>[] = filteredExamples.map(
-    (example) => ({
-      ...example,
-      displayPath: path.relative(root, example.rootPath) || '.',
-      metadata: example.metadata as TMetadata,
-    })
+    (example) =>
+      new ScannedExample({
+        ...example,
+        displayPath: path.relative(root, example.rootPath) || '.',
+        metadata: example.metadata as TMetadata,
+      })
   );
 
   // Build lookup for examples by ID

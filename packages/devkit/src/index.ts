@@ -1,12 +1,12 @@
 // Re-export all types
 export type { TypeGuard } from './types/guards.js';
+export { ExampleFile, ScannedExample } from './types/index.js';
 export type {
   BaseMetadata,
   Config,
   ConfigValidationError,
   ConfigWithRoot,
   Example,
-  ExampleFile,
   ExampleMetadata,
   ExampleMetadataRegistry,
   Extractor,
@@ -34,7 +34,6 @@ export type {
   RegionConfig,
   ResolvedConfig,
   ScanConfig,
-  ScannedExample,
   ValidationError,
   ValidationResult,
 } from './types/index.js';

@@ -4,6 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PluginRegistry } from '../plugins/registry.js';
+import { ExampleFile } from '../types/index.js';
 import type {
   Example,
   Extractor,
@@ -108,10 +109,9 @@ function createMockExample(
     id,
     title: `Example ${id}`,
     rootPath: `/test/${id}`,
-    files: files.map((f) => ({
-      absolutePath: f,
-      relativePath: f.split('/').pop() ?? f,
-    })),
+    files: files.map(
+      (f) => new ExampleFile({ absolutePath: f, relativePath: f.split('/').pop() ?? f })
+    ),
     metadata: {},
     extractorName,
   };
@@ -457,7 +457,7 @@ describe('scanExamples with plugins', () => {
                 id: 'test',
                 title: 'Test',
                 rootPath: options.rootPath,
-                files: [{ absolutePath: filePath, relativePath: 'test.ts' }],
+                files: [new ExampleFile({ absolutePath: filePath, relativePath: 'test.ts' })],
                 metadata: {},
                 extractorName: 'test-extractor',
               },
@@ -514,7 +514,7 @@ describe('scanExamples with plugins', () => {
                 title: 'Plugin 1 Example',
                 rootPath: options.rootPath,
                 files: [
-                  { absolutePath: filePath1, relativePath: 'plugin1-file.ts' },
+                  new ExampleFile({ absolutePath: filePath1, relativePath: 'plugin1-file.ts' }),
                 ],
                 metadata: {},
                 extractorName: 'plugin1-extractor',
@@ -540,7 +540,7 @@ describe('scanExamples with plugins', () => {
                 title: 'Plugin 2 Example',
                 rootPath: options.rootPath,
                 files: [
-                  { absolutePath: filePath2, relativePath: 'plugin2-file.ts' },
+                  new ExampleFile({ absolutePath: filePath2, relativePath: 'plugin2-file.ts' }),
                 ],
                 metadata: {},
                 extractorName: 'plugin2-extractor',

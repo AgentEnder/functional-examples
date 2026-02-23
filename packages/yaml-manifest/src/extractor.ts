@@ -8,13 +8,12 @@
 
 import type {
   Example,
-  ExampleFile,
   Extractor,
   ExtractorError,
   ExtractorOptions,
   ExtractorResult,
 } from '@functional-examples/devkit';
-import { glob, isMatch, parseYaml } from '@functional-examples/devkit';
+import { ExampleFile, glob, isMatch, parseYaml } from '@functional-examples/devkit';
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -223,7 +222,7 @@ async function collectFilesFromGlob(
     }
 
     const raw = await readFile(absolutePath, 'utf-8');
-    files.push({ absolutePath, relativePath, raw });
+    files.push(new ExampleFile({ absolutePath, relativePath, raw }));
   }
 
   return files;
@@ -273,11 +272,7 @@ async function collectFiles(
         await walk(fullPath, baseDir);
       } else {
         const raw = await readFile(fullPath, 'utf-8');
-        files.push({
-          absolutePath: fullPath,
-          relativePath,
-          raw,
-        });
+        files.push(new ExampleFile({ absolutePath: fullPath, relativePath, raw }));
       }
     }
   }

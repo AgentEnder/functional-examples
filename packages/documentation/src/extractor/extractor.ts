@@ -5,7 +5,7 @@ import type {
   ExtractorOptions,
   ExtractorResult,
 } from '@functional-examples/devkit';
-import { parseYaml } from '@functional-examples/devkit';
+import { ExampleFile, parseYaml } from '@functional-examples/devkit';
 import type { Dirent } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -105,12 +105,12 @@ export function createMarkdownExtractor(): Extractor {
                 : undefined,
             rootPath: path.dirname(absPath),
             files: [
-              {
+              new ExampleFile({
                 absolutePath: absPath,
                 relativePath: candidate.name,
                 raw: content,
                 parsed: body,
-              },
+              }),
             ],
             metadata,
             extractorName: EXTRACTOR_NAME,
