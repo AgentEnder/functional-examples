@@ -4,30 +4,27 @@
   "projectType": "library",
   "sourceRoot": "examples",
   "tags": ["scope:examples"],
-  "namedInputs": {
-    "noInputs": []
-  },
   "implicitDependencies": ["examples/*"],
   "targets": {
     "build": {
       "command": "echo 'Examples do not need building'",
-      "inputs": ["noInputs"],
+      "inputs": [],
       "outputs": []
     },
     "scan": {
-      "command": "npx functional-examples scan examples",
+      "command": "node node_modules/functional-examples/dist/cli scan examples",
       "options": {
         "cwd": "{workspaceRoot}"
       }
     },
     "scan:json": {
-      "command": "npx functional-examples scan examples -f json",
+      "command": "node node_modules/functional-examples/dist/cli scan examples scan examples -f json",
       "options": {
         "cwd": "{workspaceRoot}"
       }
     },
     "test": {
-      "command": "npx functional-examples test examples",
+      "command": "node node_modules/functional-examples/dist/cli scan examples test examples",
       "options": {
         "cwd": "{workspaceRoot}"
       },
