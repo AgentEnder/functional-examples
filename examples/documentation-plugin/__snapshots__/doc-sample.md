@@ -8,19 +8,6 @@ A simple example demonstrating documentation generation
 
 ## `src/sample.ts`
 
-### Region: `frontmatter`
-
-```typescript
-// ---
-// id: doc-sample
-// title: Sample for Documentation
-// description: A simple example demonstrating documentation generation
-// tags:
-//   - documentation
-//   - sample
-// ---
-```
-
 ### Region: `setup`
 
 ```typescript

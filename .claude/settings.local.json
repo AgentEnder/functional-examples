@@ -14,7 +14,9 @@
       "Bash(do)",
       "Bash(for:*)",
       "Bash(do basename \"$dir\")",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(/Users/agentender/repos/functional-examples/packages/functional-examples/src/regions/defaults.ts:*)",
+      "Bash(/Users/agentender/repos/functional-examples/packages/functional-examples/src/regions/parser.spec.ts:*)"
     ]
   }
 }

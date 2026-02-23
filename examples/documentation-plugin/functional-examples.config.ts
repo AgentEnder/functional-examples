@@ -22,6 +22,10 @@ const config: Config = {
     include: ['src/**/*'],
     exclude: ['**/node_modules/**', '**/dist/**'],
   },
+  region: {
+    startTag: '#region',
+    endTag: '#endregion',
+  },
 };
 
 export default config;

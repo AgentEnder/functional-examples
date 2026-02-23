@@ -1,7 +1,8 @@
 import { SiGithub, SiNpm } from '@icons-pack/react-simple-icons';
 import { useEffect, useRef, useState } from 'react';
+import { useData } from 'vike-react/useData';
+import type { PageData } from './+data.server.js';
 import { BlueprintFrame, CornerMark } from '../../components/BlueprintFrame';
-import { CodeBlock } from '../../components/CodeBlock';
 import { DimensionLine } from '../../components/DimensionLine';
 import { Link } from '../../components/Link';
 import { Logo } from '../../components/Logo';
@@ -557,28 +558,16 @@ function FeatureGrid() {
 }
 
 /* ─── Code Preview ─── */
-const sampleCode = `import { scanExamples, loadConfig, resolveConfig } from 'functional-examples';
-import { createJavaScriptPlugin } from '@functional-examples/javascript';
-
-const config = await loadConfig('./functional-examples.config.ts');
-const resolved = await resolveConfig(config);
-const result = await scanExamples(resolved);
-
-console.log(\`Found \${result.stats.examplesFound} examples\`);
-
-for (const example of result.examples) {
-  console.log(\`  \${example.title} (\${example.files.length} files)\`);
-}`;
-
 function CodePreviewSection() {
+  const { quickStartHtml } = useData<PageData>();
+
   return (
     <section className="py-20 px-4">
       <div className="max-w-3xl mx-auto">
         <BlueprintFrame title="QUICK START" showTitleBlock>
-          <CodeBlock
-            code={sampleCode}
-            language="typescript"
-            filename="scan.ts"
+          <div
+            className="prose-blueprint"
+            dangerouslySetInnerHTML={{ __html: quickStartHtml }}
           />
         </BlueprintFrame>
 

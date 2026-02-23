@@ -7,6 +7,7 @@
  * 3. Claims files and returns Example objects
  */
 import {
+  ExampleFile,
   type Example,
   type Extractor,
   type ExtractorResult,
@@ -88,7 +89,7 @@ export function createTomlExtractor(): Extractor<TomlMetadata> {
             title: metadata.title,
             description: metadata.description,
             rootPath: exampleDir,
-            files: files.map((f) => ({
+            files: files.map((f) => new ExampleFile({
               absolutePath: f,
               relativePath: path.relative(exampleDir, f),
             })),
