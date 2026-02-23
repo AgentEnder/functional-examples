@@ -139,7 +139,7 @@ export async function scanDocs(
 
 /**
  * Extract a named region from a workspace-relative source file and return it
- * as a fenced code block. Uses `// region <id>` / `// endregion` markers.
+ * as a fenced code block. Uses `// region <id>` / `// #endregion` markers.
  *
  * Intended for use as a guide template custom helper:
  * `<%= sourceRegion('packages/foo/src/bar.ts', 'my-region') %>`

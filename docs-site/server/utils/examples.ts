@@ -1,10 +1,12 @@
 import { renderProseFiles } from '@functional-examples/documentation';
-import type { ExampleFile } from 'functional-examples';
+import type { ParsedRegion } from 'functional-examples';
 import {
+  ExampleFile,
   findConfigFile,
   loadConfig,
   resolveConfig,
   scanExamples,
+  ScannedExample,
 } from 'functional-examples';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
@@ -12,20 +14,31 @@ import { getHighlighter } from './highlighter';
 import { linkifyCodeHtml, renderMarkdown } from './markdown';
 import { parseProseToBlocks } from './prose-parser';
 
-/** Hunk/region metadata for a file */
-export interface SiteExampleFileHunk {
-  id: string;
-  startLine: number;
-  endLine: number;
-}
+export type { ParsedRegion };
 
 /** Shape of an example file with pre-highlighted HTML */
-export interface SiteExampleFile {
-  relativePath: string;
-  content: string;
-  language: string;
-  highlightedHtml: string;
-  hunks: SiteExampleFileHunk[];
+export class SiteExampleFile extends ExampleFile {
+  readonly language: string;
+  readonly highlightedHtml: string;
+
+  constructor(data: {
+    absolutePath: string;
+    relativePath: string;
+    raw?: string;
+    parsed?: string;
+    hunks?: ParsedRegion[];
+    language: string;
+    highlightedHtml: string;
+  }) {
+    super(data);
+    this.language = data.language;
+    this.highlightedHtml = data.highlightedHtml;
+  }
+
+  /** Resolved display content: parsed (markers stripped) → raw → empty string */
+  get content(): string {
+    return this.parsed ?? this.raw ?? '';
+  }
 }
 
 /** A structured segment of prose content */
@@ -43,23 +56,36 @@ export type ProseBlock =
       endLine?: number;
     };
 
-/** Shape of an example for the docs site */
-export interface SiteExample {
-  id: string;
-  title: string;
-  description: string;
-  extractorName: string;
-  displayPath: string;
-  files: SiteExampleFile[];
-  metadata: Record<string, unknown>;
+/** An example enriched with docs-site rendering data */
+export class SiteExample extends ScannedExample {
+  /** Narrowed to SiteExampleFile[] (no new JS emitted) */
+  declare readonly files: SiteExampleFile[];
   /** Whether a README.md exists among the files */
-  hasReadme: boolean;
+  readonly hasReadme: boolean;
   /** Tags extracted from metadata */
-  tags: string[];
+  readonly tags: string[];
   /** Pre-rendered prose HTML from README.md (with expanded region/file refs) */
-  renderedProseHtml: string | null;
+  readonly renderedProseHtml: string | null;
   /** Structured prose blocks for interactive rendering */
-  proseBlocks: ProseBlock[] | null;
+  readonly proseBlocks: ProseBlock[] | null;
+
+  constructor(
+    data: ConstructorParameters<
+      typeof ScannedExample<{ tags: string[] }>
+    >[0] & {
+      files: SiteExampleFile[];
+      hasReadme: boolean;
+      tags: string[];
+      renderedProseHtml: string | null;
+      proseBlocks: ProseBlock[] | null;
+    }
+  ) {
+    super(data);
+    this.hasReadme = data.hasReadme;
+    this.tags = data.tags;
+    this.renderedProseHtml = data.renderedProseHtml;
+    this.proseBlocks = data.proseBlocks;
+  }
 }
 
 const LANG_MAP: Record<string, string> = {
@@ -98,33 +124,39 @@ async function transformFile(
   file: ExampleFile,
   highlighter: Awaited<ReturnType<typeof getHighlighter>>
 ): Promise<SiteExampleFile> {
-  const content = await loadFileContent(file);
+  const rawContent = await loadFileContent(file);
   const language = detectLanguage(file.relativePath);
 
   let highlightedHtml: string;
   try {
-    highlightedHtml = highlighter.codeToHtml(content, {
+    highlightedHtml = highlighter.codeToHtml(rawContent, {
       lang: language,
       theme: 'blueprint',
-      transformers: [{ name: 'add-language-class', code(node) { this.addClassToHast(node, `language-${language}`); return node; } }],
+      transformers: [
+        {
+          name: 'add-language-class',
+          code(node) {
+            this.addClassToHast(node, `language-${language}`);
+            return node;
+          },
+        },
+      ],
     });
     highlightedHtml = linkifyCodeHtml(highlightedHtml);
   } catch {
     // Fallback: wrap in pre/code
-    highlightedHtml = `<pre><code>${escapeHtml(content)}</code></pre>`;
+    highlightedHtml = `<pre><code>${escapeHtml(rawContent)}</code></pre>`;
   }
 
-  return {
+  return new SiteExampleFile({
+    absolutePath: file.absolutePath,
     relativePath: file.relativePath,
-    content,
+    raw: file.raw,
+    parsed: file.parsed,
+    hunks: file.hunks,
     language,
     highlightedHtml,
-    hunks: (file.hunks ?? []).map((h) => ({
-      id: h.id,
-      startLine: h.startLine,
-      endLine: h.endLine,
-    })),
-  };
+  });
 }
 
 function escapeHtml(text: string): string {
@@ -140,7 +172,7 @@ function escapeHtml(text: string): string {
  */
 export interface LoadExamplesResult {
   siteExamples: SiteExample[];
-  scannedExamples: import('@functional-examples/devkit').ScannedExample[];
+  scannedExamples: ScannedExample[];
 }
 
 export async function loadExamples(): Promise<LoadExamplesResult> {
@@ -202,21 +234,24 @@ export async function loadExamples(): Promise<LoadExamplesResult> {
       );
     }
 
-    examples.push({
-      id: ex.id,
-      title: ex.title,
-      description: ex.description ?? '',
-      extractorName: ex.extractorName,
-      displayPath: ex.displayPath,
-      files,
-      metadata,
-      hasReadme: files.some(
-        (f) => f.relativePath.toLowerCase() === 'readme.md'
-      ),
-      tags,
-      renderedProseHtml,
-      proseBlocks,
-    });
+    examples.push(
+      new SiteExample({
+        id: ex.id,
+        title: ex.title,
+        description: ex.description,
+        extractorName: ex.extractorName,
+        displayPath: ex.displayPath,
+        rootPath: ex.rootPath,
+        files,
+        metadata: metadata as Record<string, unknown>,
+        hasReadme: files.some(
+          (f) => f.relativePath.toLowerCase() === 'readme.md'
+        ),
+        tags,
+        renderedProseHtml,
+        proseBlocks,
+      })
+    );
   }
 
   return { siteExamples: examples, scannedExamples: result.examples };

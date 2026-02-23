@@ -6,19 +6,10 @@ export async function data(pageContext: PageContextServer) {
 
   let quickStartHtml = '';
   if (example) {
-    const scanFile = example.files.find(
-      (file) => file.relativePath === 'scan.ts'
-    );
-    const hunk = scanFile?.hunks.find((h) => h.id === 'scan');
+    const hunk = example.file('scan.ts')?.region('scan')?.content;
+
     if (hunk) {
-      const regionContent =
-        scanFile?.content
-          .split('\n')
-          .slice(hunk.startLine - 1, hunk.endLine)
-          .join('\n') ?? '';
-      quickStartHtml = await renderMarkdown(
-        '```typescript\n' + regionContent + '\n```'
-      );
+      quickStartHtml = await renderMarkdown('```typescript\n' + hunk + '\n```');
     }
   }
 
