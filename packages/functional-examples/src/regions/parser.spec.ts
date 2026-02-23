@@ -18,8 +18,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'file.txt',
         {},
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
       expect(result.hunks).toEqual([]);
       expect(result.parsed).toBe(content);
@@ -40,8 +40,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(1);
@@ -66,8 +66,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(2);
@@ -86,8 +86,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(1);
@@ -106,8 +106,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(parsed).toBe('const x = 42;');
@@ -125,8 +125,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(1);
@@ -148,8 +148,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(2);
@@ -179,8 +179,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(2);
@@ -197,7 +197,7 @@ describe('extractRegionFromFileContent', () => {
   describe('TypeScript block comments', () => {
     it('extracts region from block comment syntax', () => {
       const content = [
-        '/* region blockExample */',
+        '/* #region blockExample */',
         'const x = 1;',
         '/*#endregion blockExample */',
       ].join('\n');
@@ -206,8 +206,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'main.ts',
         TS_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(1);
@@ -217,7 +217,7 @@ describe('extractRegionFromFileContent', () => {
 
   describe('Python hash comments', () => {
     it('extracts region from Python hash comment syntax', () => {
-      const content = ['# region setup', 'x = 1', '##endregion setup'].join(
+      const content = ['##region setup', 'x = 1', '##endregion setup'].join(
         '\n'
       );
 
@@ -225,8 +225,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'script.py',
         PY_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       expect(hunks).toHaveLength(1);
@@ -246,8 +246,8 @@ describe('extractRegionFromFileContent', () => {
         content,
         'script.py',
         PY_MAP,
-        'region',
-        'endregion'
+        '#region',
+        '#endregion'
       );
 
       // // comments are not Python style — no match

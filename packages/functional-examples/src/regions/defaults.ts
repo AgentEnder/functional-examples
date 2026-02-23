@@ -1,4 +1,3 @@
-// prettier-ignore
 /**
  * Default region marker patterns for common file extensions.
  *
@@ -8,34 +7,22 @@
  *
  * Multiple patterns per extension support multiple comment styles.
  */
+
 // #region default-extension-map
-export const DEFAULT_REGION_EXTENSION_MAP: Record<string, (string | RegExp)[]> = {
-  // JavaScript / TypeScript family — line comment and block comment
-  '.ts':   [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.tsx':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.js':   [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.jsx':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.mjs':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.cjs':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.mts':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.cts':  [/\/\/\s*{token}\s+([\w-]+)/, /\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  // Python / Ruby / Shell — hash line comment
-  '.py':   [/#\s*{token}\s+([\w-]+)/],
-  '.rb':   [/#\s*{token}\s+([\w-]+)/],
-  '.sh':   [/#\s*{token}\s+([\w-]+)/],
-  // HTML / XML — block comment
-  '.html': [/<!--\s*{token}\s+([\w-]+)\s*-->/],
-  '.xml':  [/<!--\s*{token}\s+([\w-]+)\s*-->/],
-  // CSS / SCSS — block comment
-  '.css':  [/\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  '.scss': [/\/\*\s*{token}\s+([\w-]+)\s*\*\//],
-  // SQL / Lua — double-dash line comment
-  '.sql':  [/--\s*{token}\s+([\w-]+)/],
-  '.lua':  [/--\s*{token}\s+([\w-]+)/],
-  // Go / Rust / Swift / C# — line comment
-  '.go':   [/\/\/\s*{token}\s+([\w-]+)/],
-  '.rs':   [/\/\/\s*{token}\s+([\w-]+)/],
-  '.swift':[/\/\/\s*{token}\s+([\w-]+)/],
-  '.cs':   [/\/\/\s*{token}\s+([\w-]+)/],
-};
+// Shared pattern arrays, referenced by multiple extensions below.
+const C_LINE_AND_BLOCK = [/^\s*\/\/\s*{token}\s+([\w-]+)\s*$/, /^\s*\/\*\s*{token}\s+([\w-]+)\s*\*\/\s*$/];
+const C_LINE            = [/^\s*\/\/\s*{token}\s+([\w-]+)\s*$/];
+const HASH_LINE         = [/^\s*#\s*{token}\s+([\w-]+)\s*$/];
+const HTML_COMMENT      = [/^\s*<!--\s*{token}\s+([\w-]+)\s*-->\s*$/];
+const CSS_BLOCK         = [/^\s*\/\*\s*{token}\s+([\w-]+)\s*\*\/\s*$/];
+const DOUBLE_DASH       = [/^\s*--\s*{token}\s+([\w-]+)\s*$/];
+
+export const DEFAULT_REGION_EXTENSION_MAP: Record<string, (string | RegExp)[]> = Object.fromEntries(
+  ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'mts', 'cts'].map(ext => [`.${ext}`, C_LINE_AND_BLOCK]).concat(
+  ['py', 'rb', 'sh', 'bash', 'zsh', 'fish', 'ps1'].map(ext => [`.${ext}`, HASH_LINE]),
+  ['html', 'xml'].map(ext => [`.${ext}`, HTML_COMMENT]),
+  ['css', 'scss'].map(ext => [`.${ext}`, CSS_BLOCK]),
+  ['sql', 'lua'].map(ext => [`.${ext}`, DOUBLE_DASH]),
+  ['go', 'rs', 'swift', 'cs'].map(ext => [`.${ext}`, C_LINE])
+));
 // #endregion default-extension-map
