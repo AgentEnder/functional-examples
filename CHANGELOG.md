@@ -1,3 +1,33 @@
+## 0.1.0 (2026-02-23)
+
+### 🚀 Features
+
+- support RegExp patterns in fileExtensionMap (string | RegExp)[] ([b92ae64](https://github.com/AgentEnder/functional-examples/commit/b92ae64))
+- **core:** add DEFAULT_REGION_EXTENSION_MAP for common file extensions ([9f3e8b2](https://github.com/AgentEnder/functional-examples/commit/9f3e8b2))
+- **core:** add extractRegionFromFileContent and createGenericRegionParser ([9981b19](https://github.com/AgentEnder/functional-examples/commit/9981b19))
+- **core:** add region block to config schema, apply defaults in resolveConfig ([f98846e](https://github.com/AgentEnder/functional-examples/commit/f98846e))
+- **core:** wire regionConfig into pipeline context and scanner ([bb8bc36](https://github.com/AgentEnder/functional-examples/commit/bb8bc36))
+- **devkit:** add RegionConfig type, regionConfig to FileParseContext, region to Config ([9d8bb0a](https://github.com/AgentEnder/functional-examples/commit/9d8bb0a))
+- **documentation:** add customHelpers to createGuideRenderer; dogfood with sourceRegion helper in docs ([c68f59a](https://github.com/AgentEnder/functional-examples/commit/c68f59a))
+- **javascript:** set parsed content in extractor (strips frontmatter) ([d3ed68b](https://github.com/AgentEnder/functional-examples/commit/d3ed68b))
+- **javascript:** remove region and frontmatter parsers (handled by core) ([ee5fd39](https://github.com/AgentEnder/functional-examples/commit/ee5fd39))
+- **regions:** support hyphenated IDs and update default tags to #region/#endregion ([1280fad](https://github.com/AgentEnder/functional-examples/commit/1280fad))
+
+### 🩹 Fixes
+
+- update createInitialContext callers and fix non-null assertions in spec ([3ce88e3](https://github.com/AgentEnder/functional-examples/commit/3ce88e3))
+- **devkit:** make ScannedExample.file() throw on missing file instead of returning undefined ([1fd4056](https://github.com/AgentEnder/functional-examples/commit/1fd4056))
+- **repo:** correct snippets in files ([2405df0](https://github.com/AgentEnder/functional-examples/commit/2405df0))
+- **repo:** point to build outputs directly instead of relying on pnpm link bin entries ([70264e4](https://github.com/AgentEnder/functional-examples/commit/70264e4))
+- **tests:** use ExampleFile constructor in engine specs; add outDir to devkit tsconfig.spec ([c2625cd](https://github.com/AgentEnder/functional-examples/commit/c2625cd))
+- **tests:** loosen performance thresholds for extended-iterable ([25707dd](https://github.com/AgentEnder/functional-examples/commit/25707dd))
+- **vike-plugin-typedoc:** deduplicate prerender URLs and guard against duplicate invocations ([8dce371](https://github.com/AgentEnder/functional-examples/commit/8dce371))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.0.1 (2026-02-19)
 
 ### 🚀 Features
