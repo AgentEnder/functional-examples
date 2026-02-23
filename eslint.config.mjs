@@ -12,6 +12,7 @@ export default [
       '**/dist-spec/**',
       '**/build/**',
       '**/vitest.config.ts',
+      'examples/devkit-readme/snippets/**',
     ],
   },
   {

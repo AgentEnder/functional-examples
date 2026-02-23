@@ -44,3 +44,6 @@ Thumbs.db
 
 # AI Generated / Frequently Modified Files
 .ai/
+
+# Files with particular formatting
+packages/functional-examples/src/regions/defaults.ts
