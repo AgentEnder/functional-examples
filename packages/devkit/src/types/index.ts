@@ -189,8 +189,14 @@ export class ScannedExample<TMetadata = ExampleMetadata>
   }
 
   /** Find a file by its path relative to the example root. */
-  file(relativePath: string): ExampleFile | undefined {
-    return this.files.find((f) => f.relativePath === relativePath);
+  file(relativePath: string): ExampleFile {
+    const val = this.files.find((f) => f.relativePath === relativePath);
+    if (val) {
+      return val;
+    }
+    throw new Error(
+      `File with relative path "${relativePath}" not found in example "${this.id}"`
+    );
   }
 }
 
