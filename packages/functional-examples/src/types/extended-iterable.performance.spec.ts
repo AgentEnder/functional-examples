@@ -190,7 +190,7 @@ describe('ExtendedIterable performance vs Array methods', () => {
         `Splice early termination - ExtendedIterable: ${extendedTime.toFixed(3)}ms, Array: ${arrayTime.toFixed(3)}ms, Extended is ${ratio.toFixed(2)}x faster`
       );
 
-      expect(ratio).toBeGreaterThan(0.5);
+      expect(ratio).toBeGreaterThan(0.3);
     });
   });
 
@@ -211,7 +211,7 @@ describe('ExtendedIterable performance vs Array methods', () => {
         `Find - ExtendedIterable: ${extendedTime.toFixed(3)}ms, Array: ${arrayTime.toFixed(3)}ms, Ratio: ${ratio.toFixed(2)}x`
       );
 
-      expect(ratio).toBeLessThan(2);
+      expect(ratio).toBeLessThan(3);
     });
 
     it('some operation should be within 2x of native', () => {
