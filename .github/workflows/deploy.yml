@@ -7,12 +7,25 @@ on:
         description: 'Version to publish (e.g. 0.1.0-alpha.1)'
         type: string
         required: false
+      docs_only:
+        description: 'If true, only deploy the docs site'
+        type: choice
+        required: true
+        default: 'false'
+        options:
+          - 'true'
+          - 'false'
   workflow_call:
     inputs:
       version:
         description: 'Version to publish (e.g. 0.1.0-alpha.1)'
         type: string
-        required: true
+        required: false
+      docs_only:
+        description: 'If true, only deploy the docs site'
+        type: string
+        required: false
+        default: 'false'
 
 jobs:
   deploy:
@@ -20,6 +33,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      pages: write
 
     steps:
       - name: Checkout code
@@ -53,4 +67,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        if: github.ref == 'refs/heads/main' && inputs.docs_only == 'false'
+
+      - name: Deploy docs-site
+        run: |
+          npx nx deploy docs-site
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.ref == 'refs/heads/main'
