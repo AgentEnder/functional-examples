@@ -96,6 +96,6 @@ export default {
 | Non-JS/TS files (Python, Go, Rust) | YAML Manifest |
 | Auto entry-point tracing | JavaScript Plugin |
 
-You can use both plugins together with [path mappings](../guides/../configuration) to handle different directories.
+You can use both plugins together with [path mappings](../../guides/configuration) to handle different directories.
 
-**See also:** [JavaScript Plugin](../javascript) for frontmatter-based extraction, [Mixed Plugins example](../../examples/mixed-plugins) for combining extractors.
+**See also:** [JavaScript Plugin](../javascript) for frontmatter-based extraction, [Mixed Plugins example](../../../examples/mixed-plugins) for combining extractors.

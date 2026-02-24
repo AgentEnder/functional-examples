@@ -97,4 +97,4 @@ docs:
   outputName: custom   # Use 'custom.md' instead of 'id.md'
 ```
 
-**See also:** [Plugin Authoring](../advanced/plugin-authoring) for creating plugins that contribute to docs, [CI Integration](../advanced/ci-integration) for generating docs in CI.
+**See also:** [Plugin Authoring](../../advanced/plugin-authoring) for creating plugins that contribute to docs, [CI Integration](../../advanced/ci-integration) for generating docs in CI.

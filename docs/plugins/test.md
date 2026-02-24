@@ -83,7 +83,7 @@ Each step runs sequentially. If a step fails, subsequent steps in the same test 
 
 <%= example('test-assertions').region('snapshot') %>
 
-See [Snapshot Testing](../advanced/snapshot-testing) for details on the snapshot workflow.
+See [Snapshot Testing](../../advanced/snapshot-testing) for details on the snapshot workflow.
 
 ### Negation
 
@@ -115,4 +115,4 @@ The test plugin supports pluggable reporters:
 
 Use `createTapReporter()` for CI environments — most CI systems can parse TAP output natively.
 
-**See also:** [Snapshot Testing](../advanced/snapshot-testing) for snapshot workflows, [CI Integration](../advanced/ci-integration) for pipeline setup.
+**See also:** [Snapshot Testing](../../advanced/snapshot-testing) for snapshot workflows, [CI Integration](../../advanced/ci-integration) for pipeline setup.

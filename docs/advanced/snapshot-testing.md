@@ -71,7 +71,7 @@ And here's the stored snapshot it compares against:
 
 ## Snapshots for Generated Content
 
-Snapshots are especially powerful for verifying generated files. The [documentation plugin example](../plugins/documentation) uses a snapshot to verify the markdown output produced by `functional-examples documentation`:
+Snapshots are especially powerful for verifying generated files. The [documentation plugin example](../../plugins/documentation) uses a snapshot to verify the markdown output produced by `functional-examples documentation`:
 
 <%= example('documentation-plugin').file('__snapshots__/doc-sample.md') %>
 
@@ -100,4 +100,4 @@ Region tags in snapshot files are processed by the parser pipeline — they're s
 - **Don't snapshot non-deterministic output** — timestamps, random IDs, and absolute paths make snapshots flaky
 - **Don't use snapshots for simple checks** — `stdout.contains` is more resilient to formatting changes
 
-**See also:** [Test Plugin](../plugins/test) for the full assertion reference, [CI Integration](../ci-integration) for running snapshot tests in pipelines.
+**See also:** [Test Plugin](../../plugins/test) for the full assertion reference, [CI Integration](../ci-integration) for running snapshot tests in pipelines.

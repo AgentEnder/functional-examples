@@ -88,4 +88,4 @@ npx tsx scripts/run-workflow.mts workflow.yml --job test-examples
 - **Separate scan from test** — run `scan` first to verify discovery, then `test` for assertions
 - **Pin Node.js version** — avoid environment-specific failures
 
-**See also:** [Test Plugin](../plugins/test) for assertion reference, [Snapshot Testing](../snapshot-testing) for snapshot workflows.
+**See also:** [Test Plugin](../../plugins/test) for assertion reference, [Snapshot Testing](../snapshot-testing) for snapshot workflows.

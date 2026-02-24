@@ -62,4 +62,4 @@ Write tests that verify your extractor:
 3. Claims the correct files
 4. Handles empty candidate lists gracefully
 
-**See also:** [Plugin Authoring](./plugin-authoring) for building a full plugin with extractors, parsers, and more.
+**See also:** [Plugin Authoring](../plugin-authoring) for building a full plugin with extractors, parsers, and more.
