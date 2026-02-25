@@ -1,6 +1,6 @@
 {
   "name": "rehype-typedoc",
-  "version": "0.0.0-alpha.1",
+  "version": "0.0.1",
   "description": "Rehype plugin to auto-link inline code to TypeDoc API documentation",
   "author": {
     "name": "Craigory Coppola",

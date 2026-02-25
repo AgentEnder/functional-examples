@@ -1,6 +1,6 @@
 {
   "name": "vike-plugin-typedoc",
-  "version": "0.0.0-alpha.1",
+  "version": "0.0.1",
   "description": "Headless TypeDoc integration for Vike docs sites — parser, navigation, and context API",
   "author": {
     "name": "Craigory Coppola",
