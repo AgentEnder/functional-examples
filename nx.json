@@ -15,13 +15,21 @@
     ]
   },
   "release": {
-    "projects": ["packages/*", "!rehype-typedoc", "!vike-plugin-typedoc"],
+    "groups": {
+      "main": {
+        "projects": ["packages/*", "!rehype-typedoc", "!vike-plugin-typedoc"]
+      },
+      "typedoc": {
+        "projects": ["rehype-typedoc", "vike-plugin-typedoc"],
+        "projectsRelationship": "fixed"
+      }
+    },
     "version": {
       "preVersionCommand": "npx nx run-many -t build && pnpm sync-metadata",
       "conventionalCommits": true
     },
     "changelog": {
-      "workspaceChangelog": {
+      "projectChangelogs": {
         "createRelease": "github"
       }
     },
