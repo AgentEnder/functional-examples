@@ -105,7 +105,7 @@ export function createGuideRenderer(
         }
         const lang = templateHelpers.langFromPath(relativePath);
         const content = found.parsed ?? found.raw ?? '';
-        return fencedBlock(lang, content);
+        return fencedBlock(lang, content, relativePath);
       },
 
       region(regionId: string): string {
@@ -116,7 +116,7 @@ export function createGuideRenderer(
           );
         }
         const lang = templateHelpers.langFromPath(match.file.relativePath);
-        return fencedBlock(lang, match.content);
+        return fencedBlock(lang, match.content, `${match.file.relativePath}#${regionId}`);
       },
 
       files: ex.files,

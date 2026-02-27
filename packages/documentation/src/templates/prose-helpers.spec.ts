@@ -23,7 +23,7 @@ describe('createProseHelpers', () => {
 
       const result = helpers.file('utils.ts');
 
-      expect(result).toBe('```typescript\nexport const x = 1;\n```');
+      expect(result).toBe('```typescript title="utils.ts"\nexport const x = 1;\n```');
     });
 
     it('should mark the file as consumed', () => {
@@ -57,7 +57,7 @@ describe('createProseHelpers', () => {
 
       const result = helpers.file('data.json');
 
-      expect(result).toBe('```json\n{"key": "value"}\n```');
+      expect(result).toBe('```json title="data.json"\n{"key": "value"}\n```');
     });
 
     it('should detect language from file extension', () => {

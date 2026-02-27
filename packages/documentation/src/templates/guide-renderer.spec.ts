@@ -48,7 +48,7 @@ describe('createGuideRenderer', () => {
       );
 
       expect(result).toBe(
-        '```typescript\nconst config = loadConfig();\n```'
+        '```typescript title="scan.ts"\nconst config = loadConfig();\n```'
       );
     });
 
@@ -73,7 +73,7 @@ describe('createGuideRenderer', () => {
         '<%= example("basic-usage").region("config-setup") %>'
       );
 
-      expect(result).toBe('```typescript\nconst cfg = {};\n```');
+      expect(result).toBe('```typescript title="main.ts#config-setup"\nconst cfg = {};\n```');
     });
 
     it('should expose example metadata', () => {

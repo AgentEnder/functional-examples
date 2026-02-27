@@ -16,9 +16,14 @@ export interface ProseHelpers {
 
 /**
  * Build a fenced code block string for a given language and content.
+ *
+ * When `title` is provided it is appended to the info string as
+ * `title="..."` so downstream rehype plugins (e.g. code-block-chrome)
+ * can display it in the header instead of the language label.
  */
-export function fencedBlock(lang: string, content: string): string {
-  return `\`\`\`${lang}\n${content}\n\`\`\``;
+export function fencedBlock(lang: string, content: string, title?: string): string {
+  const info = title ? `${lang} title="${title}"` : lang;
+  return `\`\`\`${info}\n${content}\n\`\`\``;
 }
 
 /**
@@ -42,7 +47,7 @@ export function createProseHelpers(
       tracker.consume(relativePath);
       const lang = templateHelpers.langFromPath(relativePath);
       const content = found.parsed ?? found.raw ?? '';
-      return fencedBlock(lang, content);
+      return fencedBlock(lang, content, relativePath);
     },
 
     region(regionId: string): string {
