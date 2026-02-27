@@ -162,6 +162,54 @@ describe('rehypeTypedocCodeBlocks', () => {
     expect(result).toContain('class="typedoc-link"');
   });
 
+  describe('multi-token spans', () => {
+    it('links identifiers inside { Foo } import-style spans', () => {
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0"> { createMatcher } </span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+      expect(result).toContain('class="typedoc-link"');
+    });
+
+    it('links multiple identifiers in one span', () => {
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0"> { createMatcher, Extractor } </span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+      expect(result).toContain('href="/api/devkit/extractor"');
+    });
+
+    it('preserves non-identifier text around linked identifiers', () => {
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0"> { createMatcher } </span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      // The braces and surrounding whitespace should still be present
+      expect(result).toContain('{ ');
+      expect(result).toContain(' }');
+    });
+
+    it('skips spans with no matching identifiers', () => {
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0"> { unknownThing } </span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+      expect(result).toContain('unknownThing');
+    });
+
+    it('handles mixed matched and unmatched identifiers', () => {
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0"> { createMatcher, unknownThing } </span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      // createMatcher should be linked
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+      // unknownThing should NOT be linked but should still appear in the output
+      expect(result).toContain('unknownThing');
+      // Only one link should be present
+      const linkCount = (result.match(/typedoc-link/g) ?? []).length;
+      expect(linkCount).toBe(1);
+    });
+  });
+
   describe('language filtering', () => {
     it('links symbols in typescript code blocks', () => {
       const input = '<pre><code class="language-typescript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';

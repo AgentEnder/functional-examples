@@ -4,8 +4,8 @@ import { visit } from 'unist-util-visit';
 import type { RehypeTypedocOptions } from './plugin.js';
 import { lookupSymbol, resolveSymbol } from './plugin.js';
 
-/** Identifier regex: word chars starting with a letter, underscore, or $ */
-const IDENTIFIER_RE = /^(\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*)$/;
+/** Global identifier regex: finds ALL identifiers in a text string */
+const IDENTIFIER_GLOBAL_RE = /[a-zA-Z_$][a-zA-Z0-9_$]*/g;
 
 /** Languages where TypeDoc symbol linking makes sense */
 const LINKABLE_LANGUAGES = new Set([
@@ -28,60 +28,69 @@ interface Replacement {
 }
 
 /**
- * Collect all span-to-link replacements inside a code element.
- * Mutations are deferred to avoid issues with visit's index tracking.
+ * Scan a single `<span>` for all identifiers, resolve them against the
+ * symbols map, and return replacement nodes that split the span text
+ * into linked and unlinked segments.
+ *
+ * Returns `null` when nothing in the span matched a known symbol.
  */
-function collectReplacements(
-  code: Element,
+function splitSpanByIdentifiers(
+  span: Element,
   symbols: RehypeTypedocOptions['symbols'],
   buildLink: RehypeTypedocOptions['buildLink']
-): Replacement[] {
-  const replacements: Replacement[] = [];
+): ElementContent[] | null {
+  // Guard: only process spans with a single text child
+  if (span.children.length !== 1 || span.children[0].type !== 'text') {
+    return null;
+  }
 
-  visit(code, 'element', (span, index, parent) => {
-    if (span.tagName !== 'span') return;
-    if (index === undefined || !parent) return;
+  const text = (span.children[0] as Text).value;
 
-    // Only process spans with a single text child
-    if (span.children.length !== 1 || span.children[0].type !== 'text') return;
+  // Collect all identifier matches and the hrefs they resolve to
+  interface Match { start: number; end: number; identifier: string; href: string }
+  const matches: Match[] = [];
 
-    const textNode = span.children[0] as Text;
-    const match = IDENTIFIER_RE.exec(textNode.value);
-    if (!match) return;
-
-    const [, leading, identifier, trailing] = match;
-    if (SKIP_TOKENS.has(identifier)) return;
+  IDENTIFIER_GLOBAL_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = IDENTIFIER_GLOBAL_RE.exec(text)) !== null) {
+    const identifier = m[0];
+    if (SKIP_TOKENS.has(identifier)) continue;
 
     const entry = lookupSymbol(symbols, identifier);
-    if (!entry) return;
+    if (!entry) continue;
 
-    // In code blocks we have no data-pkg attribute, so pass undefined
     let resolved;
     try {
       resolved = resolveSymbol(entry, identifier, undefined);
     } catch {
       // Ambiguous symbol — skip silently in code blocks
-      return;
+      continue;
     }
-    if (!resolved) return;
+    if (!resolved) continue;
 
     const href = buildLink(resolved);
-    if (!href) return;
+    if (!href) continue;
 
-    // Build the replacement nodes.
-    // Whitespace stays inside styled <span> elements (not bare text nodes)
-    // to prevent collapsing in certain rendering contexts.
-    const nodes: ElementContent[] = [];
+    matches.push({ start: m.index, end: m.index + identifier.length, identifier, href });
+  }
 
-    // Leading whitespace in its own span (preserves original styling)
-    if (leading) {
+  if (matches.length === 0) return null;
+
+  // Split the text into segments: gaps become plain styled spans,
+  // matched identifiers become <a><span>...</span></a>.
+  const nodes: ElementContent[] = [];
+  let cursor = 0;
+
+  for (const { start, end, identifier, href } of matches) {
+    // Text before this match (may include non-identifier chars + unmatched identifiers)
+    if (cursor < start) {
       nodes.push({
         ...span,
-        children: [{ type: 'text', value: leading }],
+        children: [{ type: 'text', value: text.slice(cursor, start) }],
       } as Element);
     }
 
-    // The identifier span wrapped in a link
+    // The matched identifier wrapped in a link
     const identSpan: Element = {
       ...span,
       children: [{ type: 'text', value: identifier }],
@@ -98,13 +107,37 @@ function collectReplacements(
     };
     nodes.push(link);
 
-    // Trailing whitespace in its own span (preserves original styling)
-    if (trailing) {
-      nodes.push({
-        ...span,
-        children: [{ type: 'text', value: trailing }],
-      } as Element);
-    }
+    cursor = end;
+  }
+
+  // Remaining text after the last match
+  if (cursor < text.length) {
+    nodes.push({
+      ...span,
+      children: [{ type: 'text', value: text.slice(cursor) }],
+    } as Element);
+  }
+
+  return nodes;
+}
+
+/**
+ * Collect all span-to-link replacements inside a code element.
+ * Mutations are deferred to avoid issues with visit's index tracking.
+ */
+function collectReplacements(
+  code: Element,
+  symbols: RehypeTypedocOptions['symbols'],
+  buildLink: RehypeTypedocOptions['buildLink']
+): Replacement[] {
+  const replacements: Replacement[] = [];
+
+  visit(code, 'element', (span, index, parent) => {
+    if (span.tagName !== 'span') return;
+    if (index === undefined || !parent) return;
+
+    const nodes = splitSpanByIdentifiers(span, symbols, buildLink);
+    if (!nodes) return;
 
     replacements.push({ parent: parent as Element, index, nodes });
   });
