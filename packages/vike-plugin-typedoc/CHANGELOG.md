@@ -1,3 +1,14 @@
+## 0.1.0 (2026-02-27)
+
+### 🚀 Features
+
+- **vike-plugin-typedoc:** auto-detect single-package sites ([589bbff](https://github.com/AgentEnder/functional-examples/commit/589bbff))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.0.1 (2026-02-25)
 
 ### 🚀 Features

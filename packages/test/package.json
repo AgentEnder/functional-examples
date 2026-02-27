@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/test",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Test runner plugin for functional-examples",
   "publishConfig": {
@@ -25,7 +25,7 @@
     "extract-docs": "typedoc --options typedoc.json"
   },
   "peerDependencies": {
-    "functional-examples": "0.1.0"
+    "functional-examples": "0.1.1"
   },
   "dependencies": {
     "@functional-examples/devkit": "workspace:*",

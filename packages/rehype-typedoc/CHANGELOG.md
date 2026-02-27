@@ -1,3 +1,14 @@
+## 0.1.0 (2026-02-27)
+
+### 🚀 Features
+
+- **rehype-typedoc:** support multi-token spans in code block linking ([bbf4b07](https://github.com/AgentEnder/functional-examples/commit/bbf4b07))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.0.1 (2026-02-25)
 
 ### 🚀 Features

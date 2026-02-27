@@ -1,6 +1,6 @@
 {
   "name": "@functional-examples/yaml-manifest",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "YAML manifest plugin for multi-file examples in functional-examples",
   "author": {
     "name": "Craigory Coppola",
