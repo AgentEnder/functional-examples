@@ -1,3 +1,4 @@
+import type { RehypeTypedocSymbol } from 'rehype-typedoc';
 import { describe, expect, it } from 'vitest';
 import { createTypedocContext } from './context.js';
 import { parseTypedocJson } from './parser.js';
@@ -221,9 +222,8 @@ describe('createTypedocContext', () => {
     expect(symbol).toBeDefined();
 
     // buildLink should return the path from the symbol
-    const link = ctx.rehypeOptions.buildLink(
-      Array.isArray(symbol) ? symbol[0] : symbol
-    );
+    const resolved = (Array.isArray(symbol) ? symbol[0] : symbol) as RehypeTypedocSymbol;
+    const link = ctx.rehypeOptions.buildLink(resolved);
     expect(link).toBe('/api/devkit/create-matcher');
   });
 
@@ -235,6 +235,51 @@ describe('createTypedocContext', () => {
     expect(linked).not.toBeNull();
     expect(linked?.descriptionHtml).toBeDefined();
     expect(linked?.descriptionHtml).toContain('A test interface');
+  });
+
+  describe('single-package auto-detection', () => {
+    function makeSinglePackage() {
+      return [
+        parseTypedocJson(
+          makeFunctionJson('createWorker', 'Worker'),
+          'api',
+          'isolated-workers'
+        ),
+      ];
+    }
+
+    it('omits package slug from export paths for single package', async () => {
+      const ctx = await createTypedocContext(makeSinglePackage());
+      const exp = ctx.apiDocs.packages['api'].exports[0];
+      expect(exp.path).toBe('/api/create-worker');
+    });
+
+    it('produces basePath as the package URL for single package', async () => {
+      const ctx = await createTypedocContext(makeSinglePackage());
+      const urls = ctx.getPackageUrls();
+      expect(urls).toEqual(['/api']);
+    });
+
+    it('flattens navigation for single package', async () => {
+      const ctx = await createTypedocContext(makeSinglePackage());
+      // Should be flat: no children, just export items at top level
+      expect(ctx.navigation.every((n) => !n.children?.length)).toBe(true);
+      expect(ctx.navigation.some((n) => n.title === 'createWorker')).toBe(true);
+    });
+
+    it('custom buildUrl still overrides single-package default', async () => {
+      const ctx = await createTypedocContext(makeSinglePackage(), {
+        buildUrl: (pkg, sym) => (sym ? `/docs/${pkg}/${sym}` : `/docs/${pkg}`),
+      });
+      const exp = ctx.apiDocs.packages['api'].exports[0];
+      expect(exp.path).toBe('/docs/api/create-worker');
+    });
+
+    it('multi-package still uses package slug in URLs', async () => {
+      const ctx = await createTypedocContext(makeTestPackages());
+      const exp = ctx.apiDocs.packages['devkit'].exports[0];
+      expect(exp.path).toBe('/api/devkit/create-matcher');
+    });
   });
 
   describe('baseUrl option', () => {
@@ -282,9 +327,8 @@ describe('createTypedocContext', () => {
       const symbol = ctx.symbolsMap.get('createMatcher');
       expect(symbol).toBeDefined();
 
-      const link = ctx.rehypeOptions.buildLink(
-        Array.isArray(symbol) ? symbol[0] : symbol
-      );
+      const resolved = (Array.isArray(symbol) ? symbol[0] : symbol) as RehypeTypedocSymbol;
+      const link = ctx.rehypeOptions.buildLink(resolved);
       expect(link).toBe('/functional-examples/api/devkit/create-matcher');
     });
 

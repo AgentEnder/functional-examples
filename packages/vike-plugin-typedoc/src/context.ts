@@ -90,6 +90,11 @@ function createDefaultBuildUrl(basePath: string) {
     symbolSlug ? `${basePath}/${packageSlug}/${symbolSlug}` : `${basePath}/${packageSlug}`;
 }
 
+function createSinglePackageBuildUrl(basePath: string) {
+  return (_packageSlug: string, symbolSlug?: string): string =>
+    symbolSlug ? `${basePath}/${symbolSlug}` : basePath;
+}
+
 /**
  * Build an `applyBaseUrl` function from a raw base URL string.
  *
@@ -128,7 +133,15 @@ export async function createTypedocContext(
   packages: ApiPackage[],
   options: TypedocContextOptions = {}
 ): Promise<TypedocContext> {
-  const buildUrl = options.buildUrl ?? createDefaultBuildUrl(options.basePath ?? '/api');
+  const basePath = options.basePath ?? '/api';
+  const isSinglePackage = packages.length === 1;
+
+  // When single-package and no custom buildUrl, skip the package slug
+  const buildUrl = options.buildUrl
+    ?? (isSinglePackage
+      ? createSinglePackageBuildUrl(basePath)
+      : createDefaultBuildUrl(basePath));
+
   const applyBaseUrl = createApplyBaseUrl(options.baseUrl);
   const baseUrl = options.baseUrl ?? '/';
 
@@ -146,15 +159,17 @@ export async function createTypedocContext(
 
   const apiDocs = combineApiDocs(packages);
   const symbolsMap = buildSymbolsMap(apiDocs);
-  const navigation = buildApiNavigation(apiDocs);
+  const navigation = buildApiNavigation(apiDocs, { singlePackage: isSinglePackage });
 
-  // Update navigation paths using buildUrl
-  for (const navItem of navigation) {
-    const pkg = Object.values(apiDocs.packages).find(
-      (p) => p.name === navItem.title
-    );
-    if (pkg) {
-      navItem.path = buildUrl(pkg.slug);
+  // Update navigation paths using buildUrl (only for multi-package)
+  if (!isSinglePackage) {
+    for (const navItem of navigation) {
+      const pkg = Object.values(apiDocs.packages).find(
+        (p) => p.name === navItem.title
+      );
+      if (pkg) {
+        navItem.path = buildUrl(pkg.slug);
+      }
     }
   }
 
