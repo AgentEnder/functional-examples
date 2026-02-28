@@ -16,7 +16,11 @@
       "Bash(do basename \"$dir\")",
       "Bash(xxd:*)",
       "Bash(/Users/agentender/repos/functional-examples/packages/functional-examples/src/regions/defaults.ts:*)",
-      "Bash(/Users/agentender/repos/functional-examples/packages/functional-examples/src/regions/parser.spec.ts:*)"
+      "Bash(/Users/agentender/repos/functional-examples/packages/functional-examples/src/regions/parser.spec.ts:*)",
+      "Bash(cd /Users/agentender/repos/isolated-workers && node_modules/.bin/functional-examples --help 2>&1 || npx --prefix /Users/agentender/repos/isolated-workers functional-examples --help 2>&1)",
+      "Bash(cd /Users/agentender/repos/isolated-workers && docs-site/node_modules/.bin/functional-examples --help 2>&1)",
+      "Bash(head:*)",
+      "mcp__plugin_playwright_playwright__browser_run_code"
     ]
   }
 }
