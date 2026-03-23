@@ -32,7 +32,7 @@ export async function onCreateGlobalContext(
   // Phase 1: Read TypeDoc context (loaded by the vike-plugin-typedoc extension)
   // and configure rehype-typedoc so inline code auto-linking works.
   const typedoc = await loadTypedocContext(context);
-  configureRehypeTypedoc(typedoc.rehypeOptions);
+  configureRehypeTypedoc(typedoc.getRehypePlugins());
   configureRemarkCodeProps({
     resolveSignature: (symbolName, pkg) => {
       const exports = typedoc.apiDocs.allExports;

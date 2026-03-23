@@ -1,6 +1,6 @@
 {
   "name": "vike-plugin-typedoc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless TypeDoc integration for Vike docs sites — parser, navigation, and context API",
   "author": {
     "name": "Craigory Coppola",
@@ -66,6 +66,8 @@
   },
   "peerDependencies": {
     "react": ">=18",
+    "shiki": ">=1.0.0",
+    "typedoc": ">=0.28.0",
     "vike": ">=0.4.250",
     "vike-react": ">=0.5"
   },
@@ -78,12 +80,20 @@
     },
     "vike-react": {
       "optional": true
+    },
+    "shiki": {
+      "optional": true
+    },
+    "typedoc": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "^19.2.9",
     "react": "^19.2.3",
+    "shiki": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "vike": "^0.4.252",
     "vike-react": "^0.6.19",

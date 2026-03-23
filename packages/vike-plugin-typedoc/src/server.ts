@@ -1,13 +1,14 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import type { TypeDocDocument } from 'rehype-typedoc';
 import { GlobalContextServer, PageContextServer } from 'vike/types';
 import {
   createTypedocContext,
   type TypedocContext,
   type TypedocContextOptions,
 } from './context.js';
-import type { LinkedApiExport } from './linkify.js';
-import { parseTypedocJson } from './parser.js';
+import { deserializeTypedocJson } from './deserialize.js';
+import type { LinkedApiExport } from './types.js';
 import type { ApiPackage } from './types.js';
 
 const GLOBAL_KEY = '$$VIKE_PLUGIN_TYPEDOC$$';
@@ -41,7 +42,7 @@ export interface LoadTypedocContextOptions extends TypedocContextOptions {
 /**
  * Load TypeDoc JSON files from disk and create a TypedocContext.
  *
- * This is the pure loading function — it does not mutate any global state.
+ * This is the pure loading function -- it does not mutate any global state.
  * Used internally by the Vike extension hook and by `loadTypedocContext`.
  *
  * @param options - Where to find TypeDoc JSON files and package metadata
@@ -69,6 +70,7 @@ export async function loadTypedocContextInternal(
   }
 
   const packages: ApiPackage[] = [];
+  const documents: TypeDocDocument[] = [];
 
   for (const entry of entries) {
     if (!entry.endsWith('.json')) continue;
@@ -95,7 +97,8 @@ export async function loadTypedocContextInternal(
     try {
       const jsonContent = await readFile(join(typedocDir, entry), 'utf-8');
       const json = JSON.parse(jsonContent);
-      packages.push(parseTypedocJson(json, slug, npmName));
+      packages.push(deserializeTypedocJson(json, slug, npmName));
+      documents.push({ packageSlug: slug, json });
       console.log(`[typedoc] Loaded ${slug} (${npmName})`);
     } catch (err) {
       console.warn(
@@ -105,7 +108,7 @@ export async function loadTypedocContextInternal(
     }
   }
 
-  return await createTypedocContext(packages, contextOptions);
+  return await createTypedocContext(packages, { ...contextOptions, documents });
 }
 
 /**

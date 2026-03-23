@@ -14,7 +14,6 @@ import type { ApiComment } from './types.js';
  * Pre-rendered markdown fields for a single API export.
  */
 export interface RenderedExportMarkdown {
-  signatureCodeHtml?: string;
   returnTypeCodeHtml?: string;
   descriptionHtml?: string;
   remarksHtml?: string;
@@ -30,12 +29,14 @@ type MarkdownProcessor = { process(md: string): Promise<{ toString(): string }> 
  * Build a unified processor for rendering markdown to HTML.
  *
  * The pipeline is:
- *   remarkParse → remarkGfm → remarkBreaks → remarkDirective → remarkCodeProps → [user remarkPlugins]
- *     → remarkRehype → rehypeTypedoc → [user rehypePlugins]
- *     → rehypeTypedocCodeBlocks → rehypeStringify
+ *   remarkParse -> remarkGfm -> remarkBreaks -> remarkDirective -> remarkCodeProps -> [user remarkPlugins]
+ *     -> remarkRehype -> [rehypeTypedoc] -> [user rehypePlugins]
+ *     -> [rehypeTypedocCodeBlocks] -> rehypeStringify
+ *
+ * If no rehype-typedoc options are provided, the typedoc plugins are skipped.
  */
 export function buildMarkdownProcessor(
-  rehypeTypedocOptions: RehypeTypedocOptions,
+  rehypeTypedocOptions?: RehypeTypedocOptions,
   remarkPlugins: PluggableList = [],
   rehypePlugins: PluggableList = []
 ): MarkdownProcessor {
@@ -47,11 +48,20 @@ export function buildMarkdownProcessor(
     remarkCodeProps,
     ...remarkPlugins,
     remarkRehype,
-    [rehypeTypedoc, rehypeTypedocOptions] as Pluggable,
-    ...rehypePlugins,
-    [rehypeTypedocCodeBlocks, rehypeTypedocOptions] as Pluggable,
-    rehypeStringify,
   ];
+
+  // Only add rehype-typedoc plugins if options are provided
+  if (rehypeTypedocOptions) {
+    plugins.push([rehypeTypedoc, rehypeTypedocOptions] as Pluggable);
+  }
+
+  plugins.push(...rehypePlugins);
+
+  if (rehypeTypedocOptions) {
+    plugins.push([rehypeTypedocCodeBlocks, rehypeTypedocOptions] as Pluggable);
+  }
+
+  plugins.push(rehypeStringify);
 
   let processor = unified();
   for (const plugin of plugins) {
@@ -81,6 +91,9 @@ async function renderMarkdown(
 /**
  * Pre-render all markdown fields of an export's comment.
  *
+ * Note: Signature rendering is handled by the type-renderer pipeline,
+ * not by the markdown processor.
+ *
  * - `summary` is rendered as-is (inline markdown)
  * - `remarks` is rendered as-is (block markdown)
  * - Each example is wrapped in a typescript code fence before rendering
@@ -90,16 +103,9 @@ export async function renderExportMarkdown(
   processor: MarkdownProcessor,
   comment: ApiComment | undefined,
   description: string | undefined,
-  signature: string | undefined,
   returnType: string | undefined
 ): Promise<RenderedExportMarkdown> {
   const result: RenderedExportMarkdown = {};
-
-  // Render signature as a syntax-highlighted code block
-  if (signature) {
-    const fenced = '```ts\n' + signature + '\n```';
-    result.signatureCodeHtml = await renderMarkdown(processor, fenced);
-  }
 
   // Render return type as a syntax-highlighted code block
   if (returnType) {
@@ -118,7 +124,7 @@ export async function renderExportMarkdown(
     result.remarksHtml = await renderMarkdown(processor, comment.remarks);
   }
 
-  // Render examples — wrap each in a typescript code fence
+  // Render examples -- wrap each in a typescript code fence
   if (comment?.examples && comment.examples.length > 0) {
     result.examplesHtml = await Promise.all(
       comment.examples.map((example) => {

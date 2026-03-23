@@ -6,12 +6,52 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { describe, expect, it } from 'vitest';
+import type { TypeDocDocument } from './build-symbols.js';
 import rehypeTypedoc, {
   type RehypeTypedocOptions,
-  type RehypeTypedocSymbol,
-  type SymbolEntry,
 } from './plugin.js';
 import remarkCodeProps from './remark-code-props.js';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Minimal TypeDoc JSON for a package with the given exports. */
+function makeDoc(
+  packageSlug: string,
+  children: Array<{
+    name: string;
+    kind: number;
+    sources?: Array<{ fileName: string }>;
+  }>
+): TypeDocDocument {
+  return {
+    packageSlug,
+    json: {
+      schemaVersion: '2.0',
+      id: 0,
+      name: packageSlug,
+      variant: 'project',
+      kind: 1,
+      flags: {},
+      symbolIdMap: {},
+      files: { entries: {}, reflections: {} },
+      children: children.map((c, i) => ({
+        id: i + 1,
+        variant: 'declaration',
+        flags: {},
+        ...c,
+      })),
+    },
+  };
+}
+
+/** TypeDoc kind constants. */
+const KIND = {
+  Function: 64,
+  Interface: 256,
+  TypeAlias: 2097152,
+};
 
 /** Process raw HTML through the rehype plugin */
 function processHtml(html: string, options: RehypeTypedocOptions) {
@@ -37,23 +77,31 @@ function processMd(md: string, options: RehypeTypedocOptions) {
     .toString();
 }
 
-const symbols = new Map<string, SymbolEntry>([
-  ['createMatcher', { name: 'createMatcher', package: 'devkit' }],
-  ['parseYaml', { name: 'parseYaml', package: 'devkit' }],
-  ['Extractor', { name: 'Extractor', package: 'devkit' }],
+// ---------------------------------------------------------------------------
+// Fixtures
+// ---------------------------------------------------------------------------
+
+const devkitDoc = makeDoc('devkit', [
+  { name: 'createMatcher', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/glob/index.ts' }] },
+  { name: 'parseYaml', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/yaml/index.ts' }] },
+  { name: 'Extractor', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/types.ts' }] },
 ]);
 
-const buildLink = (sym: RehypeTypedocSymbol) =>
-  `/api/${sym.package}/${sym.name}`;
+const defaultOpts: RehypeTypedocOptions = {
+  documents: [devkitDoc],
+  buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
+};
 
-const defaultOpts: RehypeTypedocOptions = { symbols, buildLink };
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 describe('rehypeTypedoc', () => {
   it('wraps inline code matching a symbol in an <a> tag', () => {
     const input = '<p>Use <code>createMatcher</code> to match files.</p>';
     const result = processHtml(input, defaultOpts);
     expect(result).toContain(
-      '<a href="/api/devkit/createMatcher" class="typedoc-link"><code>createMatcher</code></a>'
+      '<a href="/api/devkit/create-matcher" class="typedoc-link"><code>createMatcher</code></a>'
     );
   });
 
@@ -84,66 +132,42 @@ describe('rehypeTypedoc', () => {
     const input =
       '<p>Use <code>createMatcher</code> and <code>parseYaml</code>.</p>';
     const result = processHtml(input, defaultOpts);
-    expect(result).toContain('href="/api/devkit/createMatcher"');
-    expect(result).toContain('href="/api/devkit/parseYaml"');
-  });
-
-  it('skips linking when buildLink returns undefined', () => {
-    const opts: RehypeTypedocOptions = {
-      symbols,
-      buildLink: () => undefined,
-    };
-    const input = '<p>Use <code>createMatcher</code>.</p>';
-    const result = processHtml(input, opts);
-    expect(result).not.toContain('<a');
-  });
-
-  it('works with a plain object instead of Map', () => {
-    const objSymbols: Record<string, SymbolEntry> = {
-      Extractor: { name: 'Extractor', package: 'devkit' },
-    };
-    const opts: RehypeTypedocOptions = {
-      symbols: objSymbols,
-      buildLink,
-    };
-    const input = '<p>The <code>Extractor</code> interface.</p>';
-    const result = processHtml(input, opts);
-    expect(result).toContain('href="/api/devkit/Extractor"');
+    expect(result).toContain('href="/api/devkit/create-matcher"');
+    expect(result).toContain('href="/api/devkit/parse-yaml"');
   });
 });
 
 describe('symbol disambiguation', () => {
   // Plugin: defined in devkit, re-exported from core
-  const reExportSymbols = new Map<string, SymbolEntry>([
-    [
-      'Plugin',
-      [
-        { name: 'Plugin', package: 'devkit', path: '/api/devkit/plugin', isReExport: false },
-        { name: 'Plugin', package: 'core', path: '/api/core/plugin', isReExport: true },
-      ],
-    ],
-    ['unique', { name: 'unique', package: 'devkit', path: '/api/devkit/unique' }],
-  ]);
+  const reExportDocs: TypeDocDocument[] = [
+    makeDoc('devkit', [
+      { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+      { name: 'unique', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+    ]),
+    makeDoc('core', [
+      // Re-export: source points to devkit's dist
+      { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'devkit/dist/types/index.d.ts' }] },
+    ]),
+  ];
 
   // Config: genuinely defined in both packages (not a re-export)
-  const genuineClashSymbols = new Map<string, SymbolEntry>([
-    [
-      'Config',
-      [
-        { name: 'Config', package: 'devkit', path: '/api/devkit/config', isReExport: false },
-        { name: 'Config', package: 'core', path: '/api/core/config', isReExport: false },
-      ],
-    ],
-  ]);
+  const genuineClashDocs: TypeDocDocument[] = [
+    makeDoc('devkit', [
+      { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+    ]),
+    makeDoc('core', [
+      { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/core/src/index.ts' }] },
+    ]),
+  ];
 
   const reExportOpts: RehypeTypedocOptions = {
-    symbols: reExportSymbols,
-    buildLink: (sym) => sym.path,
+    documents: reExportDocs,
+    buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
   };
 
   const genuineClashOpts: RehypeTypedocOptions = {
-    symbols: genuineClashSymbols,
-    buildLink: (sym) => sym.path,
+    documents: genuineClashDocs,
+    buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
   };
 
   it('resolves to the defining package when re-exports are present', () => {
@@ -192,27 +216,23 @@ describe('symbol disambiguation', () => {
 });
 
 describe('remarkCodeProps + rehypeTypedoc integration', () => {
-  const ambiguousSymbols = new Map<string, SymbolEntry>([
-    [
-      'Plugin',
-      [
-        { name: 'Plugin', package: 'devkit', path: '/api/devkit/plugin', isReExport: false },
-        { name: 'Plugin', package: 'core', path: '/api/core/plugin', isReExport: true },
-      ],
-    ],
-    [
-      'Config',
-      [
-        { name: 'Config', package: 'devkit', path: '/api/devkit/config', isReExport: false },
-        { name: 'Config', package: 'core', path: '/api/core/config', isReExport: false },
-      ],
-    ],
-    ['createMatcher', { name: 'createMatcher', package: 'devkit', path: '/api/devkit/create-matcher' }],
-  ]);
+  const ambiguousDocs: TypeDocDocument[] = [
+    makeDoc('devkit', [
+      { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+      { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+      { name: 'createMatcher', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/glob/index.ts' }] },
+    ]),
+    makeDoc('core', [
+      // Re-export of Plugin
+      { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'devkit/dist/types/index.d.ts' }] },
+      // Genuine clash of Config
+      { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/core/src/index.ts' }] },
+    ]),
+  ];
 
   const opts: RehypeTypedocOptions = {
-    symbols: ambiguousSymbols,
-    buildLink: (sym) => sym.path,
+    documents: ambiguousDocs,
+    buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
   };
 
   it('resolves re-exported symbol to defining package in markdown', () => {

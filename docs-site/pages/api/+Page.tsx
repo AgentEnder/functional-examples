@@ -2,7 +2,7 @@ import { useData } from 'vike-react/useData';
 import { DimensionLine } from '../../components/DimensionLine';
 import { Link } from '../../components/Link';
 import { SpecPanel } from '../../components/SpecPanel';
-import type { ApiData } from './+data.js';
+import type { ApiData } from './+data.server.js';
 
 export default function ApiPage() {
   const { packages } = useData<ApiData>();

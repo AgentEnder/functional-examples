@@ -1,6 +1,6 @@
 {
   "name": "rehype-typedoc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Rehype plugin to auto-link inline code to TypeDoc API documentation",
   "author": {
     "name": "Craigory Coppola",
@@ -34,6 +34,7 @@
   },
   "peerDependencies": {
     "remark-directive": ">=3.0.0",
+    "typedoc": ">=0.28.0",
     "unified": ">=11.0.0"
   },
   "devDependencies": {
@@ -45,6 +46,7 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "unified": "^11.0.5",
     "vitest": "catalog:"

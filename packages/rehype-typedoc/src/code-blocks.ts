@@ -1,7 +1,8 @@
 import type { Element, ElementContent, Root, Text } from 'hast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
-import type { RehypeTypedocOptions } from './plugin.js';
+import { buildSymbolsFromDocuments } from './build-symbols.js';
+import type { RehypeTypedocOptions, RehypeTypedocSymbol, SymbolEntry } from './plugin.js';
 import { lookupSymbol, resolveSymbol } from './plugin.js';
 
 /** Global identifier regex: finds ALL identifiers in a text string */
@@ -36,8 +37,8 @@ interface Replacement {
  */
 function splitSpanByIdentifiers(
   span: Element,
-  symbols: RehypeTypedocOptions['symbols'],
-  buildLink: RehypeTypedocOptions['buildLink']
+  symbols: Map<string, SymbolEntry>,
+  buildLink: (sym: RehypeTypedocSymbol) => string | undefined
 ): ElementContent[] | null {
   // Guard: only process spans with a single text child
   if (span.children.length !== 1 || span.children[0].type !== 'text') {
@@ -127,8 +128,8 @@ function splitSpanByIdentifiers(
  */
 function collectReplacements(
   code: Element,
-  symbols: RehypeTypedocOptions['symbols'],
-  buildLink: RehypeTypedocOptions['buildLink']
+  symbols: Map<string, SymbolEntry>,
+  buildLink: (sym: RehypeTypedocSymbol) => string | undefined
 ): Replacement[] {
   const replacements: Replacement[] = [];
 
@@ -153,7 +154,8 @@ function collectReplacements(
  * that code blocks contain `<span>` tokens to process.
  */
 const rehypeTypedocCodeBlocks: Plugin<[RehypeTypedocOptions], Root> = (options) => {
-  const { symbols, buildLink } = options;
+  const symbols = buildSymbolsFromDocuments(options.documents, options.buildUrl);
+  const buildLink = (sym: RehypeTypedocSymbol) => sym.path;
 
   return (tree) => {
     visit(tree, 'element', (pre) => {

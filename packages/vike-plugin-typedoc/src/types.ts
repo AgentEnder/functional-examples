@@ -107,131 +107,45 @@ export interface NavigationItem {
 }
 
 // ============================================================================
-// TypeDoc JSON types (TypeDoc 2.0 schema)
+// Linked type variants — extend the base types with `*Html` fields
 // ============================================================================
 
-export interface TypeDocJson {
-  schemaVersion: string;
-  id: number;
-  name: string;
-  variant: string;
-  kind: number;
-  flags: Record<string, unknown>;
-  comment?: TypeDocComment;
-  children?: TypeDocReflection[];
+export interface LinkedParameter extends ApiParameter {
+  typeHtml: string;
 }
 
-export interface TypeDocReflection {
-  id: number;
-  name: string;
-  variant: string;
-  kind: number;
-  flags: TypeDocFlags;
-  comment?: TypeDocComment;
-  signatures?: TypeDocSignature[];
-  children?: TypeDocReflection[];
-  type?: TypeDocType;
-  typeParameters?: TypeDocTypeParameter[];
-  sources?: Array<{ fileName: string; line: number; character: number }>;
-  extendedTypes?: TypeDocType[];
-  implementedTypes?: TypeDocType[];
-  inheritedFrom?: { type: string; target: number; name: string };
-  defaultValue?: string;
+export interface LinkedProperty extends ApiProperty {
+  typeHtml: string;
 }
 
-export interface TypeDocFlags {
-  isOptional?: boolean;
-  isReadonly?: boolean;
-  isPrivate?: boolean;
-  isProtected?: boolean;
-  isStatic?: boolean;
-  isAbstract?: boolean;
+export interface LinkedTypeParameter extends ApiTypeParameter {
+  constraintHtml?: string;
+  defaultHtml?: string;
 }
 
-export interface TypeDocComment {
-  summary?: Array<{ kind: string; text: string }>;
-  blockTags?: Array<{
-    tag: string;
-    content: Array<{ kind: string; text: string }>;
-  }>;
+export interface LinkedMethod extends ApiMethod {
+  signatureHtml: string;
+  returnTypeHtml?: string;
+  parameters?: LinkedParameter[];
 }
 
-export interface TypeDocSignature {
-  id: number;
-  name: string;
-  variant: string;
-  kind: number;
-  flags: TypeDocFlags;
-  comment?: TypeDocComment;
-  parameters?: TypeDocParameter[];
-  type?: TypeDocType;
-  typeParameter?: TypeDocTypeParameter[];
-}
+export interface LinkedApiExport extends ApiExport {
+  /** Full signature with type references linked (e.g. function names, return types) */
+  signatureHtml?: string;
+  /** Signature rendered as a syntax-highlighted code block (from type-renderer pipeline) */
+  signatureCodeHtml?: string;
+  returnTypeHtml?: string;
+  /** Return type rendered as a syntax-highlighted code block (from markdown pipeline) */
+  returnTypeCodeHtml?: string;
+  parameters?: LinkedParameter[];
+  properties?: LinkedProperty[];
+  typeParameters?: LinkedTypeParameter[];
+  methods?: LinkedMethod[];
 
-export interface TypeDocParameter {
-  id: number;
-  name: string;
-  variant: string;
-  kind: number;
-  flags: TypeDocFlags;
-  type?: TypeDocType;
-  comment?: TypeDocComment;
-  defaultValue?: string;
+  /** Pre-rendered HTML from comment.summary / description (markdown) */
+  descriptionHtml?: string;
+  /** Pre-rendered HTML from comment.remarks (markdown) */
+  remarksHtml?: string;
+  /** Pre-rendered HTML for each example (wrapped in code fences, syntax-highlighted) */
+  examplesHtml?: string[];
 }
-
-export interface TypeDocTypeParameter {
-  id: number;
-  name: string;
-  variant: string;
-  kind: number;
-  flags: TypeDocFlags;
-  type?: TypeDocType;
-  default?: TypeDocType;
-}
-
-export interface TypeDocType {
-  type: string;
-  name?: string;
-  value?: unknown;
-  types?: TypeDocType[];
-  declaration?: TypeDocReflection;
-  typeArguments?: TypeDocType[];
-  target?: number | TypeDocType;
-  elementType?: TypeDocType;
-  package?: string;
-  qualifiedName?: string;
-  operator?: string;
-  objectType?: TypeDocType;
-  indexType?: TypeDocType;
-  checkType?: TypeDocType;
-  extendsType?: TypeDocType;
-  trueType?: TypeDocType;
-  falseType?: TypeDocType;
-}
-
-/** TypeDoc kind constants (TypeDoc 2.0) */
-export const KIND = {
-  Project: 1,
-  Module: 2,
-  Namespace: 4,
-  Enum: 8,
-  EnumMember: 16,
-  Variable: 32,
-  Function: 64,
-  Class: 128,
-  Interface: 256,
-  Constructor: 512,
-  Property: 1024,
-  Method: 2048,
-  CallSignature: 4096,
-  IndexSignature: 8192,
-  ConstructorSignature: 16384,
-  Parameter: 32768,
-  TypeLiteral: 65536,
-  TypeParameter: 131072,
-  Accessor: 262144,
-  GetSignature: 524288,
-  SetSignature: 1048576,
-  TypeAlias: 2097152,
-  Reference: 16777216,
-} as const;

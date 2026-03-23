@@ -1,6 +1,10 @@
 import type { Element, Root, Text } from 'hast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
+import {
+  buildSymbolsFromDocuments,
+  type TypeDocDocument,
+} from './build-symbols.js';
 
 export interface RehypeTypedocSymbol {
   name: string;
@@ -17,10 +21,10 @@ export interface RehypeTypedocSymbol {
 export type SymbolEntry = RehypeTypedocSymbol | RehypeTypedocSymbol[];
 
 export interface RehypeTypedocOptions {
-  /** Map of symbol names to their metadata (single or array for clashes) */
-  symbols: Map<string, SymbolEntry> | Record<string, SymbolEntry>;
-  /** Build a URL for a symbol link */
-  buildLink: (symbol: RehypeTypedocSymbol) => string | undefined;
+  /** TypeDoc JSON documents to extract symbols from */
+  documents: TypeDocDocument[];
+  /** Build a URL for a symbol given its package and symbol slug */
+  buildUrl: (packageSlug: string, symbolSlug?: string) => string;
 }
 
 function getTextContent(node: Element): string {
@@ -34,13 +38,10 @@ function getTextContent(node: Element): string {
 }
 
 export function lookupSymbol(
-  symbols: Map<string, SymbolEntry> | Record<string, SymbolEntry>,
+  symbols: Map<string, SymbolEntry>,
   name: string
 ): SymbolEntry | undefined {
-  if (symbols instanceof Map) {
-    return symbols.get(name);
-  }
-  return symbols[name];
+  return symbols.get(name);
 }
 
 /**
@@ -92,7 +93,7 @@ export function resolveSymbol(
  * when a symbol name exists in multiple packages.
  */
 const rehypeTypedoc: Plugin<[RehypeTypedocOptions], Root> = (options) => {
-  const { symbols, buildLink } = options;
+  const symbols = buildSymbolsFromDocuments(options.documents, options.buildUrl);
 
   return (tree) => {
     visit(tree, 'element', (node, index, parent) => {
@@ -117,7 +118,7 @@ const rehypeTypedoc: Plugin<[RehypeTypedocOptions], Root> = (options) => {
       const symbol = resolveSymbol(entry, text, dataPkg);
       if (!symbol) return;
 
-      const href = buildLink(symbol);
+      const href = symbol.path;
       if (!href) return;
 
       // Clean up the data-pkg attribute from the output

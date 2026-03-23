@@ -2,18 +2,19 @@ import { PageContextServer } from 'vike/types';
 import { describe, expect, it } from 'vitest';
 import { createTypedocContext } from './context.js';
 import type { TypedocContext } from './context.js';
-import { parseTypedocJson } from './parser.js';
+import { deserializeTypedocJson } from './deserialize.js';
 import { getTypedocContext, withApiExport, withApiPackage } from './server.js';
 
-/** Minimal TypeDoc JSON for a function */
+/** Minimal TypeDoc JSON for a function (schema v2.0) */
 function makeFunctionJson(name: string, returnType = 'void') {
   return {
-    schemaVersion: '0.0.1',
+    schemaVersion: '2.0',
     id: 0,
     name: 'test-package',
     variant: 'project',
     kind: 1,
     flags: {},
+    files: { entries: {}, reflections: {} },
     children: [
       {
         id: 1,
@@ -41,14 +42,14 @@ function makeFunctionJson(name: string, returnType = 'void') {
             type: { type: 'intrinsic', name: returnType },
           },
         ],
-        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0 }],
+        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0, url: '' }],
       },
     ],
   };
 }
 
 async function makeTestContext() {
-  const pkg = parseTypedocJson(
+  const pkg = deserializeTypedocJson(
     makeFunctionJson('createMatcher', 'boolean'),
     'devkit',
     '@functional-examples/devkit'
@@ -70,7 +71,7 @@ describe('getTypedocContext', () => {
     const pageContext = makePageContext(typedocCtx);
     const ctx = getTypedocContext(pageContext);
     expect(ctx.apiDocs).toBeDefined();
-    expect(ctx.symbolsMap).toBeInstanceOf(Map);
+    expect(ctx.navigation).toBeInstanceOf(Array);
   });
 
   it('throws when TypedocContext is missing', () => {

@@ -1,17 +1,17 @@
-import type { RehypeTypedocSymbol } from 'rehype-typedoc';
 import { describe, expect, it } from 'vitest';
 import { createTypedocContext } from './context.js';
-import { parseTypedocJson } from './parser.js';
+import { deserializeTypedocJson } from './deserialize.js';
 
-/** Minimal TypeDoc JSON for a function */
+/** Minimal TypeDoc JSON for a function (schema v2.0) */
 function makeFunctionJson(name: string, returnType = 'void') {
   return {
-    schemaVersion: '0.0.1',
+    schemaVersion: '2.0',
     id: 0,
     name: 'test-package',
     variant: 'project',
     kind: 1,
     flags: {},
+    files: { entries: {}, reflections: {} },
     children: [
       {
         id: 1,
@@ -39,21 +39,22 @@ function makeFunctionJson(name: string, returnType = 'void') {
             type: { type: 'intrinsic', name: returnType },
           },
         ],
-        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0 }],
+        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0, url: '' }],
       },
     ],
   };
 }
 
-/** Minimal TypeDoc JSON for an interface */
+/** Minimal TypeDoc JSON for an interface (schema v2.0) */
 function makeInterfaceJson(name: string) {
   return {
-    schemaVersion: '0.0.1',
+    schemaVersion: '2.0',
     id: 0,
     name: 'test-package',
     variant: 'project',
     kind: 1,
     flags: {},
+    files: { entries: {}, reflections: {} },
     children: [
       {
         id: 1,
@@ -77,19 +78,19 @@ function makeInterfaceJson(name: string) {
         comment: {
           summary: [{ kind: 'text', text: 'A test interface' }],
         },
-        sources: [{ fileName: 'src/types/index.ts', line: 1, character: 0 }],
+        sources: [{ fileName: 'src/types/index.ts', line: 1, character: 0, url: '' }],
       },
     ],
   };
 }
 
 function makeTestPackages() {
-  const pkg1 = parseTypedocJson(
+  const pkg1 = deserializeTypedocJson(
     makeFunctionJson('createMatcher', 'boolean'),
     'devkit',
     '@functional-examples/devkit'
   );
-  const pkg2 = parseTypedocJson(
+  const pkg2 = deserializeTypedocJson(
     makeInterfaceJson('Config'),
     'core',
     '@functional-examples/core'
@@ -102,11 +103,7 @@ describe('createTypedocContext', () => {
     const ctx = await createTypedocContext(makeTestPackages());
 
     expect(ctx.apiDocs).toBeDefined();
-    expect(ctx.symbolsMap).toBeInstanceOf(Map);
     expect(ctx.navigation).toBeInstanceOf(Array);
-    expect(ctx.rehypeOptions).toBeDefined();
-    expect(ctx.rehypeOptions.symbols).toBe(ctx.symbolsMap);
-    expect(typeof ctx.rehypeOptions.buildLink).toBe('function');
     expect(typeof ctx.getLinkedExport).toBe('function');
     expect(typeof ctx.getPackage).toBe('function');
     expect(typeof ctx.getExportUrls).toBe('function');
@@ -151,7 +148,7 @@ describe('createTypedocContext', () => {
     expect(linked).not.toBeNull();
     expect(linked?.name).toBe('createMatcher');
     expect(linked?.parameters).toBeDefined();
-    // The parameter type is 'string' — an intrinsic, so typeHtml equals 'string'
+    // The parameter type is 'string' -- an intrinsic, so typeHtml equals 'string'
     expect(linked?.parameters?.[0].typeHtml).toBe('string');
   });
 
@@ -215,18 +212,6 @@ describe('createTypedocContext', () => {
     expect(names).toContain('@functional-examples/devkit');
   });
 
-  it('rehypeOptions.buildLink resolves symbol paths', async () => {
-    const ctx = await createTypedocContext(makeTestPackages());
-
-    const symbol = ctx.symbolsMap.get('createMatcher');
-    expect(symbol).toBeDefined();
-
-    // buildLink should return the path from the symbol
-    const resolved = (Array.isArray(symbol) ? symbol[0] : symbol) as RehypeTypedocSymbol;
-    const link = ctx.rehypeOptions.buildLink(resolved);
-    expect(link).toBe('/api/devkit/create-matcher');
-  });
-
   it('getLinkedExport includes pre-rendered descriptionHtml', async () => {
     const ctx = await createTypedocContext(makeTestPackages());
 
@@ -240,7 +225,7 @@ describe('createTypedocContext', () => {
   describe('single-package auto-detection', () => {
     function makeSinglePackage() {
       return [
-        parseTypedocJson(
+        deserializeTypedocJson(
           makeFunctionJson('createWorker', 'Worker'),
           'api',
           'isolated-workers'
@@ -319,19 +304,6 @@ describe('createTypedocContext', () => {
       expect(exp.path).toBe('/api/devkit/create-matcher');
     });
 
-    it('rehypeOptions.buildLink returns base-prefixed URL when baseUrl is set', async () => {
-      const ctx = await createTypedocContext(makeTestPackages(), {
-        baseUrl: '/functional-examples/',
-      });
-
-      const symbol = ctx.symbolsMap.get('createMatcher');
-      expect(symbol).toBeDefined();
-
-      const resolved = (Array.isArray(symbol) ? symbol[0] : symbol) as RehypeTypedocSymbol;
-      const link = ctx.rehypeOptions.buildLink(resolved);
-      expect(link).toBe('/functional-examples/api/devkit/create-matcher');
-    });
-
     it('prerender URLs remain route-relative when baseUrl is set', async () => {
       const ctx = await createTypedocContext(makeTestPackages(), {
         baseUrl: '/functional-examples/',
@@ -356,6 +328,24 @@ describe('createTypedocContext', () => {
     it('defaults baseUrl to / when not provided', async () => {
       const ctx = await createTypedocContext(makeTestPackages());
       expect(ctx.baseUrl).toBe('/');
+    });
+  });
+
+  describe('getRehypePlugins', () => {
+    it('throws when documents are not provided', async () => {
+      const ctx = await createTypedocContext(makeTestPackages());
+      expect(() => ctx.getRehypePlugins()).toThrow(
+        'getRehypePlugins() requires documents'
+      );
+    });
+
+    it('returns plugins when documents are provided', async () => {
+      const json = makeFunctionJson('createMatcher', 'boolean');
+      const documents = [{ packageSlug: 'devkit', json }];
+      const ctx = await createTypedocContext(makeTestPackages(), { documents });
+      const plugins = ctx.getRehypePlugins();
+      expect(plugins).toBeInstanceOf(Array);
+      expect(plugins).toHaveLength(2);
     });
   });
 });

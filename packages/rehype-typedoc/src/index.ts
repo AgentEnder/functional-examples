@@ -15,3 +15,8 @@ export {
 } from './remark-code-props.js';
 
 export type { RemarkCodePropsOptions } from './remark-code-props.js';
+
+export {
+  buildSymbolsFromDocuments,
+  type TypeDocDocument,
+} from './build-symbols.js';

@@ -3,30 +3,34 @@ import rehypeShiki from '@shikijs/rehype';
 import { rehypeGithubAlerts } from 'rehype-github-alerts';
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
-import type { RehypeTypedocOptions, RemarkCodePropsOptions } from 'rehype-typedoc';
-import { rehypeTypedoc, rehypeTypedocCodeBlocks, remarkCodeProps } from 'rehype-typedoc';
+import type { RemarkCodePropsOptions } from 'rehype-typedoc';
+import { remarkCodeProps } from 'rehype-typedoc';
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import type { Plugin } from 'unified';
 import { unified } from 'unified';
 import { blueprintTheme } from './highlighter.js';
 
-// Module-level rehype-typedoc options — configured once, used by all renderMarkdown calls
-let _rehypeOptions: RehypeTypedocOptions | undefined;
+// Module-level rehype-typedoc plugins — configured once, used by all renderMarkdown calls.
+// These are pre-configured [plugin, options] tuples from TypedocContext.getRehypePlugins().
+let _rehypePlugins: Plugin[] | undefined;
 
 // Module-level remark-code-props options — configured once, used by all renderMarkdown calls
 let _remarkCodePropsOptions: RemarkCodePropsOptions | undefined;
 
 /**
- * Configure rehype-typedoc options for auto-linking inline code to API docs.
+ * Configure rehype-typedoc plugins for auto-linking inline code to API docs.
  * Call this once at startup (before rendering markdown) so that all
  * subsequent `renderMarkdown` calls automatically apply typedoc links.
+ *
+ * Accepts the pre-configured plugin array from `TypedocContext.getRehypePlugins()`.
  */
 export function configureRehypeTypedoc(
-  options: RehypeTypedocOptions
+  plugins: Plugin[]
 ): void {
-  _rehypeOptions = options;
+  _rehypePlugins = plugins;
 }
 
 /**
@@ -61,9 +65,10 @@ export async function renderMarkdown(md: string): Promise<string> {
     .use(rehypeRaw)
     .use(rehypeGithubAlerts, {});
 
-  // Add rehype-typedoc for inline code linking if options have been configured
-  if (_rehypeOptions) {
-    processor.use(rehypeTypedoc, _rehypeOptions);
+  // Add rehype-typedoc plugins (inline code linking + code block linking) if configured.
+  // The first plugin (rehypeTypedoc) runs before shiki; the second (rehypeTypedocCodeBlocks) after.
+  if (_rehypePlugins && _rehypePlugins.length > 0) {
+    processor.use(_rehypePlugins[0]);
   }
 
   // Syntax highlighting via @shikijs/rehype (replaces post-processing regex approach)
@@ -71,8 +76,8 @@ export async function renderMarkdown(md: string): Promise<string> {
   processor.use(rehypeShiki, { theme: blueprintTheme, addLanguageClass: true });
 
   // Add code block symbol linking after shiki highlighting
-  if (_rehypeOptions) {
-    processor.use(rehypeTypedocCodeBlocks, _rehypeOptions);
+  if (_rehypePlugins && _rehypePlugins.length > 1) {
+    processor.use(_rehypePlugins[1]);
   }
 
   processor.use(rehypeStringify);
@@ -91,11 +96,11 @@ export async function renderMarkdown(md: string): Promise<string> {
  * Returns the input unchanged if rehype-typedoc is not configured.
  */
 export function linkifyCodeHtml(html: string): string {
-  if (!_rehypeOptions) return html;
+  if (!_rehypePlugins || _rehypePlugins.length < 2) return html;
 
   return unified()
     .use(rehypeParse, { fragment: true })
-    .use(rehypeTypedocCodeBlocks, _rehypeOptions)
+    .use(_rehypePlugins[1])
     .use(rehypeStringify)
     .processSync(html)
     .toString();

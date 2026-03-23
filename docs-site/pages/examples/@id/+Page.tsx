@@ -24,9 +24,7 @@ function resolveExplorerHash(
   if (!parsed || !parsed.prefix.startsWith(EXPLORER_PREFIX)) return null;
 
   const slug = parsed.prefix.slice(EXPLORER_PREFIX.length);
-  const file = files.find(
-    (f) => slugifyFilename(f.relativePath) === slug
-  );
+  const file = files.find((f) => slugifyFilename(f.relativePath) === slug);
   if (!file) return null;
 
   return {
@@ -80,7 +78,7 @@ export default function ExampleDetail() {
       // Look up line range from the file's hunks
       if (regionId && example) {
         const siteFile = example.files.find((f) => f.relativePath === file);
-        const hunk = siteFile?.hunks.find((h) => h.id === regionId);
+        const hunk = siteFile?.hunks?.find((h) => h.id === regionId);
         if (hunk) {
           setHighlightLines({ start: hunk.startLine, end: hunk.endLine });
         } else {
@@ -112,9 +110,7 @@ export default function ExampleDetail() {
         <h1 className="text-2xl font-heading text-bp-line-bright mb-4">
           EXAMPLE NOT FOUND
         </h1>
-        <p className="text-bp-line-dim">
-          No example was found.
-        </p>
+        <p className="text-bp-line-dim">No example was found.</p>
         <Link
           href="/examples"
           className="inline-block mt-6 text-bp-accent hover:text-bp-line transition-colors font-heading text-sm tracking-wider"
@@ -147,9 +143,7 @@ export default function ExampleDetail() {
             {example.title}
           </h1>
           {example.description && (
-            <p className="text-bp-line-dim max-w-2xl">
-              {example.description}
-            </p>
+            <p className="text-bp-line-dim max-w-2xl">{example.description}</p>
           )}
         </div>
 
