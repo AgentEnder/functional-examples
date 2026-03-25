@@ -631,6 +631,84 @@ describe('deserializeTypedocJson', () => {
     expect(slugs).toEqual(['config-interface', 'config-variable']);
   });
 
+  it('filters empty reflection members from intersection types', () => {
+    const json = makeProject([
+      {
+        id: 1,
+        name: 'MyType',
+        variant: 'declaration',
+        kind: 2097152, // TypeAlias
+        flags: {},
+        type: {
+          type: 'intersection',
+          types: [
+            {
+              type: 'reflection',
+              declaration: {
+                id: 2,
+                name: '__type',
+                variant: 'declaration',
+                kind: 65536,
+                flags: {},
+                children: [
+                  {
+                    id: 3,
+                    name: 'dir',
+                    variant: 'declaration',
+                    kind: 1024,
+                    flags: { isOptional: true },
+                    type: { type: 'intrinsic', name: 'string' },
+                  },
+                ],
+              },
+            },
+            {
+              type: 'reflection',
+              declaration: {
+                id: 4,
+                name: '__type',
+                variant: 'declaration',
+                kind: 65536,
+                flags: {},
+                // empty — no children, no signatures
+              },
+            },
+            {
+              type: 'reflection',
+              declaration: {
+                id: 5,
+                name: '__type',
+                variant: 'declaration',
+                kind: 65536,
+                flags: {},
+                children: [
+                  {
+                    id: 6,
+                    name: 'plugins',
+                    variant: 'declaration',
+                    kind: 1024,
+                    flags: { isOptional: true },
+                    type: {
+                      type: 'array',
+                      elementType: { type: 'intrinsic', name: 'string' },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const exp = result.exports[0];
+    // The empty reflection should be filtered out, no "& {}" in the signature
+    expect(exp.signature).not.toContain('{}');
+    expect(exp.signature).toContain('dir');
+    expect(exp.signature).toContain('plugins');
+  });
+
   it('handles empty project gracefully', () => {
     const json = makeProject([]);
     const result = deserializeTypedocJson(json, 'pkg', 'pkg');

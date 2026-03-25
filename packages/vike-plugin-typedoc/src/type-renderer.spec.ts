@@ -338,6 +338,91 @@ describe('typeToStringWithRanges', () => {
     expect(result.text).toBe('(x: string) => number');
   });
 
+  it('should filter empty reflections from intersection types', () => {
+    const type = createTypeFromJson({
+      type: 'intersection',
+      types: [
+        {
+          type: 'reflection',
+          declaration: {
+            id: 50,
+            name: '__type',
+            variant: 'declaration',
+            kind: 65536,
+            flags: {},
+            children: [
+              {
+                id: 51,
+                name: 'foo',
+                variant: 'declaration',
+                kind: 1024,
+                flags: {},
+                type: { type: 'intrinsic', name: 'string' },
+              },
+            ],
+          },
+        },
+        {
+          type: 'reflection',
+          declaration: {
+            id: 52,
+            name: '__type',
+            variant: 'declaration',
+            kind: 65536,
+            flags: {},
+            // empty — no children, no signatures
+          },
+        },
+        {
+          type: 'reflection',
+          declaration: {
+            id: 53,
+            name: '__type',
+            variant: 'declaration',
+            kind: 65536,
+            flags: {},
+            children: [
+              {
+                id: 54,
+                name: 'bar',
+                variant: 'declaration',
+                kind: 1024,
+                flags: {},
+                type: { type: 'intrinsic', name: 'number' },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    const result = typeToStringWithRanges(type, resolveUrl);
+    expect(result.text).toBe('{ foo: string } & { bar: number }');
+    expect(result.text).not.toContain('{}');
+  });
+
+  it('should filter empty reflections from union types', () => {
+    const type = createTypeFromJson({
+      type: 'union',
+      types: [
+        { type: 'intrinsic', name: 'string' },
+        {
+          type: 'reflection',
+          declaration: {
+            id: 50,
+            name: '__type',
+            variant: 'declaration',
+            kind: 65536,
+            flags: {},
+            // empty
+          },
+        },
+        { type: 'intrinsic', name: 'number' },
+      ],
+    });
+    const result = typeToStringWithRanges(type, resolveUrl);
+    expect(result.text).toBe('string | number');
+  });
+
   it('should render a named tuple member', () => {
     const type = createTypeFromJson({
       type: 'namedTupleMember',

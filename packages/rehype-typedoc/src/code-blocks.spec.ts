@@ -4,10 +4,7 @@ import { unified } from 'unified';
 import { describe, expect, it } from 'vitest';
 import type { TypeDocDocument } from './build-symbols.js';
 import rehypeTypedocCodeBlocks from './code-blocks.js';
-import type {
-  RehypeTypedocOptions,
-  SymbolEntry,
-} from './plugin.js';
+import type { RehypeTypedocOptions } from './plugin.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -65,13 +62,29 @@ function processHtml(html: string, options: RehypeTypedocOptions) {
 // ---------------------------------------------------------------------------
 
 const devkitDoc = makeDoc('devkit', [
-  { name: 'createMatcher', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/glob/index.ts' }] },
-  { name: 'parseYaml', kind: KIND.Function, sources: [{ fileName: 'packages/devkit/src/yaml/index.ts' }] },
-  { name: 'Extractor', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/types.ts' }] },
+  {
+    name: 'createMatcher',
+    kind: KIND.Function,
+    sources: [{ fileName: 'packages/devkit/src/glob/index.ts' }],
+  },
+  {
+    name: 'parseYaml',
+    kind: KIND.Function,
+    sources: [{ fileName: 'packages/devkit/src/yaml/index.ts' }],
+  },
+  {
+    name: 'Extractor',
+    kind: KIND.Interface,
+    sources: [{ fileName: 'packages/devkit/src/types.ts' }],
+  },
 ]);
 
 const coreDoc = makeDoc('core', [
-  { name: 'ResolvedConfig', kind: KIND.Interface, sources: [{ fileName: 'packages/core/src/config.ts' }] },
+  {
+    name: 'ResolvedConfig',
+    kind: KIND.Interface,
+    sources: [{ fileName: 'packages/core/src/config.ts' }],
+  },
 ]);
 
 const defaultOpts: RehypeTypedocOptions = {
@@ -85,7 +98,8 @@ const defaultOpts: RehypeTypedocOptions = {
 
 describe('rehypeTypedocCodeBlocks', () => {
   it('links a known symbol span inside <pre><code>', () => {
-    const input = '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).toContain(
       '<a href="/api/devkit/create-matcher" class="typedoc-link"><span style="color:#a8d0f0">createMatcher</span></a>'
@@ -105,14 +119,22 @@ describe('rehypeTypedocCodeBlocks', () => {
   });
 
   it('skips intrinsic types', () => {
-    const input = '<pre><code><span style="color:#8ec8e8">string</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#8ec8e8">string</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).not.toContain('<a');
     expect(result).toContain('>string</span>');
   });
 
   it('skips keywords', () => {
-    const keywords = ['function', 'const', 'interface', 'type', 'class', 'extends'];
+    const keywords = [
+      'function',
+      'const',
+      'interface',
+      'type',
+      'class',
+      'extends',
+    ];
     for (const kw of keywords) {
       const input = `<pre><code><span style="color:#8ec8e8">${kw}</span></code></pre>`;
       const result = processHtml(input, defaultOpts);
@@ -121,14 +143,16 @@ describe('rehypeTypedocCodeBlocks', () => {
   });
 
   it('skips unknown identifiers', () => {
-    const input = '<pre><code><span style="color:#e8edf4">unknownFunc</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#e8edf4">unknownFunc</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).not.toContain('<a');
     expect(result).toContain('>unknownFunc</span>');
   });
 
   it('handles whitespace-prefixed tokens (splits whitespace)', () => {
-    const input = '<pre><code><span style="color:#a8d0f0"> ResolvedConfig</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0"> ResolvedConfig</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     // Leading space should be in its own styled span, outside the link
     expect(result).toContain(
@@ -137,7 +161,8 @@ describe('rehypeTypedocCodeBlocks', () => {
   });
 
   it('handles trailing whitespace tokens', () => {
-    const input = '<pre><code><span style="color:#a8d0f0">createMatcher </span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0">createMatcher </span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).toContain('href="/api/devkit/create-matcher"');
     // Trailing space should be in its own styled span, outside the link
@@ -159,7 +184,8 @@ describe('rehypeTypedocCodeBlocks', () => {
   });
 
   it('does not touch non-identifier text', () => {
-    const input = '<pre><code><span style="color:#8fa4be">( )</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#8fa4be">( )</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).not.toContain('<a');
   });
@@ -167,17 +193,26 @@ describe('rehypeTypedocCodeBlocks', () => {
   it('silently skips ambiguous symbols in code blocks', () => {
     const ambiguousDocs: TypeDocDocument[] = [
       makeDoc('devkit', [
-        { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+        {
+          name: 'Config',
+          kind: KIND.Interface,
+          sources: [{ fileName: 'packages/devkit/src/index.ts' }],
+        },
       ]),
       makeDoc('core', [
-        { name: 'Config', kind: KIND.Interface, sources: [{ fileName: 'packages/core/src/index.ts' }] },
+        {
+          name: 'Config',
+          kind: KIND.Interface,
+          sources: [{ fileName: 'packages/core/src/index.ts' }],
+        },
       ]),
     ];
     const opts: RehypeTypedocOptions = {
       documents: ambiguousDocs,
       buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
     };
-    const input = '<pre><code><span style="color:#a8d0f0">Config</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0">Config</span></code></pre>';
     // Should not throw, should skip silently
     const result = processHtml(input, opts);
     expect(result).not.toContain('<a');
@@ -187,24 +222,34 @@ describe('rehypeTypedocCodeBlocks', () => {
   it('resolves re-exported symbols to the defining package', () => {
     const reExportDocs: TypeDocDocument[] = [
       makeDoc('devkit', [
-        { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'packages/devkit/src/index.ts' }] },
+        {
+          name: 'Plugin',
+          kind: KIND.Interface,
+          sources: [{ fileName: 'packages/devkit/src/index.ts' }],
+        },
       ]),
       makeDoc('core', [
         // Re-export: source points to devkit's dist
-        { name: 'Plugin', kind: KIND.Interface, sources: [{ fileName: 'devkit/dist/types/index.d.ts' }] },
+        {
+          name: 'Plugin',
+          kind: KIND.Interface,
+          sources: [{ fileName: 'devkit/dist/types/index.d.ts' }],
+        },
       ]),
     ];
     const opts: RehypeTypedocOptions = {
       documents: reExportDocs,
       buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
     };
-    const input = '<pre><code><span style="color:#a8d0f0">Plugin</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0">Plugin</span></code></pre>';
     const result = processHtml(input, opts);
     expect(result).toContain('href="/api/devkit/plugin"');
   });
 
   it('preserves span attributes (style) in the linked span', () => {
-    const input = '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+    const input =
+      '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
     const result = processHtml(input, defaultOpts);
     expect(result).toContain('style="color:#a8d0f0"');
     expect(result).toContain('class="typedoc-link"');
@@ -260,45 +305,144 @@ describe('rehypeTypedocCodeBlocks', () => {
 
   describe('language filtering', () => {
     it('links symbols in typescript code blocks', () => {
-      const input = '<pre><code class="language-typescript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-typescript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).toContain('href="/api/devkit/create-matcher"');
     });
 
     it('links symbols in ts code blocks', () => {
-      const input = '<pre><code class="language-ts"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-ts"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).toContain('href="/api/devkit/create-matcher"');
     });
 
     it('links symbols in javascript code blocks', () => {
-      const input = '<pre><code class="language-javascript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-javascript"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).toContain('href="/api/devkit/create-matcher"');
     });
 
     it('skips bash code blocks', () => {
-      const input = '<pre><code class="language-bash"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-bash"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).not.toContain('<a');
     });
 
     it('skips yaml code blocks', () => {
-      const input = '<pre><code class="language-yaml"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-yaml"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).not.toContain('<a');
     });
 
     it('skips json code blocks', () => {
-      const input = '<pre><code class="language-json"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code class="language-json"><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).not.toContain('<a');
     });
 
     it('still links when no language class is present (backward-compatible)', () => {
-      const input = '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
+      const input =
+        '<pre><code><span style="color:#a8d0f0">createMatcher</span></code></pre>';
       const result = processHtml(input, defaultOpts);
       expect(result).toContain('href="/api/devkit/create-matcher"');
+    });
+  });
+
+  describe('comment and string exclusion', () => {
+    it('does not link identifiers inside single-line comments', () => {
+      const input =
+        '<pre><code>' +
+        '<span style="color:#6A737D">// Use createMatcher to match files</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+      expect(result).toContain('createMatcher');
+    });
+
+    it('does not link identifiers inside multi-line comments', () => {
+      const input =
+        '<pre><code>' +
+        '<span style="color:#6A737D">/* createMatcher is great */</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+      expect(result).toContain('createMatcher');
+    });
+
+    it('does not link identifiers inside single-quoted strings', () => {
+      const input =
+        '<pre><code>' +
+        '<span style="color:#032F62">\'createMatcher\'</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('does not link identifiers inside double-quoted strings', () => {
+      const input =
+        '<pre><code>' +
+        '<span style="color:#032F62">"createMatcher"</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('still links identifiers outside comments on the same block', () => {
+      const input =
+        '<pre><code>' +
+        '<span style="color:#a8d0f0">createMatcher</span>' +
+        '<span style="color:#6A737D">// Extractor is used here</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      // createMatcher (in code) should be linked
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+      // Extractor (in comment) should NOT be linked
+      const linkCount = (result.match(/typedoc-link/g) ?? []).length;
+      expect(linkCount).toBe(1);
+    });
+
+    it('does not link identifiers inside import string paths', () => {
+      // Simulates: import { createMatcher } from 'createMatcher-pkg';
+      const input =
+        '<pre><code>' +
+        '<span style="color:#D73A49">import</span>' +
+        '<span style="color:#24292E"> { </span>' +
+        '<span style="color:#a8d0f0">createMatcher</span>' +
+        '<span style="color:#24292E"> } </span>' +
+        '<span style="color:#D73A49">from</span>' +
+        '<span style="color:#032F62"> \'createMatcher-pkg\'</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      // The actual identifier should be linked
+      expect(result).toContain('href="/api/devkit/create-matcher"');
+      // But only once (not the one in the string)
+      const linkCount = (result.match(/typedoc-link/g) ?? []).length;
+      expect(linkCount).toBe(1);
+    });
+
+    it('skips the default keyword', () => {
+      const input =
+        '<pre><code><span style="color:#D73A49">default</span></code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).not.toContain('<a');
+    });
+
+    it('still links identifiers inside template expression ${...}', () => {
+      // Template static parts should not be linked, but ${expr} should
+      const input =
+        '<pre><code>' +
+        '<span style="color:#032F62">`value: ${</span>' +
+        '<span style="color:#a8d0f0">Extractor</span>' +
+        '<span style="color:#032F62">}`</span>' +
+        '</code></pre>';
+      const result = processHtml(input, defaultOpts);
+      expect(result).toContain('href="/api/devkit/extractor"');
     });
   });
 });

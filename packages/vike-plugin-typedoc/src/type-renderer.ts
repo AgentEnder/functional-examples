@@ -1,32 +1,33 @@
 import type { BundledTheme } from 'shiki';
 import type {
-  Type,
   DeclarationReflection,
   ParameterReflection,
   SignatureReflection,
+  Type,
 } from 'typedoc';
 import {
-  ReferenceType,
-  IntrinsicType,
-  UnionType,
-  IntersectionType,
   ArrayType,
-  TupleType,
-  ReflectionType,
-  LiteralType,
   ConditionalType,
   IndexedAccessType,
-  MappedType,
-  TypeOperatorType,
-  QueryType,
-  PredicateType,
-  RestType,
-  OptionalType,
-  TemplateLiteralType,
-  NamedTupleMember,
   InferredType,
+  IntersectionType,
+  IntrinsicType,
+  LiteralType,
+  MappedType,
+  NamedTupleMember,
+  OptionalType,
+  PredicateType,
+  QueryType,
+  ReferenceType,
+  ReflectionType,
+  RestType,
+  TemplateLiteralType,
+  TupleType,
+  TypeOperatorType,
+  UnionType,
 } from 'typedoc';
 import { tokenize } from './shiki.js';
+import { isEmptyReflectionType } from './type-utils.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,17 +123,21 @@ function walkType(
   }
 
   if (type instanceof UnionType) {
-    for (let i = 0; i < type.types.length; i++) {
+    const members = type.types.filter((t) => !isEmptyReflectionType(t));
+    if (members.length === 0) return;
+    for (let i = 0; i < members.length; i++) {
       if (i > 0) builder.append(' | ');
-      walkType(type.types[i], builder, resolveUrl);
+      walkType(members[i], builder, resolveUrl);
     }
     return;
   }
 
   if (type instanceof IntersectionType) {
-    for (let i = 0; i < type.types.length; i++) {
+    const members = type.types.filter((t) => !isEmptyReflectionType(t));
+    if (members.length === 0) return;
+    for (let i = 0; i < members.length; i++) {
       if (i > 0) builder.append(' & ');
-      walkType(type.types[i], builder, resolveUrl);
+      walkType(members[i], builder, resolveUrl);
     }
     return;
   }
@@ -278,7 +283,6 @@ function walkType(
       walkObjectLiteral(decl.children, builder, resolveUrl);
       return;
     }
-    builder.append('{}');
     return;
   }
 
@@ -298,8 +302,9 @@ function walkFunctionSignature(
     builder.append(params[i].name);
     if (params[i].flags?.isOptional) builder.append('?');
     builder.append(': ');
-    if (params[i].type) {
-      walkType(params[i].type!, builder, resolveUrl);
+    const type = params[i].type;
+    if (type) {
+      walkType(type, builder, resolveUrl);
     } else {
       builder.append('any');
     }
@@ -442,7 +447,9 @@ async function mergeTokensAndRanges(
         // Use the first overlapping range for the link
         const range = overlapping[0];
         spans.push(
-          `<a href="${escapeHtml(range.path)}" class="typedoc-link"><span${style}>${escaped}</span></a>`
+          `<a href="${escapeHtml(
+            range.path
+          )}" class="typedoc-link"><span${style}>${escaped}</span></a>`
         );
       } else {
         spans.push(`<span${style}>${escaped}</span>`);

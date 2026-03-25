@@ -3,11 +3,13 @@ import {
   type DeclarationReflection,
   Deserializer,
   FileRegistry,
+  IntersectionType,
   LogLevel,
   normalizePath,
   ReflectionKind,
   type SignatureReflection,
   type Type,
+  UnionType,
 } from 'typedoc';
 
 import type {
@@ -22,12 +24,52 @@ import type {
   ApiProperty,
   ApiTypeParameter,
 } from './types.js';
+import { isEmptyReflectionType } from './type-utils.js';
 import {
   extractCategory,
   extractCommentText,
   slugify,
   stripCodeFences,
 } from './utils.js';
+
+// ---------------------------------------------------------------------------
+// Type stringification — filters empty ReflectionType members
+// ---------------------------------------------------------------------------
+
+/**
+ * Regex to strip empty `{}` intersection/union members from a type string.
+ * Handles: `& {}`, `{} &`, `| {}`, `{} |` with surrounding whitespace.
+ */
+const EMPTY_MEMBER_RE = /\s*[&|]\s*\{\}|\{\}\s*[&|]\s*/g;
+
+/**
+ * Convert a TypeDoc `Type` to string, filtering out empty `{}` members
+ * from union and intersection types.
+ *
+ * For direct IntersectionType/UnionType, filters members before stringifying.
+ * For other types (e.g. ReferenceType with type arguments containing
+ * intersections), falls back to toString() with post-processing to strip
+ * `& {}` / `| {}` artifacts from nested types.
+ */
+function typeToString(type: Type): string {
+  if (type instanceof IntersectionType) {
+    const parts = type.types.filter((t) => !isEmptyReflectionType(t));
+    if (parts.length === 0) return '{}';
+    if (parts.length === 1) return typeToString(parts[0]);
+    return parts.map((t) => typeToString(t)).join(' & ');
+  }
+  if (type instanceof UnionType) {
+    const parts = type.types.filter((t) => !isEmptyReflectionType(t));
+    if (parts.length === 0) return '{}';
+    if (parts.length === 1) return typeToString(parts[0]);
+    return parts.map((t) => typeToString(t)).join(' | ');
+  }
+  // For container types (ReferenceType with type args, ArrayType, etc.),
+  // TypeDoc's toString() may include nested empty reflections. Clean them.
+  const str = type.toString();
+  if (!str.includes('{}')) return str;
+  return str.replace(EMPTY_MEMBER_RE, '').replace(/\s{2,}/g, ' ').trim();
+}
 
 /**
  * Extended ApiExport that carries the raw TypeDoc `Type` reference
@@ -187,8 +229,8 @@ function buildTypeParameters(
   if (!typeParams || typeParams.length === 0) return undefined;
   return typeParams.map((tp) => ({
     name: tp.name,
-    constraint: tp.type ? tp.type.toString() : undefined,
-    default: tp.default ? tp.default.toString() : undefined,
+    constraint: tp.type ? typeToString(tp.type) : undefined,
+    default: tp.default ? typeToString(tp.default) : undefined,
   }));
 }
 
@@ -198,7 +240,7 @@ function buildParameters(
   if (!sig.parameters || sig.parameters.length === 0) return undefined;
   return sig.parameters.map((p) => ({
     name: p.name,
-    type: p.type ? p.type.toString() : 'unknown',
+    type: p.type ? typeToString(p.type) : 'unknown',
     description: p.comment?.summary
       ? extractCommentText(
           p.comment.summary as Array<{ kind: string; text: string }>
@@ -218,7 +260,7 @@ function buildProperties(
     if (child.inheritedFrom) continue;
     props.push({
       name: child.name,
-      type: child.type ? child.type.toString() : 'unknown',
+      type: child.type ? typeToString(child.type) : 'unknown',
       description: child.comment?.summary
         ? extractCommentText(
             child.comment.summary as Array<{ kind: string; text: string }>
@@ -250,7 +292,7 @@ function buildMethods(
           (p) => `${p.name}${p.optional ? '?' : ''}: ${p.type}`
         )
         .join(', ') || '';
-    const returnType = sig.type ? sig.type.toString() : 'void';
+    const returnType = sig.type ? typeToString(sig.type) : 'void';
 
     methods.push({
       name: child.name,
@@ -302,7 +344,7 @@ function buildExport(
     exp.typeParameters = buildTypeParameters(sig.typeParameters);
 
     if (sig.type) {
-      exp.returnType = sig.type.toString();
+      exp.returnType = typeToString(sig.type);
       exp._typeRef = sig.type;
     }
 
@@ -328,7 +370,7 @@ function buildExport(
 
     // Type alias — store type reference and string
     if (reflection.type) {
-      exp.signature = `type ${reflection.name} = ${reflection.type.toString()}`;
+      exp.signature = `type ${reflection.name} = ${typeToString(reflection.type)}`;
       exp._typeRef = reflection.type;
     }
 
@@ -362,7 +404,7 @@ function buildExport(
         reflection.extendedTypes.length > 0
       ) {
         exp.signature += ` extends ${reflection.extendedTypes
-          .map((t) => t.toString())
+          .map((t) => typeToString(t))
           .join(', ')}`;
       }
     }

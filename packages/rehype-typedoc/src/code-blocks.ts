@@ -1,5 +1,6 @@
 import type { Element, ElementContent, Root, Text } from 'hast';
 import type { Plugin } from 'unified';
+import ts from 'typescript';
 import { visit } from 'unist-util-visit';
 import { buildSymbolsFromDocuments } from './build-symbols.js';
 import type { RehypeTypedocOptions, RehypeTypedocSymbol, SymbolEntry } from './plugin.js';
@@ -15,12 +16,158 @@ const LINKABLE_LANGUAGES = new Set([
 
 /** Intrinsic types and keywords that should never be linked */
 const SKIP_TOKENS = new Set([
+  // Intrinsic types
   'string', 'number', 'boolean', 'void', 'undefined', 'null',
   'never', 'unknown', 'any', 'object', 'symbol', 'bigint',
-  'true', 'false', 'this', 'typeof', 'keyof', 'readonly',
-  'extends', 'infer', 'new', 'key', 'in', 'out', 'is',
+  // Literals
+  'true', 'false',
+  // Type-level keywords
+  'this', 'typeof', 'keyof', 'readonly', 'extends', 'infer',
+  'in', 'out', 'is',
+  // Declaration keywords
   'function', 'class', 'interface', 'type', 'enum', 'const',
+  'let', 'var', 'new', 'default', 'async', 'await',
+  // Control flow
+  'if', 'else', 'for', 'while', 'do', 'switch', 'case',
+  'break', 'continue', 'return', 'throw', 'try', 'catch', 'finally',
+  // Module keywords
+  'import', 'from', 'export', 'require', 'module',
+  // Other JS/TS keywords
+  'of', 'as', 'implements', 'abstract', 'static',
+  'public', 'private', 'protected', 'declare',
+  'delete', 'super', 'yield', 'with',
 ]);
+
+// ---------------------------------------------------------------------------
+// No-link ranges — comments and string literals
+// ---------------------------------------------------------------------------
+
+type Range = [start: number, end: number];
+
+/** Token kinds that represent non-code content where identifiers should not be linked. */
+const NO_LINK_TOKENS = new Set([
+  ts.SyntaxKind.SingleLineCommentTrivia,
+  ts.SyntaxKind.MultiLineCommentTrivia,
+  ts.SyntaxKind.StringLiteral,
+  ts.SyntaxKind.NoSubstitutionTemplateLiteral,
+  ts.SyntaxKind.TemplateHead,
+  ts.SyntaxKind.TemplateMiddle,
+  ts.SyntaxKind.TemplateTail,
+  ts.SyntaxKind.JsxText,
+]);
+
+/**
+ * Module-level scanner instance, reused across calls via setText/setTextPos.
+ * Safe because rehype plugins run synchronously and sequentially.
+ */
+const tsScanner = ts.createScanner(
+  ts.ScriptTarget.Latest,
+  /* skipTrivia */ false,
+  ts.LanguageVariant.Standard
+);
+
+/**
+ * Use TypeScript's scanner to find all character ranges in JS/TS source
+ * that should never contain linked identifiers: comments, string
+ * literals, and the static parts of template literals.
+ *
+ * Template expression contents (`${...}`) are NOT excluded — identifiers
+ * inside expressions are real code and should still be linkable.
+ */
+function getNoLinkRanges(code: string): Range[] {
+  const ranges: Range[] = [];
+  tsScanner.setText(code);
+
+  let token: ts.SyntaxKind;
+  let templateDepth = 0;
+
+  while ((token = tsScanner.scan()) !== ts.SyntaxKind.EndOfFileToken) {
+    // After a template expression's closing `}`, rescan to pick up
+    // the TemplateMiddle or TemplateTail that follows.
+    if (token === ts.SyntaxKind.CloseBraceToken && templateDepth > 0) {
+      token = tsScanner.reScanTemplateToken(/* isTaggedTemplate */ false);
+      if (token === ts.SyntaxKind.TemplateTail) templateDepth--;
+    }
+
+    if (token === ts.SyntaxKind.TemplateHead) templateDepth++;
+
+    if (NO_LINK_TOKENS.has(token)) {
+      ranges.push([tsScanner.getTokenStart(), tsScanner.getTokenEnd()]);
+    }
+  }
+
+  // Release reference to the code string so it can be GC'd
+  tsScanner.setText('');
+
+  return ranges;
+}
+
+/**
+ * Check if a character offset falls within any no-link range.
+ * Ranges are sorted by start, so we can bail early.
+ */
+function isInNoLinkRange(offset: number, ranges: Range[]): boolean {
+  for (const [start, end] of ranges) {
+    if (offset < start) return false; // past all possible ranges
+    if (offset >= start && offset < end) return true;
+  }
+  return false;
+}
+
+/**
+ * Extract the full plain text content of a HAST element tree.
+ */
+function extractText(node: Element | Text | ElementContent): string {
+  if (node.type === 'text') return (node as Text).value;
+  if ('children' in node) {
+    return (node as Element).children.map(extractText).join('');
+  }
+  return '';
+}
+
+/**
+ * Walk a HAST element tree in document order, calling `onSpan` for each
+ * `<span>` with a single text child. The `textOffset` parameter gives
+ * the span's character offset within the full text of the root element.
+ */
+function walkSpansWithOffsets(
+  node: Element,
+  onSpan: (span: Element, textOffset: number, index: number, parent: Element) => void
+): void {
+  let offset = 0;
+
+  function walk(n: Element | Text | ElementContent, parent?: Element, childIndex?: number): void {
+    if (n.type === 'text') {
+      offset += (n as Text).value.length;
+      return;
+    }
+
+    if (n.type !== 'element') return;
+    const el = n as Element;
+
+    if (
+      el.tagName === 'span' &&
+      el.children.length === 1 &&
+      el.children[0].type === 'text' &&
+      parent !== undefined &&
+      childIndex !== undefined
+    ) {
+      // This is a linkable span — record its offset before descending
+      onSpan(el, offset, childIndex, parent);
+    }
+
+    // Descend into children
+    for (let i = 0; i < el.children.length; i++) {
+      walk(el.children[i], el, i);
+    }
+  }
+
+  walk(node);
+}
+
+// ---------------------------------------------------------------------------
+// Span processing
+// ---------------------------------------------------------------------------
 
 interface Replacement {
   parent: Element;
@@ -33,12 +180,17 @@ interface Replacement {
  * symbols map, and return replacement nodes that split the span text
  * into linked and unlinked segments.
  *
+ * Identifiers whose global text offset falls within a no-link range
+ * (comments, strings) are silently skipped.
+ *
  * Returns `null` when nothing in the span matched a known symbol.
  */
 function splitSpanByIdentifiers(
   span: Element,
   symbols: Map<string, SymbolEntry>,
-  buildLink: (sym: RehypeTypedocSymbol) => string | undefined
+  buildLink: (sym: RehypeTypedocSymbol) => string | undefined,
+  noLinkRanges: Range[],
+  spanTextOffset: number
 ): ElementContent[] | null {
   // Guard: only process spans with a single text child
   if (span.children.length !== 1 || span.children[0].type !== 'text') {
@@ -56,6 +208,10 @@ function splitSpanByIdentifiers(
   while ((m = IDENTIFIER_GLOBAL_RE.exec(text)) !== null) {
     const identifier = m[0];
     if (SKIP_TOKENS.has(identifier)) continue;
+
+    // Check if this identifier falls within a comment or string literal
+    const globalOffset = spanTextOffset + m.index;
+    if (isInNoLinkRange(globalOffset, noLinkRanges)) continue;
 
     const entry = lookupSymbol(symbols, identifier);
     if (!entry) continue;
@@ -125,22 +281,27 @@ function splitSpanByIdentifiers(
 /**
  * Collect all span-to-link replacements inside a code element.
  * Mutations are deferred to avoid issues with visit's index tracking.
+ *
+ * Before processing spans, extracts the full text and builds no-link
+ * ranges (comments, strings) so that identifiers inside those regions
+ * are never linked.
  */
 function collectReplacements(
   code: Element,
   symbols: Map<string, SymbolEntry>,
   buildLink: (sym: RehypeTypedocSymbol) => string | undefined
 ): Replacement[] {
+  // Extract full text and compute no-link zones
+  const fullText = extractText(code);
+  const noLinkRanges = getNoLinkRanges(fullText);
+
   const replacements: Replacement[] = [];
 
-  visit(code, 'element', (span, index, parent) => {
-    if (span.tagName !== 'span') return;
-    if (index === undefined || !parent) return;
-
-    const nodes = splitSpanByIdentifiers(span, symbols, buildLink);
+  walkSpansWithOffsets(code, (span, textOffset, index, parent) => {
+    const nodes = splitSpanByIdentifiers(span, symbols, buildLink, noLinkRanges, textOffset);
     if (!nodes) return;
 
-    replacements.push({ parent: parent as Element, index, nodes });
+    replacements.push({ parent, index, nodes });
   });
 
   return replacements;
@@ -152,6 +313,8 @@ function collectReplacements(
  *
  * Must run **after** a syntax highlighter (e.g. `@shikijs/rehype`) so
  * that code blocks contain `<span>` tokens to process.
+ *
+ * Identifiers inside comments and string literals are never linked.
  */
 const rehypeTypedocCodeBlocks: Plugin<[RehypeTypedocOptions], Root> = (options) => {
   const symbols = buildSymbolsFromDocuments(options.documents, options.buildUrl);
