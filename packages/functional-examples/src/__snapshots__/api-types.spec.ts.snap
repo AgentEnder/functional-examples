@@ -193,7 +193,7 @@ interface Plugin<TMetadata = ExampleMetadata>
   readonly validators?: PluginValidators<TMetadata>
 
 type PluginCommands<TMetadata = ExampleMetadata>
-  = CLI[] | (config: ResolvedConfig<TMetadata>) => CLI[] | Promise<CLI[]>
+  = CLI<any, any, any, any>[] | (config: ResolvedConfig<TMetadata>) => CLI<any, any, any, any>[] | Promise<CLI<any, any, any, any>[]>
 
 interface PluginOptionsValidationContext
   pluginOptions: Map<string, unknown>
