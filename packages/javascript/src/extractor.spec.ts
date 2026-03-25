@@ -340,7 +340,9 @@ const y = 2;
 
       expect(result.examples).toHaveLength(1);
       const file = result.examples[0].files[0];
-      expect(file.absolutePath).toBe(path.join(tempDir, 'subdir/nested.ts'));
+      expect(file.absolutePath).toBe(
+        path.join(tempDir, 'subdir/nested.ts').replace(/\\/g, '/')
+      );
       expect(file.relativePath).toBe('subdir/nested.ts');
     });
 
