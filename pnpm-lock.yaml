@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@cli-forge/parser':
+      specifier: 1.7.1
+      version: 1.7.1
     '@nx/eslint':
       specifier: 22.5.0
       version: 22.5.0
@@ -34,8 +37,8 @@ catalogs:
       specifier: ^1.0.4
       version: 1.6.1
     cli-forge:
-      specifier: 1.2.0
-      version: 1.2.0
+      specifier: 1.7.1
+      version: 1.7.1
     eslint:
       specifier: ^9.15.0
       version: 9.39.2
@@ -84,11 +87,11 @@ importers:
   .:
     dependencies:
       '@cli-forge/parser':
-        specifier: link:../cli-forge/packages/parser
-        version: link:../cli-forge/packages/parser
+        specifier: 'catalog:'
+        version: 1.7.1
       cli-forge:
-        specifier: link:../cli-forge/packages/cli-forge
-        version: link:../cli-forge/packages/cli-forge
+        specifier: 'catalog:'
+        version: 1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6)
     devDependencies:
       '@functional-examples/devkit':
         specifier: workspace:*
@@ -455,7 +458,7 @@ importers:
     dependencies:
       cli-forge:
         specifier: 'catalog:'
-        version: 1.2.0(tsx@4.21.0)(zod@4.3.6)
+        version: 1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -492,10 +495,13 @@ importers:
         version: link:../devkit
       cli-forge:
         specifier: 'catalog:'
-        version: 1.2.0(tsx@4.21.0)(zod@4.3.6)
+        version: 1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6)
       eta:
         specifier: 'catalog:'
         version: 3.5.0
+      markdown-factory:
+        specifier: ^1.0.0
+        version: 1.0.0(yaml@2.8.2)
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -526,7 +532,7 @@ importers:
         version: 8.17.1
       cli-forge:
         specifier: 'catalog:'
-        version: 1.2.0(tsx@4.21.0)(zod@4.3.6)
+        version: 1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6)
       jiti:
         specifier: ^2.4.2
         version: 2.6.1
@@ -640,7 +646,7 @@ importers:
         version: link:../devkit
       cli-forge:
         specifier: 'catalog:'
-        version: 1.2.0(tsx@4.21.0)(zod@4.3.6)
+        version: 1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6)
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -1314,8 +1320,8 @@ packages:
   '@brillout/vite-plugin-server-entry@0.7.17':
     resolution: {integrity: sha512-MfvSytYl51J2B+RrHvRXMdRNc1U2lHG/K9Gw05/jdPY2iYU2YQKdEzsPswfEWnt3fd1TrXF27h/fx5DIRn19jw==}
 
-  '@cli-forge/parser@1.2.0':
-    resolution: {integrity: sha512-5BP3Y9EikmK5EjuZQl+vDvPd6NCszGC+/04jyIy23YAeRpfn6esOMhC4GYdZNwqWHdh38zTe+WrVfeCLAb9ENA==}
+  '@cli-forge/parser@1.7.1':
+    resolution: {integrity: sha512-BaMbTSzvbOEt0b26U22zU/5UIICgwrJFZnUXojUGEj7VT60MU9IuHJLrJQyeWlqg566s56c0Qy2fzgynEwMYkQ==}
 
   '@dependents/detective-less@5.0.1':
     resolution: {integrity: sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==}
@@ -2488,14 +2494,17 @@ packages:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==}
     engines: {node: '>=8'}
 
-  cli-forge@1.2.0:
-    resolution: {integrity: sha512-QX8mQmx2Aj1FqbiufmERG3QxNKG44JB64cyrKgIPcCWOLxDfcLZfd1VzDUrbuu5TKsDZch9nTPGdBXC9sfRz0Q==}
+  cli-forge@1.7.1:
+    resolution: {integrity: sha512-JbL4lKljcF9xhz8PbzUJhI4KDAm6118VLvOdm+j1lsrT3q8jwcNqvOhDBiUmy8qOS4OF+y+SWmnWelZSwPIk1g==}
     hasBin: true
     peerDependencies:
-      markdown-factory: ^0.2.0
+      '@clack/prompts': '*'
+      markdown-factory: ^1.0.0
       tsx: ^4.19.0
       zod: ^4.1.13
     peerDependenciesMeta:
+      '@clack/prompts':
+        optional: true
       markdown-factory:
         optional: true
       tsx:
@@ -3396,6 +3405,14 @@ packages:
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
+
+  markdown-factory@1.0.0:
+    resolution: {integrity: sha512-5AJ/g5V6S9kQASb6eYz2w3XSzJbjLfy/hEq65NX9VKhqIOJqEqhxOr/Qh7COIxZRrkP8DUVFSLnPQCXud9hLDg==}
+    peerDependencies:
+      yaml: 2.5.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
 
   markdown-it@14.1.1:
     resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
@@ -5177,7 +5194,7 @@ snapshots:
       '@brillout/import': 0.2.6
       '@brillout/picocolors': 1.0.30
 
-  '@cli-forge/parser@1.2.0':
+  '@cli-forge/parser@1.7.1':
     dependencies:
       tslib: 2.8.1
 
@@ -6325,11 +6342,12 @@ snapshots:
     dependencies:
       restore-cursor: 3.1.0
 
-  cli-forge@1.2.0(tsx@4.21.0)(zod@4.3.6):
+  cli-forge@1.7.1(markdown-factory@1.0.0(yaml@2.8.2))(tsx@4.21.0)(zod@4.3.6):
     dependencies:
-      '@cli-forge/parser': 1.2.0
+      '@cli-forge/parser': 1.7.1
       tslib: 2.8.1
     optionalDependencies:
+      markdown-factory: 1.0.0(yaml@2.8.2)
       tsx: 4.21.0
       zod: 4.3.6
 
@@ -7281,6 +7299,10 @@ snapshots:
   make-dir@4.0.0:
     dependencies:
       semver: 7.7.3
+
+  markdown-factory@1.0.0(yaml@2.8.2):
+    optionalDependencies:
+      yaml: 2.8.2
 
   markdown-it@14.1.1:
     dependencies:

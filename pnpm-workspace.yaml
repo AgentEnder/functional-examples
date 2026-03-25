@@ -5,7 +5,7 @@ packages:
   - e2e
 
 catalog:
-  '@cli-forge/parser': 1.2.0
+  '@cli-forge/parser': 1.7.1
   '@nx/devkit': 22.4.3
   '@nx/eslint': 22.5.0
   '@nx/eslint-plugin': 22.5.0
@@ -21,7 +21,7 @@ catalog:
   '@typescript-eslint/eslint-plugin': ^8.24.0
   '@typescript-eslint/parser': ^8.24.0
   '@vitest/coverage-v8': ^1.0.4
-  cli-forge: 1.2.0
+  cli-forge: 1.7.1
   eslint: ^9.15.0
   eslint-config-prettier: 10.1.8
   eta: ^3.5.0

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Core type definitions for functional-examples
  */
@@ -550,7 +551,7 @@ export type TypedPluginReference = PluginOptionsRegistry extends {
 
 export interface Config {
   /** Plugins to use for scanning and parsing (recommended) */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   plugins?: (Plugin<any> | TypedPluginReference)[];
   /** Scan options */
   scan?: ScanConfig;
@@ -632,10 +633,15 @@ export interface ResolvedConfig<TMetadata = ExampleMetadata>
 /**
  * Plugin commands can be a static array or a function that receives
  * the resolved config and returns commands (sync or async).
+ *
+ * Uses `CLI<any, any, any, any>` because each command defines its own
+ * args/handler shape — the plugin system doesn't need to know specifics.
  */
 export type PluginCommands<TMetadata = ExampleMetadata> =
-  | CLI[]
-  | ((config: ResolvedConfig<TMetadata>) => CLI[] | Promise<CLI[]>);
+  | CLI<any, any, any, any>[]
+  | ((
+      config: ResolvedConfig<TMetadata>
+    ) => CLI<any, any, any, any>[] | Promise<CLI<any, any, any, any>[]>);
 
 // ============================================================================
 // Plugin Interface

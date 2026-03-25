@@ -62,7 +62,7 @@
   },
   "packageManager": "pnpm@10.23.0",
   "dependencies": {
-    "@cli-forge/parser": "link:../cli-forge/packages/parser",
-    "cli-forge": "link:../cli-forge/packages/cli-forge"
+    "@cli-forge/parser": "catalog:",
+    "cli-forge": "catalog:"
   }
 }
