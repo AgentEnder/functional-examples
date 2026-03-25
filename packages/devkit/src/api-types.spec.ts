@@ -241,6 +241,7 @@ function generateTypeDocJson(): Record<string, unknown> {
       {
         cwd: packageRoot,
         encoding: 'utf8',
+        shell: true,
       }
     );
 
