@@ -55,9 +55,16 @@ process.exit(1);
   });
 
   afterAll(async () => {
-    // Cleanup temp directory — maxRetries handles EBUSY on Windows
-    // where child process file handles may not be fully released yet
-    await rm(testDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    // On Windows, spawned child processes may hold directory handles briefly
+    // after exit. Retry cleanup to avoid EBUSY failures in CI.
+    for (let i = 0; i < 5; i++) {
+      try {
+        await rm(testDir, { recursive: true, force: true });
+        return;
+      } catch {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    }
   });
 
   describe('runTest', () => {

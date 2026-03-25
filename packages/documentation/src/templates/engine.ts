@@ -225,7 +225,7 @@ async function collectTemplateFiles(
     if (entry.isDirectory()) {
       results.push(...(await collectTemplateFiles(root, fullPath)));
     } else if (entry.name.endsWith('.template')) {
-      results.push(path.relative(root, fullPath));
+      results.push(path.relative(root, fullPath).replace(/\\/g, '/'));
     }
   }
 
