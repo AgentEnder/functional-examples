@@ -1,4 +1,5 @@
 import type { ExampleFile } from '@functional-examples/devkit';
+import { codeBlock } from 'markdown-factory';
 
 /** Map of file extensions to language identifiers for code fences. */
 const EXT_TO_LANG: Record<string, string> = {
@@ -42,20 +43,83 @@ export function langFromPath(filePath: string): string {
 
 /**
  * Select a specific hunk (region) by ID across all files.
- * Returns the first matching hunk or undefined.
+ * Returns the matching hunk or undefined.
+ *
+ * Throws if the region ID matches hunks in multiple files — callers
+ * should use `file('path').region('id')` to disambiguate.
  */
 export function region(
   files: ExampleFile[],
   regionId: string
 ): { file: ExampleFile; content: string } | undefined {
+  const matches: { file: ExampleFile; content: string }[] = [];
   for (const file of files) {
     if (!file.hunks) continue;
     const hunk = file.hunks.find((h) => h.id === regionId);
     if (hunk) {
-      return { file, content: hunk.content };
+      matches.push({ file, content: hunk.content });
     }
   }
-  return undefined;
+  if (matches.length > 1) {
+    const fileList = matches.map((m) => m.file.relativePath).join(', ');
+    throw new Error(
+      `region('${regionId}') is ambiguous — found in ${fileList}. ` +
+        `Use file('...').region('${regionId}') to disambiguate.`
+    );
+  }
+  return matches[0];
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// FileAccessor — chainable object returned by file() helpers
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Chainable accessor returned by `file()` in both prose and guide contexts.
+ *
+ * Supports two usage patterns:
+ * - `<%= file('path.ts') %>` — renders the whole file (calls `toString()`)
+ * - `<%= file('path.ts').region('id') %>` — renders a scoped region
+ */
+export interface FileAccessor {
+  /** Render a region within this file as a fenced code block. */
+  region(regionId: string): string;
+  /** Renders the whole file as a fenced code block (called implicitly by Eta's `<%= %>`). */
+  toString(): string;
+}
+
+/**
+ * Create a FileAccessor for a specific file.
+ *
+ * @param file - The example file to wrap
+ * @param title - Optional title for the fenced code block header
+ */
+export function createFileAccessor(
+  file: ExampleFile,
+  title?: string
+): FileAccessor {
+  const lang = langFromPath(file.relativePath);
+  const content = file.parsed ?? file.raw ?? '';
+
+  return {
+    region(regionId: string): string {
+      const hunk = file.region(regionId);
+      if (!hunk) {
+        throw new Error(
+          `file('${file.relativePath}').region('${regionId}'): ` +
+            `no region found with id "${regionId}" in ${file.relativePath}`
+        );
+      }
+      const regionTitle = title
+        ? `${title}#${regionId}`
+        : `${file.relativePath}#${regionId}`;
+      return codeBlock(hunk.content, lang, { title: regionTitle });
+    },
+
+    toString(): string {
+      return codeBlock(content, lang, title ? { title } : undefined);
+    },
+  };
 }
 
 /**
@@ -112,12 +176,14 @@ export function slugify(text: string): string {
  * Collected template helpers exposed as `it.helpers`.
  */
 export const templateHelpers = {
+  codeBlock,
   langFromPath,
   region,
   filesByExt,
   isProseFile,
   hunkDescription,
   slugify,
+  createFileAccessor,
 } as const;
 
 export type TemplateHelpers = typeof templateHelpers;

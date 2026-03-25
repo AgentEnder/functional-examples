@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ExampleFile } from '@functional-examples/devkit';
+import { codeBlock } from 'markdown-factory';
 import {
   langFromPath,
   region,
@@ -7,6 +8,7 @@ import {
   isProseFile,
   hunkDescription,
   slugify,
+  createFileAccessor,
 } from './helpers.js';
 
 describe('langFromPath', () => {
@@ -84,6 +86,24 @@ describe('region', () => {
       new ExampleFile({ absolutePath: '/c.ts', relativePath: 'c.ts' }),
     ];
     expect(region(noHunks, 'any')).toBeUndefined();
+  });
+
+  it('should throw when region id is ambiguous across files', () => {
+    const ambiguousFiles: ExampleFile[] = [
+      new ExampleFile({
+        absolutePath: '/auth.ts',
+        relativePath: 'auth.ts',
+        hunks: [{ id: 'middleware', content: 'auth()', startLine: 1, endLine: 2 }],
+      }),
+      new ExampleFile({
+        absolutePath: '/timing.ts',
+        relativePath: 'timing.ts',
+        hunks: [{ id: 'middleware', content: 'timing()', startLine: 1, endLine: 2 }],
+      }),
+    ];
+    expect(() => region(ambiguousFiles, 'middleware')).toThrowError(
+      /region\('middleware'\) is ambiguous.*auth\.ts.*timing\.ts.*disambiguate/
+    );
   });
 });
 
@@ -186,5 +206,55 @@ describe('slugify', () => {
 
   it('should collapse multiple non-alphanumeric chars', () => {
     expect(slugify('foo   bar---baz')).toBe('foo-bar-baz');
+  });
+});
+
+describe('createFileAccessor', () => {
+  const file = new ExampleFile({
+    absolutePath: '/src/utils.ts',
+    relativePath: 'src/utils.ts',
+    parsed: 'export function add(a: number, b: number) { return a + b; }',
+    hunks: [
+      { id: 'add', content: 'function add(a: number, b: number) { return a + b; }', startLine: 1, endLine: 3 },
+      { id: 'subtract', content: 'function subtract(a: number, b: number) { return a - b; }', startLine: 5, endLine: 7 },
+    ],
+  });
+
+  it('toString() should return a fenced code block of the whole file', () => {
+    const accessor = createFileAccessor(file, 'src/utils.ts');
+    const result = accessor.toString();
+    expect(result).toBe(codeBlock(file.parsed ?? '', 'typescript', { title: 'src/utils.ts' }));
+  });
+
+  it('toString() should be called implicitly by string coercion', () => {
+    const accessor = createFileAccessor(file, 'src/utils.ts');
+    // Template literal triggers toString()
+    const result = `${accessor}`;
+    expect(result).toBe(codeBlock(file.parsed ?? '', 'typescript', { title: 'src/utils.ts' }));
+  });
+
+  it('region() should return a fenced code block for a specific region', () => {
+    const accessor = createFileAccessor(file, 'src/utils.ts');
+    const result = accessor.region('add');
+    expect(result).toBe(
+      codeBlock('function add(a: number, b: number) { return a + b; }', 'typescript', { title: 'src/utils.ts#add' })
+    );
+  });
+
+  it('region() should throw on unknown region ID', () => {
+    const accessor = createFileAccessor(file, 'src/utils.ts');
+    expect(() => accessor.region('nonexistent')).toThrowError(
+      /no region found with id "nonexistent" in src\/utils\.ts/
+    );
+  });
+
+  it('should use raw content when parsed is not available', () => {
+    const rawFile = new ExampleFile({
+      absolutePath: '/raw.js',
+      relativePath: 'raw.js',
+      raw: 'var x = 1;',
+    });
+    const accessor = createFileAccessor(rawFile);
+    expect(accessor.toString()).toBe(codeBlock('var x = 1;', 'javascript'));
   });
 });

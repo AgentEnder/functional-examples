@@ -165,6 +165,61 @@ describe('createGuideRenderer', () => {
       ).toThrow('no region "missing"');
     });
 
+    it('should support file().region() chaining for scoped region lookup', () => {
+      const examples = [
+        makeExample({
+          files: [
+            makeFile('auth.ts', 'auth code', [
+              { id: 'middleware', content: 'auth middleware', startLine: 1, endLine: 2 },
+            ]),
+            makeFile('timing.ts', 'timing code', [
+              { id: 'middleware', content: 'timing middleware', startLine: 1, endLine: 2 },
+            ]),
+          ],
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '<%= example("basic-usage").file("auth.ts").region("middleware") %>'
+      );
+
+      expect(result).toBe('```typescript title="auth.ts#middleware"\nauth middleware\n```');
+    });
+
+    it('should throw when unscoped region() is ambiguous across files', () => {
+      const examples = [
+        makeExample({
+          files: [
+            makeFile('auth.ts', 'auth code', [
+              { id: 'middleware', content: 'auth middleware', startLine: 1, endLine: 2 },
+            ]),
+            makeFile('timing.ts', 'timing code', [
+              { id: 'middleware', content: 'timing middleware', startLine: 1, endLine: 2 },
+            ]),
+          ],
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render(
+          '<%= example("basic-usage").region("middleware") %>'
+        )
+      ).toThrow(/ambiguous/);
+    });
+
+    it('should throw when file().region() targets unknown region', () => {
+      const examples = [makeExample()];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render(
+          '<%= example("basic-usage").file("scan.ts").region("nope") %>'
+        )
+      ).toThrow(/no region found with id "nope"/);
+    });
+
     it('should handle multiple example references in one template', () => {
       const examples = [
         makeExample(),

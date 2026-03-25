@@ -14,8 +14,12 @@
 import type { ExampleFile, ScannedExample } from '@functional-examples/devkit';
 import { Eta } from 'eta';
 import * as fs from 'node:fs/promises';
-import { templateHelpers } from './helpers.js';
-import { fencedBlock } from './prose-helpers.js';
+import { codeBlock } from 'markdown-factory';
+import {
+  type FileAccessor,
+  createFileAccessor,
+  templateHelpers,
+} from './helpers.js';
 
 /**
  * A renderer that expands example references in guide markdown.
@@ -31,9 +35,9 @@ export interface GuideRenderer {
  * Scoped API returned by `example(id)` inside guide templates.
  */
 export interface ExampleAccessor {
-  /** Render a file as a fenced code block. */
-  file(relativePath: string): string;
-  /** Render a region/hunk as a fenced code block. */
+  /** Return a chainable FileAccessor for a file. */
+  file(relativePath: string): FileAccessor;
+  /** Render a region/hunk as a fenced code block (throws if ambiguous). */
   region(regionId: string): string;
   /** All files in the example. */
   files: ExampleFile[];
@@ -95,7 +99,7 @@ export function createGuideRenderer(
     }
 
     return {
-      file(relativePath: string): string {
+      file(relativePath: string): FileAccessor {
         const found = ex.files.find((f) => f.relativePath === relativePath);
         if (!found) {
           const fileList = ex.files.map((f) => f.relativePath).join(', ');
@@ -103,9 +107,7 @@ export function createGuideRenderer(
             `Guide helper example('${id}').file(): no file "${relativePath}". Available: ${fileList}`
           );
         }
-        const lang = templateHelpers.langFromPath(relativePath);
-        const content = found.parsed ?? found.raw ?? '';
-        return fencedBlock(lang, content, relativePath);
+        return createFileAccessor(found, relativePath);
       },
 
       region(regionId: string): string {
@@ -116,7 +118,7 @@ export function createGuideRenderer(
           );
         }
         const lang = templateHelpers.langFromPath(match.file.relativePath);
-        return fencedBlock(lang, match.content, `${match.file.relativePath}#${regionId}`);
+        return codeBlock(match.content, lang, { title: `${match.file.relativePath}#${regionId}` });
       },
 
       files: ex.files,

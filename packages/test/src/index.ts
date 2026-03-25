@@ -1,5 +1,4 @@
 import type { Plugin, ValidationResult } from '@functional-examples/devkit';
-import type { CLI } from 'cli-forge';
 import { z } from 'zod';
 import { createTestCommands } from './commands/index.js';
 import { resolveReporters } from './reporters/resolve.js';
@@ -80,7 +79,7 @@ export function createTestPlugin(
         defaultReporter: options.defaultReporter ?? 'pretty',
         ciReporter: options.ciReporter ?? 'tap',
         timeout: options.timeout ?? 30000,
-      }) as CLI[];
+      });
     },
     _options: options,
   };

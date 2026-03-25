@@ -8,7 +8,7 @@ import type { Config } from 'functional-examples';
  * The documentation plugin:
  * - Adds the `generate` CLI command
  * - Enables template-based doc generation
- * - Provides prose helpers (file(), region(), fencedBlock())
+ * - Provides prose helpers (file(), region())
  */
 const config: Config = {
   plugins: [

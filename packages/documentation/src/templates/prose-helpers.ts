@@ -1,29 +1,22 @@
 import type { ExampleFile } from '@functional-examples/devkit';
+import { codeBlock } from 'markdown-factory';
 import { ConsumptionTracker } from './consumption-tracker.js';
-import { templateHelpers } from './helpers.js';
+import {
+  type FileAccessor,
+  createFileAccessor,
+  templateHelpers,
+} from './helpers.js';
 
 /** Helpers injected into prose Eta templates as top-level variables. */
 export interface ProseHelpers {
-  /** Render a file as a fenced code block and mark it consumed. */
-  file: (relativePath: string) => string;
+  /** Return a chainable FileAccessor for a file, marking it consumed. */
+  file: (relativePath: string) => FileAccessor;
   /** Render a region/hunk as a fenced code block and mark its file consumed. */
   region: (regionId: string) => string;
   /** All example files (read-only). */
   files: ExampleFile[];
   /** Standard template helpers (langFromPath, slugify, etc.). */
   helpers: typeof templateHelpers;
-}
-
-/**
- * Build a fenced code block string for a given language and content.
- *
- * When `title` is provided it is appended to the info string as
- * `title="..."` so downstream rehype plugins (e.g. code-block-chrome)
- * can display it in the header instead of the language label.
- */
-export function fencedBlock(lang: string, content: string, title?: string): string {
-  const info = title ? `${lang} title="${title}"` : lang;
-  return `\`\`\`${info}\n${content}\n\`\`\``;
 }
 
 /**
@@ -37,7 +30,7 @@ export function createProseHelpers(
   tracker: ConsumptionTracker
 ): ProseHelpers {
   return {
-    file(relativePath: string): string {
+    file(relativePath: string): FileAccessor {
       const found = files.find((f) => f.relativePath === relativePath);
       if (!found) {
         throw new Error(
@@ -45,9 +38,8 @@ export function createProseHelpers(
         );
       }
       tracker.consume(relativePath);
-      const lang = templateHelpers.langFromPath(relativePath);
-      const content = found.parsed ?? found.raw ?? '';
-      return fencedBlock(lang, content, relativePath);
+      // file() already marks consumed; no need to re-consume in region()
+      return createFileAccessor(found, relativePath);
     },
 
     region(regionId: string): string {
@@ -59,7 +51,7 @@ export function createProseHelpers(
       }
       tracker.consume(match.file.relativePath);
       const lang = templateHelpers.langFromPath(match.file.relativePath);
-      return fencedBlock(lang, match.content);
+      return codeBlock(match.content, lang, { title: `${match.file.relativePath}#${regionId}` });
     },
 
     files,
