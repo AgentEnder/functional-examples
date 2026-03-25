@@ -545,7 +545,7 @@ export function createJavaScriptExtractor(): Extractor {
     }
 
     const { id, title, description, ...restMetadata } = frontmatter.metadata;
-    const relativePath = path.relative(rootPath, absolutePath);
+    const relativePath = path.relative(rootPath, absolutePath).replace(/\\/g, '/');
     const lines = content.split('\n');
     const parsed = lines.slice(frontmatter.endLine + 1).join('\n').trimStart();
 
@@ -619,7 +619,7 @@ export function createJavaScriptExtractor(): Extractor {
           raw = stripFunctionalExamplesKey(raw);
         }
 
-        const relativePath = path.relative(exampleDir, filePath);
+        const relativePath = path.relative(exampleDir, filePath).replace(/\\/g, '/');
         exampleFiles.push(
           new ExampleFile({ absolutePath: filePath, relativePath, raw })
         );
