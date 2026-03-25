@@ -348,7 +348,7 @@ function resolveConflicts(
 
     // This is a conflict - try to resolve via path mappings
     // Use relative path for matching since pathMapping patterns are relative to root
-    const relativePath = path.relative(root, filePath);
+    const relativePath = path.relative(root, filePath).replace(/\\/g, '/');
     let resolved = false;
 
     for (const mapping of pathMappings) {

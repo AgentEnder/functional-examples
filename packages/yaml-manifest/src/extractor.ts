@@ -204,7 +204,7 @@ async function collectFilesFromGlob(
 
   const files: ExampleFile[] = [];
   for (const absolutePath of matched) {
-    const relativePath = path.relative(dir, absolutePath);
+    const relativePath = path.relative(dir, absolutePath).replace(/\\/g, '/');
     const baseName = path.basename(absolutePath);
 
     // Skip the root-level meta file (nested ones are regular content)
@@ -247,7 +247,7 @@ async function collectFiles(
       if (excludeNames.includes(entry.name)) continue;
 
       const fullPath = path.join(currentDir, entry.name);
-      const relativePath = path.relative(baseDir, fullPath);
+      const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
 
       // Skip the root-level meta file (nested ones are regular content)
       if (relativePath === metaFileName) continue;

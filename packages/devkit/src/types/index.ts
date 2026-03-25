@@ -121,7 +121,7 @@ export class ExampleFile {
     hunks?: ParsedRegion[];
   }) {
     this.absolutePath = data.absolutePath;
-    this.relativePath = data.relativePath;
+    this.relativePath = data.relativePath.replace(/\\/g, '/');
     this.raw = data.raw;
     this.parsed = data.parsed;
     this.hunks = data.hunks;
