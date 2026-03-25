@@ -16,7 +16,7 @@ functional-examples scan -f json
 
 The `scan.ts` file demonstrates the simplest programmatic entry point:
 
-<%= region('scan') %>
+<%= file('scan.ts').region('scan') %>
 
 The `scan()` function auto-discovers your config file and installed plugins, then returns:
 - `examples` — Array of extracted examples
