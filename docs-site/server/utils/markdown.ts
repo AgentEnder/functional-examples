@@ -67,8 +67,10 @@ export async function renderMarkdown(md: string): Promise<string> {
 
   // Add rehype-typedoc plugins (inline code linking + code block linking) if configured.
   // The first plugin (rehypeTypedoc) runs before shiki; the second (rehypeTypedocCodeBlocks) after.
+  // Each element is a [plugin, options] tuple — spread it so unified sees (plugin, options)
+  // instead of interpreting the array as a preset.
   if (_rehypePlugins && _rehypePlugins.length > 0) {
-    processor.use(_rehypePlugins[0]);
+    processor.use(...(_rehypePlugins[0] as [Plugin, ...unknown[]]));
   }
 
   // Syntax highlighting via @shikijs/rehype (replaces post-processing regex approach)
@@ -77,7 +79,7 @@ export async function renderMarkdown(md: string): Promise<string> {
 
   // Add code block symbol linking after shiki highlighting
   if (_rehypePlugins && _rehypePlugins.length > 1) {
-    processor.use(_rehypePlugins[1]);
+    processor.use(...(_rehypePlugins[1] as [Plugin, ...unknown[]]));
   }
 
   processor.use(rehypeStringify);
@@ -100,7 +102,7 @@ export function linkifyCodeHtml(html: string): string {
 
   return unified()
     .use(rehypeParse, { fragment: true })
-    .use(_rehypePlugins[1])
+    .use(...(_rehypePlugins[1] as [Plugin, ...unknown[]]))
     .use(rehypeStringify)
     .processSync(html)
     .toString();
