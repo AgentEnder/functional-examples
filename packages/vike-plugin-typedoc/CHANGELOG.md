@@ -1,3 +1,15 @@
+## 0.2.0 (2026-03-25)
+
+### 🚀 Features
+
+- **rehype-typedoc,vike-plugin-typedoc:** use typedoc APIs for deserialization ([0ed97b3](https://github.com/AgentEnder/functional-examples/commit/0ed97b3))
+- **vike-plugin-typedoc,rehype-typedoc:** use typedoc APIs for deserialization ([a84e28c](https://github.com/AgentEnder/functional-examples/commit/a84e28c))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.1.0 (2026-02-27)
 
 ### 🚀 Features
