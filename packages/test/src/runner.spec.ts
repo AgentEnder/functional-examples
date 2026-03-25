@@ -294,7 +294,7 @@ describe('runTest (steps format)', () => {
         options: { env: { MY_VAR: 'from-defaults' } },
         steps: [
           {
-            command: 'echo $MY_VAR',
+            command: 'node -e "process.stdout.write(process.env.MY_VAR)"',
             assertions: { stdout: { contains: 'from-defaults' } },
           },
         ],
@@ -314,7 +314,8 @@ describe('runTest (steps format)', () => {
         options: { env: { MY_VAR: 'default', OTHER: 'kept' } },
         steps: [
           {
-            command: 'echo $MY_VAR $OTHER',
+            command:
+              'node -e "process.stdout.write(process.env.MY_VAR + \' \' + process.env.OTHER)"',
             env: { MY_VAR: 'overridden' },
             assertions: { stdout: { contains: 'overridden kept' } },
           },

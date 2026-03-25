@@ -55,8 +55,9 @@ process.exit(1);
   });
 
   afterAll(async () => {
-    // Cleanup temp directory
-    await rm(testDir, { recursive: true, force: true });
+    // Cleanup temp directory — maxRetries handles EBUSY on Windows
+    // where child process file handles may not be fully released yet
+    await rm(testDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   });
 
   describe('runTest', () => {
