@@ -94,7 +94,9 @@ function findSymbolRanges(
 type LinkifyFn = (typeStr: string) => string;
 
 function linkifyApiExport(exp: ApiExport, linkify: LinkifyFn): LinkedApiExport {
-  const linked = { ...exp } as LinkedApiExport;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _typeRef, ...rest } = exp as ApiExport & { _typeRef?: unknown };
+  const linked = { ...rest } as LinkedApiExport;
 
   if (exp.signature) {
     linked.signatureHtml = linkify(exp.signature);
@@ -420,7 +422,17 @@ export async function createTypedocContext(
     },
 
     getPackage(packageSlug: string): ApiPackage | null {
-      return apiDocs.packages[packageSlug] ?? null;
+      const pkg = apiDocs.packages[packageSlug];
+      if (!pkg) return null;
+      const stripTypeRef = ({ _typeRef, ...rest }: ApiExport & { _typeRef?: unknown }): ApiExport => rest;
+      return {
+        ...pkg,
+        exports: pkg.exports.map(stripTypeRef),
+        modules: pkg.modules.map((mod) => ({
+          ...mod,
+          exports: mod.exports.map(stripTypeRef),
+        })),
+      };
     },
 
     getExportUrls(): string[] {
