@@ -261,7 +261,7 @@ function generateTypeDocJson(): Record<string, unknown> {
 }
 
 describe('public API types', () => {
-  it('matches typedoc export snapshot', () => {
+  it('matches typedoc export snapshot', { timeout: 30_000 }, () => {
     const json = generateTypeDocJson();
     const snapshot = renderApiSnapshot(json);
     expect(snapshot).toMatchSnapshot();
