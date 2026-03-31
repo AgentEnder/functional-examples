@@ -32,7 +32,7 @@
     "remark-rehype": "^11.1.2",
     "shiki": "^3.21.0",
     "unified": "^11.0.5",
-    "vike": "^0.4.252",
+    "vike": "0.4.253",
     "vike-plugin-typedoc": "workspace:*",
     "vike-react": "^0.6.19"
   },
