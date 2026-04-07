@@ -94,9 +94,7 @@ function findSymbolRanges(
 type LinkifyFn = (typeStr: string) => string;
 
 function linkifyApiExport(exp: ApiExport, linkify: LinkifyFn): LinkedApiExport {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { _typeRef, ...rest } = exp as ApiExport & { _typeRef?: unknown };
-  const linked = { ...rest } as LinkedApiExport;
+  const linked = { ...exp } as LinkedApiExport;
 
   if (exp.signature) {
     linked.signatureHtml = linkify(exp.signature);
@@ -221,6 +219,8 @@ export interface TypedocContext {
   getAllPrerenderUrls(): string[];
   /** Get pre-configured rehype-typedoc plugins for use in custom unified pipelines */
   getRehypePlugins(): Plugin[];
+  /** Get the raw TypeDoc Type object for a server-side export (server use only, not serialized) */
+  getTypeRef(exp: ApiExport): import('typedoc').Type | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -277,11 +277,19 @@ function markdownCacheKey(packageSlug: string, symbolSlug: string): string {
  */
 export async function createTypedocContext(
   packages: ApiPackage[],
-  options: TypedocContextOptions = {}
+  options: TypedocContextOptions = {},
+  typeRefs?: Map<ApiExport, import('typedoc').Type>
 ): Promise<TypedocContext> {
   const basePath = options.basePath ?? '/api';
   const isSinglePackage = packages.length === 1;
   const theme = options.theme ?? 'github-dark';
+
+  const typeRefMap = new WeakMap<ApiExport, import('typedoc').Type>();
+  if (typeRefs) {
+    for (const [exp, type] of typeRefs) {
+      typeRefMap.set(exp, type);
+    }
+  }
 
   // When single-package and no custom buildUrl, skip the package slug
   const buildUrl = options.buildUrl
@@ -424,14 +432,10 @@ export async function createTypedocContext(
     getPackage(packageSlug: string): ApiPackage | null {
       const pkg = apiDocs.packages[packageSlug];
       if (!pkg) return null;
-      const stripTypeRef = ({ _typeRef, ...rest }: ApiExport & { _typeRef?: unknown }): ApiExport => rest;
       return {
         ...pkg,
-        exports: pkg.exports.map(stripTypeRef),
-        modules: pkg.modules.map((mod) => ({
-          ...mod,
-          exports: mod.exports.map(stripTypeRef),
-        })),
+        exports: [...pkg.exports],
+        modules: pkg.modules.map((mod) => ({ ...mod, exports: [...mod.exports] })),
       };
     },
 
@@ -460,6 +464,10 @@ export async function createTypedocContext(
         );
       }
       return rehypePlugins;
+    },
+
+    getTypeRef(exp: ApiExport) {
+      return typeRefMap.get(exp);
     },
   };
 }
