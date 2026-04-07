@@ -97,7 +97,7 @@ export async function loadTypedocContextInternal(
     try {
       const jsonContent = await readFile(join(typedocDir, entry), 'utf-8');
       const json = JSON.parse(jsonContent);
-      packages.push(deserializeTypedocJson(json, slug, npmName));
+      packages.push(deserializeTypedocJson(json, slug, npmName).pkg);
       documents.push({ packageSlug: slug, json });
       console.log(`[typedoc] Loaded ${slug} (${npmName})`);
     } catch (err) {

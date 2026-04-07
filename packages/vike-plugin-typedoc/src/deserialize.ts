@@ -72,12 +72,12 @@ function typeToString(type: Type): string {
 }
 
 /**
- * Extended ApiExport that carries the raw TypeDoc `Type` reference
- * for downstream type renderers.
+ * Result returned by `deserializeTypedocJson`, containing the parsed
+ * package and a side-channel map from export to its raw TypeDoc `Type`.
  */
-export interface ApiExportWithTypeRef extends ApiExport {
-  /** Raw TypeDoc Type object for linked HTML rendering. */
-  _typeRef?: Type;
+export interface DeserializeResult {
+  pkg: ApiPackage;
+  typeRefs: Map<ApiExport, Type>;
 }
 
 // ---------------------------------------------------------------------------
@@ -315,13 +315,14 @@ function buildMethods(
 
 function buildExport(
   reflection: DeclarationReflection,
-  packageSlug: string
-): ApiExportWithTypeRef | null {
+  packageSlug: string,
+  typeRefs: Map<ApiExport, Type>
+): ApiExport | null {
   const kind = reflectionKindToApiKind(reflection.kind);
   const exportSlug = slugify(reflection.name);
   const reExport = isReExportedSymbol(reflection, packageSlug);
 
-  const exp: ApiExportWithTypeRef = {
+  const exp: ApiExport = {
     name: reflection.name,
     slug: exportSlug,
     path: '',
@@ -345,7 +346,7 @@ function buildExport(
 
     if (sig.type) {
       exp.returnType = typeToString(sig.type);
-      exp._typeRef = sig.type;
+      typeRefs.set(exp, sig.type);
     }
 
     const typeParamStr = exp.typeParameters
@@ -371,7 +372,7 @@ function buildExport(
     // Type alias — store type reference and string
     if (reflection.type) {
       exp.signature = `type ${reflection.name} = ${typeToString(reflection.type)}`;
-      exp._typeRef = reflection.type;
+      typeRefs.set(exp, reflection.type);
     }
 
     // Interface / class children
@@ -419,13 +420,14 @@ function buildExport(
 
 /**
  * Deserialize TypeDoc JSON using TypeDoc's native `Deserializer.reviveProject()`
- * and walk the resulting `ProjectReflection` to produce an `ApiPackage`.
+ * and walk the resulting `ProjectReflection` to produce an `ApiPackage` and
+ * a side-channel map from each `ApiExport` to its raw TypeDoc `Type`.
  */
 export function deserializeTypedocJson(
   json: unknown,
   packageSlug: string,
   packageName: string
-): ApiPackage {
+): DeserializeResult {
   const logger = new ConsoleLogger();
   logger.level = LogLevel.None;
   const deserializer = new Deserializer(logger);
@@ -469,6 +471,7 @@ export function deserializeTypedocJson(
     }
   }
 
+  const typeRefs = new Map<ApiExport, Type>();
   const modules: ApiModule[] = [];
   const allExports: ApiExport[] = [];
 
@@ -476,7 +479,7 @@ export function deserializeTypedocJson(
     const moduleExports: ApiExport[] = [];
 
     for (const reflection of reflections) {
-      const exp = buildExport(reflection, packageSlug);
+      const exp = buildExport(reflection, packageSlug, typeRefs);
       if (exp) {
         moduleExports.push(exp);
         allExports.push(exp);
@@ -508,10 +511,8 @@ export function deserializeTypedocJson(
   }
 
   return {
-    name: packageName,
-    slug: packageSlug,
-    modules,
-    exports: allExports,
+    pkg: { name: packageName, slug: packageSlug, modules, exports: allExports },
+    typeRefs,
   };
 }
 
