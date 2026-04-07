@@ -205,6 +205,15 @@ describe('deserializeTypedocJson', () => {
     expect(Object.prototype.hasOwnProperty.call(exp, '_typeRef')).toBe(false);
   });
 
+  it('ApiPackage output is JSON-serializable (no _typeRef leak)', () => {
+    const json = makeFunctionJson('myFunc', 'boolean');
+    const { pkg } = deserializeTypedocJson(json, 'pkg', 'pkg');
+    expect(() => JSON.stringify(pkg)).not.toThrow();
+    const roundTripped = JSON.parse(JSON.stringify(pkg));
+    expect(roundTripped.exports[0].name).toBe('myFunc');
+    expect(roundTripped.exports[0]._typeRef).toBeUndefined();
+  });
+
   it('detects re-exports from another package', () => {
     const json = makeProject([
       {
