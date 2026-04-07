@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import type { TypeDocDocument } from 'rehype-typedoc';
+import type { Type } from 'typedoc';
 import { GlobalContextServer, PageContextServer } from 'vike/types';
 import {
   createTypedocContext,
@@ -71,7 +72,7 @@ export async function loadTypedocContextInternal(
 
   const packages: ApiPackage[] = [];
   const documents: TypeDocDocument[] = [];
-  const allTypeRefs = new Map<ApiExport, import('typedoc').Type>();
+  const allTypeRefs = new Map<ApiExport, Type>();
 
   for (const entry of entries) {
     if (!entry.endsWith('.json')) continue;
