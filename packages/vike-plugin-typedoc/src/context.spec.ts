@@ -162,6 +162,35 @@ describe('createTypedocContext', () => {
     expect(ctx.getLinkedExport('devkit', 'nonexistent')).toBeNull();
   });
 
+  it('getTypeRef returns the TypeDoc Type for a raw ApiExport from apiDocs', async () => {
+    const { pkg, typeRefs } = deserializeTypedocJson(
+      makeFunctionJson('createMatcher', 'boolean'),
+      'devkit',
+      '@functional-examples/devkit'
+    );
+    const ctx = await createTypedocContext([pkg], {}, typeRefs);
+    // Must use the original ApiExport reference from apiDocs, NOT getLinkedExport()
+    const rawExport = ctx.apiDocs.packages['devkit'].exports.find(
+      (e) => e.slug === 'create-matcher'
+    );
+    expect(rawExport).toBeDefined();
+    expect(ctx.getTypeRef(rawExport!)).toBeDefined();
+    expect(ctx.getTypeRef(rawExport!)?.toString()).toBe('boolean');
+  });
+
+  it('getTypeRef returns undefined for a LinkedApiExport (spread copy, not original reference)', async () => {
+    const { pkg, typeRefs } = deserializeTypedocJson(
+      makeFunctionJson('createMatcher', 'boolean'),
+      'devkit',
+      '@functional-examples/devkit'
+    );
+    const ctx = await createTypedocContext([pkg], {}, typeRefs);
+    // getLinkedExport returns a spread copy — WeakMap lookup by identity returns undefined
+    const linked = ctx.getLinkedExport('devkit', 'create-matcher');
+    expect(linked).not.toBeNull();
+    expect(ctx.getTypeRef(linked!)).toBeUndefined();
+  });
+
   it('getExportUrls returns all paths', async () => {
     const ctx = await createTypedocContext(makeTestPackages());
     const urls = ctx.getExportUrls();
