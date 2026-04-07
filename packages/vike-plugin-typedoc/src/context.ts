@@ -1,6 +1,7 @@
 import rehypeTypedoc, { rehypeTypedocCodeBlocks } from 'rehype-typedoc';
 import type { RehypeTypedocOptions, TypeDocDocument } from 'rehype-typedoc';
 import type { BundledTheme } from 'shiki';
+import type { Type } from 'typedoc';
 import type { Plugin, PluggableList } from 'unified';
 import { combineApiDocs } from './deserialize.js';
 import {
@@ -220,7 +221,7 @@ export interface TypedocContext {
   /** Get pre-configured rehype-typedoc plugins for use in custom unified pipelines */
   getRehypePlugins(): Plugin[];
   /** Get the raw TypeDoc Type object for a server-side export (server use only, not serialized) */
-  getTypeRef(exp: ApiExport): import('typedoc').Type | undefined;
+  getTypeRef(exp: ApiExport): Type | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -278,13 +279,13 @@ function markdownCacheKey(packageSlug: string, symbolSlug: string): string {
 export async function createTypedocContext(
   packages: ApiPackage[],
   options: TypedocContextOptions = {},
-  typeRefs?: Map<ApiExport, import('typedoc').Type>
+  typeRefs?: Map<ApiExport, Type>
 ): Promise<TypedocContext> {
   const basePath = options.basePath ?? '/api';
   const isSinglePackage = packages.length === 1;
   const theme = options.theme ?? 'github-dark';
 
-  const typeRefMap = new WeakMap<ApiExport, import('typedoc').Type>();
+  const typeRefMap = new WeakMap<ApiExport, Type>();
   if (typeRefs) {
     for (const [exp, type] of typeRefs) {
       typeRefMap.set(exp, type);
