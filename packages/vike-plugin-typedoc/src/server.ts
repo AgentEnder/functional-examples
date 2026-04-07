@@ -8,7 +8,7 @@ import {
   type TypedocContextOptions,
 } from './context.js';
 import { deserializeTypedocJson } from './deserialize.js';
-import type { LinkedApiExport } from './types.js';
+import type { ApiExport, LinkedApiExport } from './types.js';
 import type { ApiPackage } from './types.js';
 
 const GLOBAL_KEY = '$$VIKE_PLUGIN_TYPEDOC$$';
@@ -71,6 +71,7 @@ export async function loadTypedocContextInternal(
 
   const packages: ApiPackage[] = [];
   const documents: TypeDocDocument[] = [];
+  const allTypeRefs = new Map<ApiExport, import('typedoc').Type>();
 
   for (const entry of entries) {
     if (!entry.endsWith('.json')) continue;
@@ -97,7 +98,11 @@ export async function loadTypedocContextInternal(
     try {
       const jsonContent = await readFile(join(typedocDir, entry), 'utf-8');
       const json = JSON.parse(jsonContent);
-      packages.push(deserializeTypedocJson(json, slug, npmName).pkg);
+      const { pkg, typeRefs } = deserializeTypedocJson(json, slug, npmName);
+      packages.push(pkg);
+      for (const [exp, type] of typeRefs) {
+        allTypeRefs.set(exp, type);
+      }
       documents.push({ packageSlug: slug, json });
       console.log(`[typedoc] Loaded ${slug} (${npmName})`);
     } catch (err) {
@@ -108,7 +113,7 @@ export async function loadTypedocContextInternal(
     }
   }
 
-  return await createTypedocContext(packages, { ...contextOptions, documents });
+  return await createTypedocContext(packages, { ...contextOptions, documents }, allTypeRefs);
 }
 
 /**
