@@ -85,12 +85,12 @@ function makeInterfaceJson(name: string) {
 }
 
 function makeTestPackages() {
-  const pkg1 = deserializeTypedocJson(
+  const { pkg: pkg1 } = deserializeTypedocJson(
     makeFunctionJson('createMatcher', 'boolean'),
     'devkit',
     '@functional-examples/devkit'
   );
-  const pkg2 = deserializeTypedocJson(
+  const { pkg: pkg2 } = deserializeTypedocJson(
     makeInterfaceJson('Config'),
     'core',
     '@functional-examples/core'
@@ -229,7 +229,7 @@ describe('createTypedocContext', () => {
           makeFunctionJson('createWorker', 'Worker'),
           'api',
           'isolated-workers'
-        ),
+        ).pkg,
       ];
     }
 

@@ -4,7 +4,7 @@ export type { TypedocContext, TypedocContextOptions } from './context.js';
 
 // Deserialization
 export { combineApiDocs, deserializeTypedocJson } from './deserialize.js';
-export type { ApiExportWithTypeRef } from './deserialize.js';
+export type { DeserializeResult } from './deserialize.js';
 
 // Navigation
 export { buildApiNavigation } from './navigation.js';

@@ -49,7 +49,7 @@ function makeFunctionJson(name: string, returnType = 'void') {
 }
 
 async function makeTestContext() {
-  const pkg = deserializeTypedocJson(
+  const { pkg } = deserializeTypedocJson(
     makeFunctionJson('createMatcher', 'boolean'),
     'devkit',
     '@functional-examples/devkit'

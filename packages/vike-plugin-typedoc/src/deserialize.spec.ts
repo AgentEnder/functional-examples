@@ -3,7 +3,6 @@ import {
   combineApiDocs,
   deserializeTypedocJson,
 } from './deserialize.js';
-import type { ApiExportWithTypeRef } from './deserialize.js';
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -102,7 +101,7 @@ function makeInterfaceJson(name: string) {
 describe('deserializeTypedocJson', () => {
   it('parses a function export', () => {
     const json = makeFunctionJson('createMatcher', 'boolean');
-    const result = deserializeTypedocJson(
+    const { pkg: result } = deserializeTypedocJson(
       json,
       'devkit',
       '@functional-examples/devkit'
@@ -128,7 +127,7 @@ describe('deserializeTypedocJson', () => {
 
   it('parses an interface export with properties', () => {
     const json = makeInterfaceJson('Config');
-    const result = deserializeTypedocJson(
+    const { pkg: result } = deserializeTypedocJson(
       json,
       'devkit',
       '@functional-examples/devkit'
@@ -165,7 +164,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(1);
 
     const exp = result.exports[0];
@@ -174,15 +173,15 @@ describe('deserializeTypedocJson', () => {
     expect(exp.signature).toBe('type MyType = string | number');
   });
 
-  it('stores raw Type object on _typeRef for functions', () => {
+  it('returns typeRefs map with Type for functions', () => {
     const json = makeFunctionJson('myFunc', 'boolean');
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
-    const exp = result.exports[0] as ApiExportWithTypeRef;
-    expect(exp._typeRef).toBeDefined();
-    expect(exp._typeRef?.toString()).toBe('boolean');
+    const { pkg, typeRefs } = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const exp = pkg.exports[0];
+    expect(typeRefs.get(exp)).toBeDefined();
+    expect(typeRefs.get(exp)?.toString()).toBe('boolean');
   });
 
-  it('stores raw Type object on _typeRef for type aliases', () => {
+  it('returns typeRefs map with Type for type aliases', () => {
     const json = makeProject([
       {
         id: 1,
@@ -193,11 +192,17 @@ describe('deserializeTypedocJson', () => {
         type: { type: 'intrinsic', name: 'string' },
       },
     ]);
+    const { pkg, typeRefs } = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const exp = pkg.exports[0];
+    expect(typeRefs.get(exp)).toBeDefined();
+    expect(typeRefs.get(exp)?.toString()).toBe('string');
+  });
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
-    const exp = result.exports[0] as ApiExportWithTypeRef;
-    expect(exp._typeRef).toBeDefined();
-    expect(exp._typeRef?.toString()).toBe('string');
+  it('ApiExport objects have no _typeRef property', () => {
+    const json = makeFunctionJson('myFunc', 'boolean');
+    const { pkg } = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const exp = pkg.exports[0];
+    expect(Object.prototype.hasOwnProperty.call(exp, '_typeRef')).toBe(false);
   });
 
   it('detects re-exports from another package', () => {
@@ -228,13 +233,13 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'my-pkg', 'my-pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'my-pkg', 'my-pkg');
     expect(result.exports[0].isReExport).toBe(true);
   });
 
   it('does not mark own-package exports as re-exports', () => {
     const json = makeFunctionJson('ownFunc', 'void', 'packages/devkit/src/core.ts');
-    const result = deserializeTypedocJson(json, 'devkit', 'devkit');
+    const { pkg: result } = deserializeTypedocJson(json, 'devkit', 'devkit');
     expect(result.exports[0].isReExport).toBeUndefined();
   });
 
@@ -276,7 +281,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(1);
     expect(result.exports[0].name).toBe('publicFunc');
   });
@@ -302,7 +307,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(0);
   });
 
@@ -327,7 +332,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(0);
   });
 
@@ -378,7 +383,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const exp = result.exports[0];
 
     expect(exp.description).toBe('Does something useful');
@@ -423,7 +428,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'devkit', 'devkit');
+    const { pkg: result } = deserializeTypedocJson(json, 'devkit', 'devkit');
     expect(result.modules).toHaveLength(2);
 
     const moduleNames = result.modules.map((m) => m.name).sort();
@@ -442,7 +447,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.modules).toHaveLength(1);
     expect(result.modules[0].name).toBe('core');
   });
@@ -480,7 +485,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(1);
     expect(result.exports[0].name).toBe('globFunc');
     expect(result.modules[0].name).toBe('glob');
@@ -529,7 +534,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const exp = result.exports[0];
     expect(exp.methods).toHaveLength(1);
     expect(exp.methods?.[0].name).toBe('execute');
@@ -579,7 +584,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const exp = result.exports[0];
     expect(exp.typeParameters).toHaveLength(1);
     expect(exp.typeParameters?.[0].name).toBe('T');
@@ -601,7 +606,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const exp = result.exports[0];
     expect(exp.signature).toBe('interface Child extends Parent');
   });
@@ -625,7 +630,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(2);
     const slugs = result.exports.map((e) => e.slug).sort();
     expect(slugs).toEqual(['config-interface', 'config-variable']);
@@ -701,7 +706,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const exp = result.exports[0];
     // The empty reflection should be filtered out, no "& {}" in the signature
     expect(exp.signature).not.toContain('{}');
@@ -711,7 +716,7 @@ describe('deserializeTypedocJson', () => {
 
   it('handles empty project gracefully', () => {
     const json = makeProject([]);
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     expect(result.exports).toHaveLength(0);
     expect(result.modules).toHaveLength(0);
   });
@@ -748,7 +753,7 @@ describe('deserializeTypedocJson', () => {
       },
     ]);
 
-    const result = deserializeTypedocJson(json, 'pkg', 'pkg');
+    const { pkg: result } = deserializeTypedocJson(json, 'pkg', 'pkg');
     const param = result.exports[0].parameters?.[0];
     expect(param?.optional).toBe(true);
     expect(param?.defaultValue).toBe('"World"');
@@ -758,12 +763,12 @@ describe('deserializeTypedocJson', () => {
 
 describe('combineApiDocs', () => {
   it('combines multiple packages into one ApiDocs', () => {
-    const pkg1 = deserializeTypedocJson(
+    const { pkg: pkg1 } = deserializeTypedocJson(
       makeFunctionJson('funcA'),
       'pkg-a',
       'Package A'
     );
-    const pkg2 = deserializeTypedocJson(
+    const { pkg: pkg2 } = deserializeTypedocJson(
       makeInterfaceJson('TypeB'),
       'pkg-b',
       'Package B'
