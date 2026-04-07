@@ -220,7 +220,14 @@ export interface TypedocContext {
   getAllPrerenderUrls(): string[];
   /** Get pre-configured rehype-typedoc plugins for use in custom unified pipelines */
   getRehypePlugins(): Plugin[];
-  /** Get the raw TypeDoc Type object for a server-side export (server use only, not serialized) */
+  /**
+   * Get the raw TypeDoc `Type` object for an export (server-side use only, never serialized).
+   *
+   * **Important:** `exp` must be the original `ApiExport` reference stored in `apiDocs`
+   * (e.g. from `apiDocs.packages[slug].exports`). Passing a `LinkedApiExport` returned by
+   * `getLinkedExport()` will always return `undefined` because `LinkedApiExport` is a
+   * shallow copy and will not match the WeakMap key.
+   */
   getTypeRef(exp: ApiExport): Type | undefined;
 }
 
