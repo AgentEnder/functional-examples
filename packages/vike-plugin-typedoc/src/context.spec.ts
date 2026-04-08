@@ -39,7 +39,9 @@ function makeFunctionJson(name: string, returnType = 'void') {
             type: { type: 'intrinsic', name: returnType },
           },
         ],
-        sources: [{ fileName: 'src/core/index.ts', line: 1, character: 0, url: '' }],
+        sources: [
+          { fileName: 'src/core/index.ts', line: 1, character: 0, url: '' },
+        ],
       },
     ],
   };
@@ -78,7 +80,9 @@ function makeInterfaceJson(name: string) {
         comment: {
           summary: [{ kind: 'text', text: 'A test interface' }],
         },
-        sources: [{ fileName: 'src/types/index.ts', line: 1, character: 0, url: '' }],
+        sources: [
+          { fileName: 'src/types/index.ts', line: 1, character: 0, url: '' },
+        ],
       },
     ],
   };
@@ -174,8 +178,11 @@ describe('createTypedocContext', () => {
       (e) => e.slug === 'create-matcher'
     );
     expect(rawExport).toBeDefined();
-    expect(ctx.getTypeRef(rawExport!)).toBeDefined();
-    expect(ctx.getTypeRef(rawExport!)?.toString()).toBe('boolean');
+    if (!rawExport) {
+      throw new Error('Expected raw export to be defined');
+    }
+    expect(ctx.getTypeRef(rawExport)).toBeDefined();
+    expect(ctx.getTypeRef(rawExport)?.toString()).toBe('boolean');
   });
 
   it('getTypeRef returns undefined for a LinkedApiExport (spread copy, not original reference)', async () => {
@@ -188,7 +195,10 @@ describe('createTypedocContext', () => {
     // getLinkedExport returns a spread copy — WeakMap lookup by identity returns undefined
     const linked = ctx.getLinkedExport('devkit', 'create-matcher');
     expect(linked).not.toBeNull();
-    expect(ctx.getTypeRef(linked!)).toBeUndefined();
+    if (!linked) {
+      throw new Error('Expected linked export to be defined');
+    }
+    expect(ctx.getTypeRef(linked)).toBeUndefined();
   });
 
   it('getExportUrls returns all paths', async () => {
