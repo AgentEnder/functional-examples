@@ -105,6 +105,16 @@ export function buildSymbolsFromDocuments(
   logger.level = LogLevel.None;
   const deserializer = new Deserializer(logger);
 
+  // First pass: collect all symbols with their base slugs (defer path computation)
+  type CollectedSymbol = {
+    name: string;
+    package: string;
+    slug: string;
+    kind: string;
+    isReExport?: boolean;
+  };
+  const allSymbols: CollectedSymbol[] = [];
+
   for (const { packageSlug, json } of documents) {
     const registry = new FileRegistry();
     const project = deserializer.reviveProject(packageSlug, json as JSONOutput.ProjectReflection, {
@@ -126,32 +136,70 @@ export function buildSymbolsFromDocuments(
         const kind = kindToString(reflection.kind);
         if (!kind) continue;
 
-        const symbolSlug = slugify(reflection.name);
-        const path = buildUrl(packageSlug, symbolSlug);
         const reExport = isReExported(reflection, packageSlug);
-
-        const sym: RehypeTypedocSymbol = {
+        allSymbols.push({
           name: reflection.name,
           package: packageSlug,
-          path,
+          slug: slugify(reflection.name),
           kind,
           ...(reExport ? { isReExport: true } : {}),
-        };
-
-        const existing = map.get(reflection.name);
-        if (!existing) {
-          map.set(reflection.name, sym);
-        } else if (Array.isArray(existing)) {
-          existing.push(sym);
-        } else {
-          // Promote single entry to array
-          map.set(reflection.name, [existing, sym]);
-        }
+        });
       }
     }
 
     if (project.children) {
       walkReflections(project.children as DeclarationReflection[]);
+    }
+  }
+
+  // Second pass: disambiguate colliding slugs within each package by appending -kind
+  // (matches vike-plugin-typedoc behavior for slug generation)
+  const byPackage = new Map<string, CollectedSymbol[]>();
+  for (const sym of allSymbols) {
+    let pkgSymbols = byPackage.get(sym.package);
+    if (!pkgSymbols) {
+      pkgSymbols = [];
+      byPackage.set(sym.package, pkgSymbols);
+    }
+    pkgSymbols.push(sym);
+  }
+  for (const [, pkgSymbols] of byPackage) {
+    const slugGroups = new Map<string, CollectedSymbol[]>();
+    for (const sym of pkgSymbols) {
+      let group = slugGroups.get(sym.slug);
+      if (!group) {
+        group = [];
+        slugGroups.set(sym.slug, group);
+      }
+      group.push(sym);
+    }
+    for (const [, group] of slugGroups) {
+      if (group.length < 2) continue;
+      for (const sym of group) {
+        sym.slug = `${sym.slug}-${sym.kind}`;
+      }
+    }
+  }
+
+  // Third pass: build paths with disambiguated slugs and populate the map
+  for (const sym of allSymbols) {
+    const path = buildUrl(sym.package, sym.slug);
+    const entry: RehypeTypedocSymbol = {
+      name: sym.name,
+      package: sym.package,
+      path,
+      kind: sym.kind,
+      ...(sym.isReExport ? { isReExport: true } : {}),
+    };
+
+    const existing = map.get(sym.name);
+    if (!existing) {
+      map.set(sym.name, entry);
+    } else if (Array.isArray(existing)) {
+      existing.push(entry);
+    } else {
+      // Promote single entry to array
+      map.set(sym.name, [existing, entry]);
     }
   }
 

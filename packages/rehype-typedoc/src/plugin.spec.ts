@@ -215,6 +215,41 @@ describe('symbol disambiguation', () => {
   });
 });
 
+describe('slug collision disambiguation', () => {
+  // "CLI" (Interface) and "cli" (Function) both slugify to "cli" within the same package.
+  // vike-plugin-typedoc appends "-{kind}" for collisions; rehype-typedoc must match.
+  const collisionDocs: TypeDocDocument[] = [
+    makeDoc('my-pkg', [
+      { name: 'CLI', kind: KIND.Interface, sources: [{ fileName: 'packages/my-pkg/src/index.ts' }] },
+      { name: 'cli', kind: KIND.Function, sources: [{ fileName: 'packages/my-pkg/src/index.ts' }] },
+    ]),
+  ];
+
+  const collisionOpts: RehypeTypedocOptions = {
+    documents: collisionDocs,
+    buildUrl: (pkg, sym) => `/api/${pkg}/${sym}`,
+  };
+
+  it('disambiguates colliding slugs within a package by appending -kind', () => {
+    const inputInterface = '<p><code>CLI</code></p>';
+    const resultInterface = processHtml(inputInterface, collisionOpts);
+    expect(resultInterface).toContain('href="/api/my-pkg/cli-interface"');
+  });
+
+  it('disambiguates the function variant with -kind suffix', () => {
+    const inputFunction = '<p><code>cli</code></p>';
+    const resultFunction = processHtml(inputFunction, collisionOpts);
+    expect(resultFunction).toContain('href="/api/my-pkg/cli-function"');
+  });
+
+  it('does not add -kind suffix when no collision exists', () => {
+    const input = '<p><code>createMatcher</code></p>';
+    const result = processHtml(input, defaultOpts);
+    expect(result).toContain('href="/api/devkit/create-matcher"');
+    expect(result).not.toContain('create-matcher-function');
+  });
+});
+
 describe('remarkCodeProps + rehypeTypedoc integration', () => {
   const ambiguousDocs: TypeDocDocument[] = [
     makeDoc('devkit', [
