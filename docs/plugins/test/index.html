@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <link rel="stylesheet" type="text/css" href="/functional-examples/assets/static/pages_tailwind-65fb2459.CdF2YPMY.css">
+        <meta charset="UTF-8" />
+        
+        
+    <title>functional-examples</title><meta property="og:title" content="functional-examples" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="/functional-examples/favicon.svg"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    
+    <meta name="description" content="A toolkit for managing, scanning, and validating code examples" /><meta property="og:description" content="A toolkit for managing, scanning, and validating code examples" />
+    
+  
+        
+      </head>
+      <body>
+        
+        <div id="root"><link rel="preload" as="image" href="/functional-examples/logo-transparent.svg"/><div class="min-h-screen flex flex-col text-bp-line bp-grid"><div class="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true"><div class="absolute inset-0 opacity-[0.04]" style="background-image:url(&quot;data:image/svg+xml,%3Csvg viewBox=&#x27;0 0 256 256&#x27; xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%3E%3Cfilter id=&#x27;n&#x27;%3E%3CfeTurbulence type=&#x27;fractalNoise&#x27; baseFrequency=&#x27;0.85&#x27; numOctaves=&#x27;4&#x27; stitchTiles=&#x27;stitch&#x27;/%3E%3C/filter%3E%3Crect width=&#x27;100%25&#x27; height=&#x27;100%25&#x27; filter=&#x27;url(%23n)&#x27;/%3E%3C/svg%3E&quot;);background-repeat:repeat;background-size:256px 256px"></div></div><header class="sticky top-0 z-50 h-16 shrink-0 bp-glass border-b border-bp-line-dim/20"><div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between"><a href="/functional-examples/" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        relative flex items-center gap-2.5 px-1 py-0.5 mx-2
+      "><div class="absolute pointer-events-none" style="top:-6px;left:-6px" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" class="text-bp-line-dim"><line x1="6" y1="0" x2="6" y2="12" stroke="currentColor" stroke-width="1"></line><line x1="0" y1="6" x2="12" y2="6" stroke="currentColor" stroke-width="1"></line></svg></div><div class="absolute pointer-events-none" style="top:-6px;right:-6px" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" class="text-bp-line-dim"><line x1="6" y1="0" x2="6" y2="12" stroke="currentColor" stroke-width="1"></line><line x1="0" y1="6" x2="12" y2="6" stroke="currentColor" stroke-width="1"></line></svg></div><div class="absolute pointer-events-none" style="bottom:-6px;left:-6px" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" class="text-bp-line-dim"><line x1="6" y1="0" x2="6" y2="12" stroke="currentColor" stroke-width="1"></line><line x1="0" y1="6" x2="12" y2="6" stroke="currentColor" stroke-width="1"></line></svg></div><div class="absolute pointer-events-none" style="bottom:-6px;right:-6px" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" class="text-bp-line-dim"><line x1="6" y1="0" x2="6" y2="12" stroke="currentColor" stroke-width="1"></line><line x1="0" y1="6" x2="12" y2="6" stroke="currentColor" stroke-width="1"></line></svg></div><img src="/functional-examples/logo-transparent.svg" alt="functional-examples" width="28" height="28" class=""/><span class="font-heading text-lg tracking-[0.15em] text-bp-line-bright">FUNCTIONAL-EXAMPLES</span></a><nav class="hidden md:flex items-center gap-6"><a href="/functional-examples/docs" class="
+        transition-colors duration-200
+        text-bp-line font-medium
+        text-xs font-heading tracking-widest relative py-1 group
+      ">DOCS<span class="absolute -bottom-0.5 left-0 right-0 h-0.5 transition-transform duration-300 origin-left bg-bp-line scale-x-100"></span></a><a href="/functional-examples/examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        text-xs font-heading tracking-widest relative py-1 group
+      ">EXAMPLES<span class="absolute -bottom-0.5 left-0 right-0 h-0.5 transition-transform duration-300 origin-left bg-bp-line-dim scale-x-0 group-hover:scale-x-100"></span></a><a href="/functional-examples/api" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        text-xs font-heading tracking-widest relative py-1 group
+      ">API<span class="absolute -bottom-0.5 left-0 right-0 h-0.5 transition-transform duration-300 origin-left bg-bp-line-dim scale-x-0 group-hover:scale-x-100"></span></a></nav><div class="flex items-center gap-3"><div class="hidden md:block"><div class="relative"><div class="relative"><svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-bp-line-dim pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg><input type="text" placeholder="Search..." class="w-56 pl-9 pr-14 py-1.5 rounded text-xs font-code bg-bp-paper-light/60 border border-bp-line-dim/25 text-bp-line placeholder:text-bp-line-dim focus:border-bp-accent focus:outline-none transition-all" value=""/><kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1 py-0.5 text-[0.5625rem] bg-bp-paper border border-bp-line-dim/25 rounded text-bp-line-dim pointer-events-none">⌘K</kbd></div></div></div><span class="hidden md:block h-4 border-l border-bp-line-dim/30"></span><a href="https://github.com/AgentEnder/functional-examples" target="_blank" rel="noopener noreferrer" class="hidden md:block text-bp-line-dim hover:text-bp-line transition-colors" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg></a><a href="https://www.npmjs.com/package/functional-examples" target="_blank" rel="noopener noreferrer" class="hidden md:block text-bp-line-dim hover:text-bp-line transition-colors" aria-label="NPM"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><title>npm</title><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"></path></svg></a></div></div></header><aside class="
+          lg:hidden fixed left-0 top-16 bottom-0 w-72 z-40
+          bg-bp-paper border-r border-bp-line-dim/20
+          transition-transform duration-300 ease-in-out
+          -translate-x-full
+          overflow-y-auto
+        "><nav class="p-4 space-y-4"><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Guides</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/guides/getting-started" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/docs/guides/why-functional-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Why functional-examples</a></li><li><a href="/functional-examples/docs/guides/core-concepts" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Core Concepts</a></li><li><a href="/functional-examples/docs/guides/plugins" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugins</a></li><li><a href="/functional-examples/docs/guides/configuration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Configuration</a></li><li><a href="/functional-examples/docs/guides/testing-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Testing Examples</a></li><li><a href="/functional-examples/docs/guides/use-cases" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Use Cases</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Plugins</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/plugins/javascript" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JavaScript Plugin</a></li><li><a href="/functional-examples/docs/plugins/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">YAML Manifest Plugin</a></li><li><a href="/functional-examples/docs/plugins/test" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-bp-accent text-bp-line bg-bp-accent/5
+                          
+      ">Test Plugin</a></li><li><a href="/functional-examples/docs/plugins/documentation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Documentation Plugin</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Advanced</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/advanced/custom-extractors" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Custom Extractors</a></li><li><a href="/functional-examples/docs/advanced/plugin-authoring" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugin Authoring</a></li><li><a href="/functional-examples/docs/advanced/snapshot-testing" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Snapshot Testing</a></li><li><a href="/functional-examples/docs/advanced/ci-integration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">CI Integration</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><a href="/functional-examples/examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        bp-annotation text-bp-accent hover:text-bp-line transition-colors
+      ">Examples</a><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/examples/ci-integration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">CI Integration</a></li><li><a href="/functional-examples/examples/custom-extractor" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Custom Extractor</a></li><li><a href="/functional-examples/examples/devkit-readme" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Devkit README Snippets</a></li><li><a href="/functional-examples/examples/documentation-plugin" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Documentation Plugin</a></li><li><a href="/functional-examples/examples/basic-usage" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/examples/getting-started" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/examples/javascript-plugin" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JavaScript Plugin</a></li><li><a href="/functional-examples/examples/json-config" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JSON Configuration</a></li><li><a href="/functional-examples/examples/metadata-validation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Metadata Validation</a></li><li><a href="/functional-examples/examples/mixed-plugins" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Mixed Plugins</a></li><li><a href="/functional-examples/examples/multi-plugin-config" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Multi-Plugin Configuration</a></li><li><a href="/functional-examples/examples/plugin-authoring" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugin Authoring</a></li><li><a href="/functional-examples/examples/region-markers" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Region Markers</a></li><li><a href="/functional-examples/examples/snapshot-testing" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Snapshot Testing</a></li><li><a href="/functional-examples/examples/test-assertions" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Test Assertions Reference</a></li><li><a href="/functional-examples/examples/test-plugin-example" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Test Plugin Example</a></li><li><a href="/functional-examples/examples/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">YAML Manifest Plugin</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><a href="/functional-examples/api" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        bp-annotation text-bp-accent hover:text-bp-line transition-colors
+      ">API</a><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/api/devkit" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/devkit</a></li><li><a href="/functional-examples/api/documentation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/documentation</a></li><li><a href="/functional-examples/api/javascript" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/javascript</a></li><li><a href="/functional-examples/api/test" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/test</a></li><li><a href="/functional-examples/api/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/yaml-manifest</a></li><li><a href="/functional-examples/api/functional-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">functional-examples</a></li><li><a href="/functional-examples/api/rehype-typedoc" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">rehype-typedoc</a></li><li><a href="/functional-examples/api/vike-plugin-typedoc" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">vike-plugin-typedoc</a></li></ul></div><div class="border-t border-bp-line-dim/20 pt-4 mt-4 flex items-center gap-4"><a href="https://github.com/AgentEnder/functional-examples" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg>GitHub</a><a href="https://www.npmjs.com/package/functional-examples" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><title>npm</title><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"></path></svg>NPM</a></div></nav></aside><div class="relative flex grow"><aside class="hidden lg:block shrink-0 w-64 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto border-r border-bp-line-dim/15 bg-bp-paper/80"><nav class="p-4 space-y-4"><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Guides</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/guides/getting-started" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/docs/guides/why-functional-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Why functional-examples</a></li><li><a href="/functional-examples/docs/guides/core-concepts" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Core Concepts</a></li><li><a href="/functional-examples/docs/guides/plugins" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugins</a></li><li><a href="/functional-examples/docs/guides/configuration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Configuration</a></li><li><a href="/functional-examples/docs/guides/testing-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Testing Examples</a></li><li><a href="/functional-examples/docs/guides/use-cases" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Use Cases</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Plugins</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/plugins/javascript" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JavaScript Plugin</a></li><li><a href="/functional-examples/docs/plugins/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">YAML Manifest Plugin</a></li><li><a href="/functional-examples/docs/plugins/test" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-bp-accent text-bp-line bg-bp-accent/5
+                          
+      ">Test Plugin</a></li><li><a href="/functional-examples/docs/plugins/documentation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Documentation Plugin</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><span class="bp-annotation text-bp-line-dim">Advanced</span><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/docs/advanced/custom-extractors" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Custom Extractors</a></li><li><a href="/functional-examples/docs/advanced/plugin-authoring" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugin Authoring</a></li><li><a href="/functional-examples/docs/advanced/snapshot-testing" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Snapshot Testing</a></li><li><a href="/functional-examples/docs/advanced/ci-integration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">CI Integration</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><a href="/functional-examples/examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        bp-annotation text-bp-accent hover:text-bp-line transition-colors
+      ">Examples</a><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/examples/ci-integration" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">CI Integration</a></li><li><a href="/functional-examples/examples/custom-extractor" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Custom Extractor</a></li><li><a href="/functional-examples/examples/devkit-readme" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Devkit README Snippets</a></li><li><a href="/functional-examples/examples/documentation-plugin" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Documentation Plugin</a></li><li><a href="/functional-examples/examples/basic-usage" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/examples/getting-started" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Getting Started</a></li><li><a href="/functional-examples/examples/javascript-plugin" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JavaScript Plugin</a></li><li><a href="/functional-examples/examples/json-config" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">JSON Configuration</a></li><li><a href="/functional-examples/examples/metadata-validation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Metadata Validation</a></li><li><a href="/functional-examples/examples/mixed-plugins" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Mixed Plugins</a></li><li><a href="/functional-examples/examples/multi-plugin-config" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Multi-Plugin Configuration</a></li><li><a href="/functional-examples/examples/plugin-authoring" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Plugin Authoring</a></li><li><a href="/functional-examples/examples/region-markers" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Region Markers</a></li><li><a href="/functional-examples/examples/snapshot-testing" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Snapshot Testing</a></li><li><a href="/functional-examples/examples/test-assertions" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Test Assertions Reference</a></li><li><a href="/functional-examples/examples/test-plugin-example" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">Test Plugin Example</a></li><li><a href="/functional-examples/examples/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">YAML Manifest Plugin</a></li></ul></div><div><div class="flex items-center justify-between mb-1.5"><a href="/functional-examples/api" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        bp-annotation text-bp-accent hover:text-bp-line transition-colors
+      ">API</a><button class="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-3.5 h-3.5 transition-transform duration-200" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div><ul class="space-y-0.5 ml-1"><li><a href="/functional-examples/api/devkit" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/devkit</a></li><li><a href="/functional-examples/api/documentation" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/documentation</a></li><li><a href="/functional-examples/api/javascript" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/javascript</a></li><li><a href="/functional-examples/api/test" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/test</a></li><li><a href="/functional-examples/api/yaml-manifest" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">@functional-examples/yaml-manifest</a></li><li><a href="/functional-examples/api/functional-examples" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">functional-examples</a></li><li><a href="/functional-examples/api/rehype-typedoc" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">rehype-typedoc</a></li><li><a href="/functional-examples/api/vike-plugin-typedoc" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        
+                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                            border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20
+                          
+      ">vike-plugin-typedoc</a></li></ul></div><div class="border-t border-bp-line-dim/20 pt-4 mt-4 flex items-center gap-4"><a href="https://github.com/AgentEnder/functional-examples" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg>GitHub</a><a href="https://www.npmjs.com/package/functional-examples" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-bp-line-dim hover:text-bp-line transition-colors text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><title>npm</title><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"></path></svg>NPM</a></div></nav></aside><main class="flex-1 min-w-0 px-6 lg:px-12 py-8 max-w-6xl"><div><div class="bp-annotation mb-4 flex items-center gap-2"><a href="/functional-examples/docs" class="
+        transition-colors duration-200
+        text-bp-line/70 hover:text-bp-line
+        text-bp-line-dim hover:text-bp-line transition-colors
+      ">DOCS</a><span class="text-bp-line-dim/50">/</span><span class="text-bp-line">Test Plugin</span></div><div class="inline-flex items-center justify-center mb-4" aria-hidden="true"><svg width="200" height="14" viewBox="0 0 200 14" class="overflow-visible"><line x1="0" y1="1" x2="0" y2="13" stroke="var(--color-bp-line-dim)" stroke-width="1"></line><line x1="0" y1="7" x2="200" y2="7" stroke="var(--color-bp-line-dim)" stroke-width="0.5"></line><line x1="200" y1="1" x2="200" y2="13" stroke="var(--color-bp-line-dim)" stroke-width="1"></line><text x="100" y="-3" text-anchor="middle" dominant-baseline="auto" fill="var(--color-bp-line-dim)" font-size="9" font-family="var(--font-heading)" letter-spacing="0.1em">PLUGINS</text></svg></div><div class="max-w-4xl"><div class="prose-blueprint"><h1>Test Plugin</h1>
+<p>The test plugin (<code>@functional-examples/test</code>) adds testing capabilities to functional-examples. It reads test definitions from <code>metadata.test</code> on any scanned example and provides the <code>test</code> CLI command.</p>
+<h2>Installation</h2>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#B8D8F0">npm</span><span style="color:#7CC9A0"> install</span><span style="color:#7CC9A0"> @functional-examples/test</span></span></code></pre>
+<h2>Setup</h2>
+<p>Add the test plugin to your config:</p>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-typescript"><span class="line"><span style="color:#8EC8E8">import </span><span style="color:#8FA4BE">{</span><span style="color:#E8EDF4"> </span><a href="/functional-examples/api/test/create-test-plugin" class="typedoc-link"><span style="color:#E8EDF4">createTestPlugin</span></a><span style="color:#8FA4BE"> }</span><span style="color:#8EC8E8"> from </span><span style="color:#8FA4BE">'</span><span style="color:#7CC9A0">@functional-examples/test</span><span style="color:#8FA4BE">'</span><span style="color:#8FA4BE">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#8EC8E8">export</span><span style="color:#8EC8E8"> default</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#E8EDF4">  plugins</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> [</span></span>
+<span class="line"><span style="color:#6B8AAA;font-style:italic">    // ... your extraction plugins</span></span>
+<span class="line"><span style="color:#B8D8F0">    </span><a href="/functional-examples/api/test/create-test-plugin" class="typedoc-link"><span style="color:#B8D8F0">createTestPlugin</span></a><span style="color:#8FA4BE">(),</span></span>
+<span class="line"><span style="color:#8FA4BE">  ],</span></span>
+<span class="line"><span style="color:#8FA4BE">};</span></span></code></pre>
+<h3>Plugin Options</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>timeout</code></td><td><code>number</code></td><td><code>30000</code></td><td>Default timeout per test in milliseconds</td></tr><tr><td><code>reporters</code></td><td><code>ReporterConfig[]</code></td><td><code>[]</code></td><td>Additional reporters</td></tr><tr><td><code>defaultReporter</code></td><td><a href="/functional-examples/api/test/reporter-config" class="typedoc-link"><code>ReporterConfig</code></a></td><td>Pretty reporter</td><td>Reporter for local runs</td></tr><tr><td><code>ciReporter</code></td><td><a href="/functional-examples/api/test/reporter-config" class="typedoc-link"><code>ReporterConfig</code></a></td><td>TAP reporter</td><td>Reporter for CI environments</td></tr></tbody></table>
+<h2>Defining Tests</h2>
+<p>Tests live in the <code>test</code> field of an example's metadata. The test plugin doesn't care which extractor produced the example — it works with any metadata source.</p>
+<h3>Single Command Tests</h3>
+<p>The simplest form — run a command and check assertions:</p>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-json"><span class="line"><span style="color:#8FA4BE">  "</span><span style="color:#7CC9A0">functional-examples</span><span style="color:#8FA4BE">"</span><span style="color:#E8EDF4">: </span><span style="color:#8FA4BE">{</span></span>
+<span class="line"><span style="color:#8FA4BE">    "</span><span style="color:#A8D0F0">title</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">Hello Script</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">    "</span><span style="color:#A8D0F0">test</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> [</span></span>
+<span class="line"><span style="color:#8FA4BE">      {</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">name</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">runs hello script</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">options</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span><span style="color:#8FA4BE"> "</span><span style="color:#A8D0F0">command</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">node hello.js</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE"> },</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">assertions</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">          "</span><span style="color:#A8D0F0">exitCode</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#D4A94E"> 0</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">          "</span><span style="color:#A8D0F0">stdout</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span><span style="color:#8FA4BE"> "</span><span style="color:#A8D0F0">contains</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">Hello from example</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE"> }</span></span>
+<span class="line"><span style="color:#8FA4BE">        }</span></span>
+<span class="line"><span style="color:#8FA4BE">      }</span></span>
+<span class="line"><span style="color:#8FA4BE">    ]</span></span>
+<span class="line"><span style="color:#8FA4BE">  }</span><span style="color:#E8EDF4">,</span></span></code></pre>
+<h3>Multi-Step Tests</h3>
+<p>For examples that require setup or multiple phases, use <code>steps</code>:</p>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-json"><span class="line"><span style="color:#8FA4BE">  "</span><span style="color:#7CC9A0">functional-examples</span><span style="color:#8FA4BE">"</span><span style="color:#E8EDF4">: </span><span style="color:#8FA4BE">{</span></span>
+<span class="line"><span style="color:#8FA4BE">    "</span><span style="color:#A8D0F0">title</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">Greeting Function</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">    "</span><span style="color:#A8D0F0">test</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> [</span></span>
+<span class="line"><span style="color:#8FA4BE">      {</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">name</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">scan output matches snapshot</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">steps</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> [</span></span>
+<span class="line"><span style="color:#8FA4BE">          {</span></span>
+<span class="line"><span style="color:#8FA4BE">            "</span><span style="color:#A8D0F0">command</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">bash ../../scan.sh</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">            "</span><span style="color:#A8D0F0">assertions</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">              "</span><span style="color:#A8D0F0">exitCode</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#D4A94E"> 0</span></span>
+<span class="line"><span style="color:#8FA4BE">            }</span></span>
+<span class="line"><span style="color:#8FA4BE">          },</span></span>
+<span class="line"><span style="color:#8FA4BE">          {</span></span>
+<span class="line"><span style="color:#8FA4BE">            "</span><span style="color:#A8D0F0">command</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">true</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">            "</span><span style="color:#A8D0F0">assertions</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">              "</span><span style="color:#A8D0F0">snapshot</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">                "</span><span style="color:#A8D0F0">path</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">../../output.txt</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">                "</span><span style="color:#A8D0F0">snapshot</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">../../__snapshots__/scan-output.txt</span><span style="color:#8FA4BE">"</span></span>
+<span class="line"><span style="color:#8FA4BE">              }</span></span>
+<span class="line"><span style="color:#8FA4BE">            }</span></span>
+<span class="line"><span style="color:#8FA4BE">          }</span></span>
+<span class="line"><span style="color:#8FA4BE">        ]</span></span>
+<span class="line"><span style="color:#8FA4BE">      },</span></span>
+<span class="line"><span style="color:#8FA4BE">      {</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">name</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">cleanup</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">,</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">options</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">          "</span><span style="color:#A8D0F0">command</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">rm -f ../../output.txt</span><span style="color:#8FA4BE">"</span></span>
+<span class="line"><span style="color:#8FA4BE">        },</span></span>
+<span class="line"><span style="color:#8FA4BE">        "</span><span style="color:#A8D0F0">assertions</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> {</span></span>
+<span class="line"><span style="color:#8FA4BE">          "</span><span style="color:#A8D0F0">exitCode</span><span style="color:#8FA4BE">"</span><span style="color:#8FA4BE">:</span><span style="color:#D4A94E"> 0</span></span>
+<span class="line"><span style="color:#8FA4BE">        }</span></span>
+<span class="line"><span style="color:#8FA4BE">      }</span></span>
+<span class="line"><span style="color:#8FA4BE">    ]</span></span>
+<span class="line"><span style="color:#8FA4BE">  }</span><span style="color:#E8EDF4">,</span></span></code></pre>
+<p>Each step runs sequentially. If a step fails, subsequent steps in the same test are skipped.</p>
+<h2>Assertion Reference</h2>
+<h3>Exit Code</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  exitCode</span><span style="color:#8FA4BE">:</span><span style="color:#D4A94E"> 0</span><span style="color:#6B8AAA;font-style:italic">      # Expected exit code (0 = success)</span></span></code></pre>
+<h3>Standard Output</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  stdout</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    contains</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">expected text</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">     # Substring match</span></span>
+<span class="line"><span style="color:#8EC8E8">    matches</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">pattern.*regex</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">     # Regex match</span></span></code></pre>
+<h3>Standard Error</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  stderr</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    contains</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">Error</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">             # Substring match</span></span>
+<span class="line"><span style="color:#8EC8E8">    matches</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">Error:\\s+.*</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">       # Regex match</span></span></code></pre>
+<h3>File Assertions</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  file</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> output.txt</span><span style="color:#6B8AAA;font-style:italic">              # File must exist</span></span>
+<span class="line"><span style="color:#8EC8E8">    contains</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">expected content</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">  # File content substring</span></span>
+<span class="line"><span style="color:#8EC8E8">    matches</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">pattern</span><span style="color:#8FA4BE">"</span><span style="color:#6B8AAA;font-style:italic">            # File content regex</span></span>
+<span class="line"><span style="color:#8EC8E8">  files</span><span style="color:#8FA4BE">:</span><span style="color:#6B8AAA;font-style:italic">                          # Multiple file checks</span></span>
+<span class="line"><span style="color:#8FA4BE">    -</span><span style="color:#8EC8E8"> path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> a.txt</span></span>
+<span class="line"><span style="color:#8EC8E8">      contains</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">content a</span><span style="color:#8FA4BE">"</span></span>
+<span class="line"><span style="color:#8FA4BE">    -</span><span style="color:#8EC8E8"> path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> b.txt</span></span></code></pre>
+<h3>Directory Assertions</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  dir</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> output/</span><span style="color:#6B8AAA;font-style:italic">                 # Directory must exist</span></span>
+<span class="line"><span style="color:#8EC8E8">  directories</span><span style="color:#8FA4BE">:</span><span style="color:#6B8AAA;font-style:italic">                    # Multiple directory checks</span></span>
+<span class="line"><span style="color:#8FA4BE">    -</span><span style="color:#8EC8E8"> path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> dist/</span></span>
+<span class="line"><span style="color:#8FA4BE">    -</span><span style="color:#8EC8E8"> path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> generated/</span></span></code></pre>
+<h3>Snapshot Assertions</h3>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  snapshot</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> output.txt</span><span style="color:#6B8AAA;font-style:italic">              # File to compare</span></span>
+<span class="line"><span style="color:#8EC8E8">    snapshot</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> __snapshots__/expected.txt</span><span style="color:#6B8AAA;font-style:italic">  # Reference snapshot</span></span>
+<span class="line"><span style="color:#8EC8E8">  snapshots</span><span style="color:#8FA4BE">:</span><span style="color:#6B8AAA;font-style:italic">                      # Multiple snapshot checks</span></span>
+<span class="line"><span style="color:#8FA4BE">    -</span><span style="color:#8EC8E8"> path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> a.txt</span></span>
+<span class="line"><span style="color:#8EC8E8">      snapshot</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> __snapshots__/a.txt</span></span></code></pre>
+<p>See <a href="../../advanced/snapshot-testing">Snapshot Testing</a> for details on the snapshot workflow.</p>
+<h3>Negation</h3>
+<p>Wrap any assertion in <code>not</code> to invert it:</p>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-yaml"><span class="line"><span style="color:#8EC8E8">assertions</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">  not</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">    stdout</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">      contains</span><span style="color:#8FA4BE">:</span><span style="color:#8FA4BE"> "</span><span style="color:#7CC9A0">ERROR</span><span style="color:#8FA4BE">"</span></span>
+<span class="line"><span style="color:#8EC8E8">    file</span><span style="color:#8FA4BE">:</span></span>
+<span class="line"><span style="color:#8EC8E8">      path</span><span style="color:#8FA4BE">:</span><span style="color:#7CC9A0"> should-not-exist.txt</span></span></code></pre>
+<h2>Running Tests</h2>
+<pre class="shiki blueprint" style="background-color:#122a48f2;color:#e8edf4" tabindex="0"><code class="language-bash"><span class="line"><span style="color:#6B8AAA;font-style:italic"># Run all example tests</span></span>
+<span class="line"><span style="color:#B8D8F0">npx</span><span style="color:#7CC9A0"> functional-examples</span><span style="color:#7CC9A0"> test</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6B8AAA;font-style:italic"># Run tests for a specific directory</span></span>
+<span class="line"><span style="color:#B8D8F0">npx</span><span style="color:#7CC9A0"> functional-examples</span><span style="color:#7CC9A0"> test</span><span style="color:#7CC9A0"> examples/test-plugin-example</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6B8AAA;font-style:italic"># Update snapshots</span></span>
+<span class="line"><span style="color:#B8D8F0">npx</span><span style="color:#7CC9A0"> functional-examples</span><span style="color:#7CC9A0"> test</span><span style="color:#D4A94E"> -u</span></span></code></pre>
+<h2>Reporters</h2>
+<p>The test plugin supports pluggable reporters:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Reporter</th><th>Use Case</th><th>Output</th></tr></thead><tbody><tr><td>Pretty (default)</td><td>Local development</td><td>Colored, human-readable</td></tr><tr><td>TAP</td><td>CI pipelines</td><td>Machine-parseable TAP format</td></tr></tbody></table>
+<p>Use <code>createTapReporter()</code> for CI environments — most CI systems can parse TAP output natively.</p>
+<p><strong>See also:</strong> <a href="../../advanced/snapshot-testing">Snapshot Testing</a> for snapshot workflows, <a href="../../advanced/ci-integration">CI Integration</a> for pipeline setup.</p></div></div></div></main></div></div></div>
+        
+        <script id="vike_pageContext" type="application/json">{"pageId":"\\/pages\\/docs\\/@slug","routeParams":{"*":"plugins\\/test"},"data":{"doc":{"slug":"plugins\\/test","title":"Test Plugin","description":"Define and run executable tests for your examples with assertions for exit codes, output, files, and snapshots.","section":"Plugins","order":3,"filePath":"\\/home\\/runner\\/work\\/functional-examples\\/functional-examples\\/docs\\/plugins\\/test.md","content":"\n# Test Plugin\n\nThe test plugin (`@functional-examples\\/test`) adds testing capabilities to functional-examples. It reads test definitions from `metadata.test` on any scanned example and provides the `test` CLI command.\n\n## Installation\n\n```bash\nnpm install @functional-examples\\/test\n```\n\n## Setup\n\nAdd the test plugin to your config:\n\n```typescript\nimport { createTestPlugin } from '@functional-examples\\/test';\n\nexport default {\n  plugins: [\n    \\/\\/ ... your extraction plugins\n    createTestPlugin(),\n  ],\n};\n```\n\n### Plugin Options\n\n| Option | Type | Default | Description |\n|--------|------|---------|-------------|\n| `timeout` | `number` | `30000` | Default timeout per test in milliseconds |\n| `reporters` | `ReporterConfig[]` | `[]` | Additional reporters |\n| `defaultReporter` | `ReporterConfig` | Pretty reporter | Reporter for local runs |\n| `ciReporter` | `ReporterConfig` | TAP reporter | Reporter for CI environments |\n\n## Defining Tests\n\nTests live in the `test` field of an example's metadata. The test plugin doesn't care which extractor produced the example — it works with any metadata source.\n\n### Single Command Tests\n\nThe simplest form — run a command and check assertions:\n\n```json title=\"examples\\/hello\\/package.json#hello-test\"\n  \"functional-examples\": {\n    \"title\": \"Hello Script\",\n    \"test\": [\n      {\n        \"name\": \"runs hello script\",\n        \"options\": { \"command\": \"node hello.js\" },\n        \"assertions\": {\n          \"exitCode\": 0,\n          \"stdout\": { \"contains\": \"Hello from example\" }\n        }\n      }\n    ]\n  },\n```\n\n### Multi-Step Tests\n\nFor examples that require setup or multiple phases, use `steps`:\n\n```json title=\"examples\\/greeting\\/package.json#snapshot-test\"\n  \"functional-examples\": {\n    \"title\": \"Greeting Function\",\n    \"test\": [\n      {\n        \"name\": \"scan output matches snapshot\",\n        \"steps\": [\n          {\n            \"command\": \"bash ..\\/..\\/scan.sh\",\n            \"assertions\": {\n              \"exitCode\": 0\n            }\n          },\n          {\n            \"command\": \"true\",\n            \"assertions\": {\n              \"snapshot\": {\n                \"path\": \"..\\/..\\/output.txt\",\n                \"snapshot\": \"..\\/..\\/__snapshots__\\/scan-output.txt\"\n              }\n            }\n          }\n        ]\n      },\n      {\n        \"name\": \"cleanup\",\n        \"options\": {\n          \"command\": \"rm -f ..\\/..\\/output.txt\"\n        },\n        \"assertions\": {\n          \"exitCode\": 0\n        }\n      }\n    ]\n  },\n```\n\nEach step runs sequentially. If a step fails, subsequent steps in the same test are skipped.\n\n## Assertion Reference\n\n### Exit Code\n\n```yaml title=\"assertions-reference.yml#exit-code\"\nassertions:\n  exitCode: 0      # Expected exit code (0 = success)\n```\n\n### Standard Output\n\n```yaml title=\"assertions-reference.yml#stdout\"\nassertions:\n  stdout:\n    contains: \"expected text\"     # Substring match\n    matches: \"pattern.*regex\"     # Regex match\n```\n\n### Standard Error\n\n```yaml title=\"assertions-reference.yml#stderr\"\nassertions:\n  stderr:\n    contains: \"Error\"             # Substring match\n    matches: \"Error:\\\\s+.*\"       # Regex match\n```\n\n### File Assertions\n\n```yaml title=\"assertions-reference.yml#file\"\nassertions:\n  file:\n    path: output.txt              # File must exist\n    contains: \"expected content\"  # File content substring\n    matches: \"pattern\"            # File content regex\n  files:                          # Multiple file checks\n    - path: a.txt\n      contains: \"content a\"\n    - path: b.txt\n```\n\n### Directory Assertions\n\n```yaml title=\"assertions-reference.yml#dir\"\nassertions:\n  dir:\n    path: output\\/                 # Directory must exist\n  directories:                    # Multiple directory checks\n    - path: dist\\/\n    - path: generated\\/\n```\n\n### Snapshot Assertions\n\n```yaml title=\"assertions-reference.yml#snapshot\"\nassertions:\n  snapshot:\n    path: output.txt              # File to compare\n    snapshot: __snapshots__\\/expected.txt  # Reference snapshot\n  snapshots:                      # Multiple snapshot checks\n    - path: a.txt\n      snapshot: __snapshots__\\/a.txt\n```\n\nSee [Snapshot Testing](..\\/..\\/advanced\\/snapshot-testing) for details on the snapshot workflow.\n\n### Negation\n\nWrap any assertion in `not` to invert it:\n\n```yaml title=\"assertions-reference.yml#negation\"\nassertions:\n  not:\n    stdout:\n      contains: \"ERROR\"\n    file:\n      path: should-not-exist.txt\n```\n\n## Running Tests\n\n```bash\n# Run all example tests\nnpx functional-examples test\n\n# Run tests for a specific directory\nnpx functional-examples test examples\\/test-plugin-example\n\n# Update snapshots\nnpx functional-examples test -u\n```\n\n## Reporters\n\nThe test plugin supports pluggable reporters:\n\n| Reporter | Use Case | Output |\n|----------|----------|--------|\n| Pretty (default) | Local development | Colored, human-readable |\n| TAP | CI pipelines | Machine-parseable TAP format |\n\nUse `createTapReporter()` for CI environments — most CI systems can parse TAP output natively.\n\n**See also:** [Snapshot Testing](..\\/..\\/advanced\\/snapshot-testing) for snapshot workflows, [CI Integration](..\\/..\\/advanced\\/ci-integration) for pipeline setup.\n","renderedHtml":"\u003ch1>Test Plugin\u003c\\/h1>\n\u003cp>The test plugin (\u003ccode>@functional-examples\\/test\u003c\\/code>) adds testing capabilities to functional-examples. It reads test definitions from \u003ccode>metadata.test\u003c\\/code> on any scanned example and provides the \u003ccode>test\u003c\\/code> CLI command.\u003c\\/p>\n\u003ch2>Installation\u003c\\/h2>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-bash\">\u003cspan class=\"line\">\u003cspan style=\"color:#B8D8F0\">npm\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> install\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> @functional-examples\\/test\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch2>Setup\u003c\\/h2>\n\u003cp>Add the test plugin to your config:\u003c\\/p>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-typescript\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">import \u003c\\/span>\u003cspan style=\"color:#8FA4BE\">{\u003c\\/span>\u003cspan style=\"color:#E8EDF4\"> \u003c\\/span>\u003ca href=\"\\/functional-examples\\/api\\/test\\/create-test-plugin\" class=\"typedoc-link\">\u003cspan style=\"color:#E8EDF4\">createTestPlugin\u003c\\/span>\u003c\\/a>\u003cspan style=\"color:#8FA4BE\"> }\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> from \u003c\\/span>\u003cspan style=\"color:#8FA4BE\">'\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">@functional-examples\\/test\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">'\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">;\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">export\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> default\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#E8EDF4\">  plugins\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> [\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#6B8AAA;font-style:italic\">    \\/\\/ ... your extraction plugins\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#B8D8F0\">    \u003c\\/span>\u003ca href=\"\\/functional-examples\\/api\\/test\\/create-test-plugin\" class=\"typedoc-link\">\u003cspan style=\"color:#B8D8F0\">createTestPlugin\u003c\\/span>\u003c\\/a>\u003cspan style=\"color:#8FA4BE\">(),\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">  ],\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">};\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Plugin Options\u003c\\/h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\u003ctable>\u003cthead>\u003ctr>\u003cth>Option\u003c\\/th>\u003cth>Type\u003c\\/th>\u003cth>Default\u003c\\/th>\u003cth>Description\u003c\\/th>\u003c\\/tr>\u003c\\/thead>\u003ctbody>\u003ctr>\u003ctd>\u003ccode>timeout\u003c\\/code>\u003c\\/td>\u003ctd>\u003ccode>number\u003c\\/code>\u003c\\/td>\u003ctd>\u003ccode>30000\u003c\\/code>\u003c\\/td>\u003ctd>Default timeout per test in milliseconds\u003c\\/td>\u003c\\/tr>\u003ctr>\u003ctd>\u003ccode>reporters\u003c\\/code>\u003c\\/td>\u003ctd>\u003ccode>ReporterConfig[]\u003c\\/code>\u003c\\/td>\u003ctd>\u003ccode>[]\u003c\\/code>\u003c\\/td>\u003ctd>Additional reporters\u003c\\/td>\u003c\\/tr>\u003ctr>\u003ctd>\u003ccode>defaultReporter\u003c\\/code>\u003c\\/td>\u003ctd>\u003ca href=\"\\/functional-examples\\/api\\/test\\/reporter-config\" class=\"typedoc-link\">\u003ccode>ReporterConfig\u003c\\/code>\u003c\\/a>\u003c\\/td>\u003ctd>Pretty reporter\u003c\\/td>\u003ctd>Reporter for local runs\u003c\\/td>\u003c\\/tr>\u003ctr>\u003ctd>\u003ccode>ciReporter\u003c\\/code>\u003c\\/td>\u003ctd>\u003ca href=\"\\/functional-examples\\/api\\/test\\/reporter-config\" class=\"typedoc-link\">\u003ccode>ReporterConfig\u003c\\/code>\u003c\\/a>\u003c\\/td>\u003ctd>TAP reporter\u003c\\/td>\u003ctd>Reporter for CI environments\u003c\\/td>\u003c\\/tr>\u003c\\/tbody>\u003c\\/table>\n\u003ch2>Defining Tests\u003c\\/h2>\n\u003cp>Tests live in the \u003ccode>test\u003c\\/code> field of an example's metadata. The test plugin doesn't care which extractor produced the example — it works with any metadata source.\u003c\\/p>\n\u003ch3>Single Command Tests\u003c\\/h3>\n\u003cp>The simplest form — run a command and check assertions:\u003c\\/p>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-json\">\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">  \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">functional-examples\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#E8EDF4\">: \u003c\\/span>\u003cspan style=\"color:#8FA4BE\">{\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">title\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">Hello Script\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">test\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> [\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">name\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">runs hello script\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">options\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">command\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">node hello.js\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> },\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">exitCode\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#D4A94E\"> 0\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">stdout\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">Hello from example\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    ]\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">  }\u003c\\/span>\u003cspan style=\"color:#E8EDF4\">,\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Multi-Step Tests\u003c\\/h3>\n\u003cp>For examples that require setup or multiple phases, use \u003ccode>steps\u003c\\/code>:\u003c\\/p>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-json\">\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">  \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">functional-examples\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#E8EDF4\">: \u003c\\/span>\u003cspan style=\"color:#8FA4BE\">{\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">title\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">Greeting Function\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">test\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> [\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">name\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">scan output matches snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">steps\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> [\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">command\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">bash ..\\/..\\/scan.sh\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">              \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">exitCode\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#D4A94E\"> 0\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          },\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">command\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">true\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">              \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">                \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">..\\/..\\/output.txt\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">                \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">..\\/..\\/__snapshots__\\/scan-output.txt\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">              }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">            }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        ]\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      },\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">name\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">cleanup\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">,\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">options\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">command\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">rm -f ..\\/..\\/output.txt\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        },\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> {\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">          \"\u003c\\/span>\u003cspan style=\"color:#A8D0F0\">exitCode\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#D4A94E\"> 0\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">        }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">      }\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    ]\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">  }\u003c\\/span>\u003cspan style=\"color:#E8EDF4\">,\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003cp>Each step runs sequentially. If a step fails, subsequent steps in the same test are skipped.\u003c\\/p>\n\u003ch2>Assertion Reference\u003c\\/h2>\n\u003ch3>Exit Code\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  exitCode\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#D4A94E\"> 0\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">      # Expected exit code (0 = success)\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Standard Output\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  stdout\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">expected text\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">     # Substring match\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    matches\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">pattern.*regex\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">     # Regex match\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Standard Error\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  stderr\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">Error\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">             # Substring match\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    matches\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">Error:\\\\s+.*\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">       # Regex match\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>File Assertions\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  file\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> output.txt\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">              # File must exist\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">expected content\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">  # File content substring\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    matches\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">pattern\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">            # File content regex\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  files\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">                          # Multiple file checks\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    -\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> a.txt\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">      contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">content a\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    -\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> b.txt\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Directory Assertions\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  dir\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> output\\/\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">                 # Directory must exist\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  directories\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">                    # Multiple directory checks\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    -\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> dist\\/\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    -\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> generated\\/\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch3>Snapshot Assertions\u003c\\/h3>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> output.txt\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">              # File to compare\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> __snapshots__\\/expected.txt\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">  # Reference snapshot\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  snapshots\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#6B8AAA;font-style:italic\">                      # Multiple snapshot checks\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8FA4BE\">    -\u003c\\/span>\u003cspan style=\"color:#8EC8E8\"> path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> a.txt\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">      snapshot\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> __snapshots__\\/a.txt\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003cp>See \u003ca href=\"..\\/..\\/advanced\\/snapshot-testing\">Snapshot Testing\u003c\\/a> for details on the snapshot workflow.\u003c\\/p>\n\u003ch3>Negation\u003c\\/h3>\n\u003cp>Wrap any assertion in \u003ccode>not\u003c\\/code> to invert it:\u003c\\/p>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-yaml\">\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">assertions\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">  not\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    stdout\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">      contains\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#8FA4BE\"> \"\u003c\\/span>\u003cspan style=\"color:#7CC9A0\">ERROR\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">\"\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">    file\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#8EC8E8\">      path\u003c\\/span>\u003cspan style=\"color:#8FA4BE\">:\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> should-not-exist.txt\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch2>Running Tests\u003c\\/h2>\n\u003cpre class=\"shiki blueprint\" style=\"background-color:#122a48f2;color:#e8edf4\" tabindex=\"0\">\u003ccode class=\"language-bash\">\u003cspan class=\"line\">\u003cspan style=\"color:#6B8AAA;font-style:italic\"># Run all example tests\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#B8D8F0\">npx\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> functional-examples\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> test\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#6B8AAA;font-style:italic\"># Run tests for a specific directory\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#B8D8F0\">npx\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> functional-examples\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> test\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> examples\\/test-plugin-example\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#6B8AAA;font-style:italic\"># Update snapshots\u003c\\/span>\u003c\\/span>\n\u003cspan class=\"line\">\u003cspan style=\"color:#B8D8F0\">npx\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> functional-examples\u003c\\/span>\u003cspan style=\"color:#7CC9A0\"> test\u003c\\/span>\u003cspan style=\"color:#D4A94E\"> -u\u003c\\/span>\u003c\\/span>\u003c\\/code>\u003c\\/pre>\n\u003ch2>Reporters\u003c\\/h2>\n\u003cp>The test plugin supports pluggable reporters:\u003c\\/p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\u003ctable>\u003cthead>\u003ctr>\u003cth>Reporter\u003c\\/th>\u003cth>Use Case\u003c\\/th>\u003cth>Output\u003c\\/th>\u003c\\/tr>\u003c\\/thead>\u003ctbody>\u003ctr>\u003ctd>Pretty (default)\u003c\\/td>\u003ctd>Local development\u003c\\/td>\u003ctd>Colored, human-readable\u003c\\/td>\u003c\\/tr>\u003ctr>\u003ctd>TAP\u003c\\/td>\u003ctd>CI pipelines\u003c\\/td>\u003ctd>Machine-parseable TAP format\u003c\\/td>\u003c\\/tr>\u003c\\/tbody>\u003c\\/table>\n\u003cp>Use \u003ccode>createTapReporter()\u003c\\/code> for CI environments — most CI systems can parse TAP output natively.\u003c\\/p>\n\u003cp>\u003cstrong>See also:\u003c\\/strong> \u003ca href=\"..\\/..\\/advanced\\/snapshot-testing\">Snapshot Testing\u003c\\/a> for snapshot workflows, \u003ca href=\"..\\/..\\/advanced\\/ci-integration\">CI Integration\u003c\\/a> for pipeline setup.\u003c\\/p>"}}}</script>
+        <script id="vike_globalContext" type="application/json">{"navigation":[{"title":"Guides","order":1,"children":[{"title":"Getting Started","path":"\\/docs\\/guides\\/getting-started","order":1},{"title":"Why functional-examples","path":"\\/docs\\/guides\\/why-functional-examples","order":2},{"title":"Core Concepts","path":"\\/docs\\/guides\\/core-concepts","order":3},{"title":"Plugins","path":"\\/docs\\/guides\\/plugins","order":4},{"title":"Configuration","path":"\\/docs\\/guides\\/configuration","order":5},{"title":"Testing Examples","path":"\\/docs\\/guides\\/testing-examples","order":6},{"title":"Use Cases","path":"\\/docs\\/guides\\/use-cases","order":7}]},{"title":"Plugins","order":10,"children":[{"title":"JavaScript Plugin","path":"\\/docs\\/plugins\\/javascript","order":1},{"title":"YAML Manifest Plugin","path":"\\/docs\\/plugins\\/yaml-manifest","order":2},{"title":"Test Plugin","path":"\\/docs\\/plugins\\/test","order":3},{"title":"Documentation Plugin","path":"\\/docs\\/plugins\\/documentation","order":4}]},{"title":"Advanced","order":20,"children":[{"title":"Custom Extractors","path":"\\/docs\\/advanced\\/custom-extractors","order":1},{"title":"Plugin Authoring","path":"\\/docs\\/advanced\\/plugin-authoring","order":2},{"title":"Snapshot Testing","path":"\\/docs\\/advanced\\/snapshot-testing","order":3},{"title":"CI Integration","path":"\\/docs\\/advanced\\/ci-integration","order":4}]},{"title":"Examples","path":"\\/examples","order":50,"children":[{"title":"CI Integration","path":"\\/examples\\/ci-integration"},{"title":"Custom Extractor","path":"\\/examples\\/custom-extractor"},{"title":"Devkit README Snippets","path":"\\/examples\\/devkit-readme"},{"title":"Documentation Plugin","path":"\\/examples\\/documentation-plugin"},{"title":"Getting Started","path":"\\/examples\\/basic-usage"},{"title":"Getting Started","path":"\\/examples\\/getting-started"},{"title":"JavaScript Plugin","path":"\\/examples\\/javascript-plugin"},{"title":"JSON Configuration","path":"\\/examples\\/json-config"},{"title":"Metadata Validation","path":"\\/examples\\/metadata-validation"},{"title":"Mixed Plugins","path":"\\/examples\\/mixed-plugins"},{"title":"Multi-Plugin Configuration","path":"\\/examples\\/multi-plugin-config"},{"title":"Plugin Authoring","path":"\\/examples\\/plugin-authoring"},{"title":"Region Markers","path":"\\/examples\\/region-markers"},{"title":"Snapshot Testing","path":"\\/examples\\/snapshot-testing"},{"title":"Test Assertions Reference","path":"\\/examples\\/test-assertions"},{"title":"Test Plugin Example","path":"\\/examples\\/test-plugin-example"},{"title":"YAML Manifest Plugin","path":"\\/examples\\/yaml-manifest"}]},{"title":"API","path":"\\/api","order":100,"children":[{"title":"@functional-examples\\/devkit","path":"\\/api\\/devkit","children":[{"title":"BaseMetadata","path":"\\/api\\/devkit\\/base-metadata"},{"title":"Config","path":"\\/api\\/devkit\\/config"},{"title":"ConfigValidationError","path":"\\/api\\/devkit\\/config-validation-error"},{"title":"ConfigWithRoot","path":"\\/api\\/devkit\\/config-with-root"},{"title":"createMatcher","path":"\\/api\\/devkit\\/create-matcher"},{"title":"Example","path":"\\/api\\/devkit\\/example"},{"title":"ExampleFile","path":"\\/api\\/devkit\\/example-file"},{"title":"ExampleMetadata","path":"\\/api\\/devkit\\/example-metadata"},{"title":"ExampleMetadataRegistry","path":"\\/api\\/devkit\\/example-metadata-registry"},{"title":"Extractor","path":"\\/api\\/devkit\\/extractor"},{"title":"ExtractorConfig","path":"\\/api\\/devkit\\/extractor-config"},{"title":"ExtractorConfigOrFunction","path":"\\/api\\/devkit\\/extractor-config-or-function"},{"title":"ExtractorError","path":"\\/api\\/devkit\\/extractor-error"},{"title":"ExtractorFactory","path":"\\/api\\/devkit\\/extractor-factory"},{"title":"ExtractorOptions","path":"\\/api\\/devkit\\/extractor-options"},{"title":"ExtractorReference","path":"\\/api\\/devkit\\/extractor-reference"},{"title":"ExtractorResult","path":"\\/api\\/devkit\\/extractor-result"},{"title":"FileContentsParser","path":"\\/api\\/devkit\\/file-contents-parser"},{"title":"FileParseContext","path":"\\/api\\/devkit\\/file-parse-context"},{"title":"GenerateConfig","path":"\\/api\\/devkit\\/generate-config"},{"title":"glob","path":"\\/api\\/devkit\\/glob"},{"title":"GlobOptions","path":"\\/api\\/devkit\\/glob-options"},{"title":"isMatch","path":"\\/api\\/devkit\\/is-match"},{"title":"JsonParseError","path":"\\/api\\/devkit\\/json-parse-error"},{"title":"JSONSchemaObject","path":"\\/api\\/devkit\\/jsonschema-object"},{"title":"ParsedRegion","path":"\\/api\\/devkit\\/parsed-region"},{"title":"parseJson","path":"\\/api\\/devkit\\/parse-json"},{"title":"parseYaml","path":"\\/api\\/devkit\\/parse-yaml"},{"title":"PathMapping","path":"\\/api\\/devkit\\/path-mapping"},{"title":"Plugin","path":"\\/api\\/devkit\\/plugin"},{"title":"PluginCommands","path":"\\/api\\/devkit\\/plugin-commands"},{"title":"PluginReference","path":"\\/api\\/devkit\\/plugin-reference"},{"title":"PluginRegistryInterface","path":"\\/api\\/devkit\\/plugin-registry-interface"},{"title":"PluginSchemaEntry","path":"\\/api\\/devkit\\/plugin-schema-entry"},{"title":"PluginSchemas","path":"\\/api\\/devkit\\/plugin-schemas"},{"title":"PluginValidatorEntry","path":"\\/api\\/devkit\\/plugin-validator-entry"},{"title":"PluginValidators","path":"\\/api\\/devkit\\/plugin-validators"},{"title":"RegionConfig","path":"\\/api\\/devkit\\/region-config"},{"title":"ResolvedConfig","path":"\\/api\\/devkit\\/resolved-config"},{"title":"ScanConfig","path":"\\/api\\/devkit\\/scan-config"},{"title":"ScannedExample","path":"\\/api\\/devkit\\/scanned-example"},{"title":"tryParseJson","path":"\\/api\\/devkit\\/try-parse-json"},{"title":"tryParseYaml","path":"\\/api\\/devkit\\/try-parse-yaml"},{"title":"TypeGuard","path":"\\/api\\/devkit\\/type-guard"},{"title":"ValidationError","path":"\\/api\\/devkit\\/validation-error"},{"title":"ValidationResult","path":"\\/api\\/devkit\\/validation-result"},{"title":"YamlParseError","path":"\\/api\\/devkit\\/yaml-parse-error"}]},{"title":"@functional-examples\\/documentation","path":"\\/api\\/documentation","children":[{"title":"buildTemplateData","path":"\\/api\\/documentation\\/build-template-data"},{"title":"ConsumptionTracker","path":"\\/api\\/documentation\\/consumption-tracker"},{"title":"createDocumentationPlugin","path":"\\/api\\/documentation\\/create-documentation-plugin"},{"title":"createFileAccessor","path":"\\/api\\/documentation\\/create-file-accessor"},{"title":"createGuideRenderer","path":"\\/api\\/documentation\\/create-guide-renderer"},{"title":"createMarkdownExtractor","path":"\\/api\\/documentation\\/create-markdown-extractor"},{"title":"createProseHelpers","path":"\\/api\\/documentation\\/create-prose-helpers"},{"title":"DocsMetadata","path":"\\/api\\/documentation\\/docs-metadata"},{"title":"DocsMetadataSchemaType","path":"\\/api\\/documentation\\/docs-metadata-schema-type"},{"title":"DocumentationPluginOptions","path":"\\/api\\/documentation\\/documentation-plugin-options"},{"title":"ExampleAccessor","path":"\\/api\\/documentation\\/example-accessor"},{"title":"FileAccessor","path":"\\/api\\/documentation\\/file-accessor"},{"title":"getBuiltinTemplatesDir","path":"\\/api\\/documentation\\/get-builtin-templates-dir"},{"title":"GuideRenderer","path":"\\/api\\/documentation\\/guide-renderer"},{"title":"GuideRendererOptions","path":"\\/api\\/documentation\\/guide-renderer-options"},{"title":"IndexTemplateData","path":"\\/api\\/documentation\\/index-template-data"},{"title":"loadTemplates","path":"\\/api\\/documentation\\/load-templates"},{"title":"parseTemplateName","path":"\\/api\\/documentation\\/parse-template-name"},{"title":"ProseHelpers","path":"\\/api\\/documentation\\/prose-helpers"},{"title":"ProseRenderResult","path":"\\/api\\/documentation\\/prose-render-result"},{"title":"RenderedFile","path":"\\/api\\/documentation\\/rendered-file"},{"title":"renderIndexTemplate","path":"\\/api\\/documentation\\/render-index-template"},{"title":"renderItemTemplate","path":"\\/api\\/documentation\\/render-item-template"},{"title":"renderProseFiles","path":"\\/api\\/documentation\\/render-prose-files"},{"title":"renderTemplate","path":"\\/api\\/documentation\\/render-template"},{"title":"ResolvedDocumentationPluginOptions","path":"\\/api\\/documentation\\/resolved-documentation-plugin-options"},{"title":"substituteVars","path":"\\/api\\/documentation\\/substitute-vars"},{"title":"TemplateData","path":"\\/api\\/documentation\\/template-data"},{"title":"TemplateDescriptor","path":"\\/api\\/documentation\\/template-descriptor"},{"title":"templateHelpers","path":"\\/api\\/documentation\\/template-helpers-variable"},{"title":"TemplateHelpers","path":"\\/api\\/documentation\\/template-helpers-type"}]},{"title":"@functional-examples\\/javascript","path":"\\/api\\/javascript","children":[{"title":"createJavaScriptExtractor","path":"\\/api\\/javascript\\/create-java-script-extractor"},{"title":"createJavaScriptPlugin","path":"\\/api\\/javascript\\/create-java-script-plugin"},{"title":"JAVASCRIPT_EXTENSIONS","path":"\\/api\\/javascript\\/javascript-extensions"},{"title":"JavaScriptPluginOptions","path":"\\/api\\/javascript\\/java-script-plugin-options"}]},{"title":"@functional-examples\\/test","path":"\\/api\\/test","children":[{"title":"CommandStep","path":"\\/api\\/test\\/command-step"},{"title":"createPrettyReporter","path":"\\/api\\/test\\/create-pretty-reporter"},{"title":"createTapReporter","path":"\\/api\\/test\\/create-tap-reporter"},{"title":"createTestPlugin","path":"\\/api\\/test\\/create-test-plugin"},{"title":"DirAssertions","path":"\\/api\\/test\\/dir-assertions"},{"title":"FileAssertions","path":"\\/api\\/test\\/file-assertions"},{"title":"OptionsTestCase","path":"\\/api\\/test\\/options-test-case"},{"title":"Reporter","path":"\\/api\\/test\\/reporter"},{"title":"ReporterConfig","path":"\\/api\\/test\\/reporter-config"},{"title":"ReporterFactory","path":"\\/api\\/test\\/reporter-factory"},{"title":"SnapshotAssertion","path":"\\/api\\/test\\/snapshot-assertion"},{"title":"StepsTestCase","path":"\\/api\\/test\\/steps-test-case"},{"title":"TestAssertions","path":"\\/api\\/test\\/test-assertions"},{"title":"TestCase","path":"\\/api\\/test\\/test-case"},{"title":"TestMetadata","path":"\\/api\\/test\\/test-metadata"},{"title":"TestOptions","path":"\\/api\\/test\\/test-options"},{"title":"TestPluginOptions","path":"\\/api\\/test\\/test-plugin-options"},{"title":"TestResult","path":"\\/api\\/test\\/test-result"},{"title":"TestStep","path":"\\/api\\/test\\/test-step"},{"title":"TestSummary","path":"\\/api\\/test\\/test-summary"}]},{"title":"@functional-examples\\/yaml-manifest","path":"\\/api\\/yaml-manifest","children":[{"title":"createMetaYmlExtractor","path":"\\/api\\/yaml-manifest\\/create-meta-yml-extractor"},{"title":"createYamlManifestExtractor","path":"\\/api\\/yaml-manifest\\/create-yaml-manifest-extractor"},{"title":"createYamlManifestPlugin","path":"\\/api\\/yaml-manifest\\/create-yaml-manifest-plugin"},{"title":"MetaYmlExtractorOptions","path":"\\/api\\/yaml-manifest\\/meta-yml-extractor-options"},{"title":"YamlManifestExtractorOptions","path":"\\/api\\/yaml-manifest\\/yaml-manifest-extractor-options"}]},{"title":"functional-examples","path":"\\/api\\/functional-examples","children":[{"title":"BaseMetadata","path":"\\/api\\/functional-examples\\/base-metadata"},{"title":"Config","path":"\\/api\\/functional-examples\\/config"},{"title":"ConfigValidationError","path":"\\/api\\/functional-examples\\/config-validation-error"},{"title":"createInitialContext","path":"\\/api\\/functional-examples\\/create-initial-context"},{"title":"Example","path":"\\/api\\/functional-examples\\/example"},{"title":"ExampleFile","path":"\\/api\\/functional-examples\\/example-file"},{"title":"ExampleMetadata","path":"\\/api\\/functional-examples\\/example-metadata"},{"title":"ExampleMetadataRegistry","path":"\\/api\\/functional-examples\\/example-metadata-registry"},{"title":"Extractor","path":"\\/api\\/functional-examples\\/extractor"},{"title":"ExtractorConfig","path":"\\/api\\/functional-examples\\/extractor-config"},{"title":"ExtractorConfigOrFunction","path":"\\/api\\/functional-examples\\/extractor-config-or-function"},{"title":"ExtractorError","path":"\\/api\\/functional-examples\\/extractor-error"},{"title":"ExtractorFactory","path":"\\/api\\/functional-examples\\/extractor-factory"},{"title":"ExtractorOptions","path":"\\/api\\/functional-examples\\/extractor-options"},{"title":"ExtractorReference","path":"\\/api\\/functional-examples\\/extractor-reference"},{"title":"ExtractorResult","path":"\\/api\\/functional-examples\\/extractor-result"},{"title":"FileConflict","path":"\\/api\\/functional-examples\\/file-conflict"},{"title":"FileContentsParser","path":"\\/api\\/functional-examples\\/file-contents-parser"},{"title":"FileParseContext","path":"\\/api\\/functional-examples\\/file-parse-context"},{"title":"findConfigFile","path":"\\/api\\/functional-examples\\/find-config-file"},{"title":"GenerateConfig","path":"\\/api\\/functional-examples\\/generate-config"},{"title":"generateTypes","path":"\\/api\\/functional-examples\\/generate-types"},{"title":"GenerateTypesOptions","path":"\\/api\\/functional-examples\\/generate-types-options"},{"title":"JSONSchema","path":"\\/api\\/functional-examples\\/jsonschema"},{"title":"JSONSchemaObject","path":"\\/api\\/functional-examples\\/jsonschema-object"},{"title":"loadConfig","path":"\\/api\\/functional-examples\\/load-config"},{"title":"mergeConfigs","path":"\\/api\\/functional-examples\\/merge-configs"},{"title":"mergeConfigSchema","path":"\\/api\\/functional-examples\\/merge-config-schema"},{"title":"MergeConfigSchemaOptions","path":"\\/api\\/functional-examples\\/merge-config-schema-options"},{"title":"mergeMetadataSchemas","path":"\\/api\\/functional-examples\\/merge-metadata-schemas"},{"title":"MergeMetadataSchemasOptions","path":"\\/api\\/functional-examples\\/merge-metadata-schemas-options"},{"title":"MetadataValidationContext","path":"\\/api\\/functional-examples\\/metadata-validation-context"},{"title":"MetadataValidationError","path":"\\/api\\/functional-examples\\/metadata-validation-error"},{"title":"MetadataValidationResult","path":"\\/api\\/functional-examples\\/metadata-validation-result"},{"title":"OptionsValidationError","path":"\\/api\\/functional-examples\\/options-validation-error"},{"title":"OptionsValidationResult","path":"\\/api\\/functional-examples\\/options-validation-result"},{"title":"ParsedRegion","path":"\\/api\\/functional-examples\\/parsed-region"},{"title":"PathMapping","path":"\\/api\\/functional-examples\\/path-mapping"},{"title":"Plugin","path":"\\/api\\/functional-examples\\/plugin"},{"title":"PluginCommands","path":"\\/api\\/functional-examples\\/plugin-commands"},{"title":"PluginOptionsValidationContext","path":"\\/api\\/functional-examples\\/plugin-options-validation-context"},{"title":"PluginRegistry","path":"\\/api\\/functional-examples\\/plugin-registry"},{"title":"PluginSchemaEntry","path":"\\/api\\/functional-examples\\/plugin-schema-entry"},{"title":"PluginSchemas","path":"\\/api\\/functional-examples\\/plugin-schemas"},{"title":"PluginValidator","path":"\\/api\\/functional-examples\\/plugin-validator"},{"title":"PluginValidators","path":"\\/api\\/functional-examples\\/plugin-validators"},{"title":"readExampleFile","path":"\\/api\\/functional-examples\\/read-example-file"},{"title":"readExampleFiles","path":"\\/api\\/functional-examples\\/read-example-files"},{"title":"resolveConfig","path":"\\/api\\/functional-examples\\/resolve-config"},{"title":"ResolvedConfig","path":"\\/api\\/functional-examples\\/resolved-config"},{"title":"runParsePipeline","path":"\\/api\\/functional-examples\\/run-parse-pipeline"},{"title":"scan","path":"\\/api\\/functional-examples\\/scan"},{"title":"ScanConfig","path":"\\/api\\/functional-examples\\/scan-config"},{"title":"scanExamples","path":"\\/api\\/functional-examples\\/scan-examples"},{"title":"ScannedExample","path":"\\/api\\/functional-examples\\/scanned-example"},{"title":"ScanOptions","path":"\\/api\\/functional-examples\\/scan-options"},{"title":"ScanResult","path":"\\/api\\/functional-examples\\/scan-result"},{"title":"validateConfig","path":"\\/api\\/functional-examples\\/validate-config"},{"title":"validateExampleMetadata","path":"\\/api\\/functional-examples\\/validate-example-metadata"},{"title":"validatePluginOptions","path":"\\/api\\/functional-examples\\/validate-plugin-options"},{"title":"ValidationError","path":"\\/api\\/functional-examples\\/validation-error"},{"title":"ValidationResult","path":"\\/api\\/functional-examples\\/validation-result"}]},{"title":"rehype-typedoc","path":"\\/api\\/rehype-typedoc","children":[{"title":"buildSymbolsFromDocuments","path":"\\/api\\/rehype-typedoc\\/build-symbols-from-documents"},{"title":"default","path":"\\/api\\/rehype-typedoc\\/default"},{"title":"rehypeTypedoc","path":"\\/api\\/rehype-typedoc\\/rehype-typedoc"},{"title":"rehypeTypedocCodeBlocks","path":"\\/api\\/rehype-typedoc\\/rehype-typedoc-code-blocks"},{"title":"RehypeTypedocOptions","path":"\\/api\\/rehype-typedoc\\/rehype-typedoc-options"},{"title":"RehypeTypedocSymbol","path":"\\/api\\/rehype-typedoc\\/rehype-typedoc-symbol"},{"title":"remarkCodeProps","path":"\\/api\\/rehype-typedoc\\/remark-code-props"},{"title":"RemarkCodePropsOptions","path":"\\/api\\/rehype-typedoc\\/remark-code-props-options"},{"title":"SymbolEntry","path":"\\/api\\/rehype-typedoc\\/symbol-entry"},{"title":"TypeDocDocument","path":"\\/api\\/rehype-typedoc\\/type-doc-document"}]},{"title":"vike-plugin-typedoc","path":"\\/api\\/vike-plugin-typedoc","children":[{"title":"ApiComment","path":"\\/api\\/vike-plugin-typedoc\\/api-comment"},{"title":"ApiDocs","path":"\\/api\\/vike-plugin-typedoc\\/api-docs"},{"title":"ApiExport","path":"\\/api\\/vike-plugin-typedoc\\/api-export"},{"title":"ApiExportKind","path":"\\/api\\/vike-plugin-typedoc\\/api-export-kind"},{"title":"ApiMethod","path":"\\/api\\/vike-plugin-typedoc\\/api-method"},{"title":"ApiModule","path":"\\/api\\/vike-plugin-typedoc\\/api-module"},{"title":"ApiPackage","path":"\\/api\\/vike-plugin-typedoc\\/api-package"},{"title":"ApiParameter","path":"\\/api\\/vike-plugin-typedoc\\/api-parameter"},{"title":"ApiProperty","path":"\\/api\\/vike-plugin-typedoc\\/api-property"},{"title":"ApiTypeParameter","path":"\\/api\\/vike-plugin-typedoc\\/api-type-parameter"},{"title":"buildApiNavigation","path":"\\/api\\/vike-plugin-typedoc\\/build-api-navigation"},{"title":"buildMarkdownProcessor","path":"\\/api\\/vike-plugin-typedoc\\/build-markdown-processor"},{"title":"BundledTheme","path":"\\/api\\/vike-plugin-typedoc\\/bundled-theme"},{"title":"codeToHtml","path":"\\/api\\/vike-plugin-typedoc\\/code-to-html"},{"title":"combineApiDocs","path":"\\/api\\/vike-plugin-typedoc\\/combine-api-docs"},{"title":"createTypedocContext","path":"\\/api\\/vike-plugin-typedoc\\/create-typedoc-context"},{"title":"DeserializeResult","path":"\\/api\\/vike-plugin-typedoc\\/deserialize-result"},{"title":"deserializeTypedocJson","path":"\\/api\\/vike-plugin-typedoc\\/deserialize-typedoc-json"},{"title":"LinkedApiExport","path":"\\/api\\/vike-plugin-typedoc\\/linked-api-export"},{"title":"LinkedMethod","path":"\\/api\\/vike-plugin-typedoc\\/linked-method"},{"title":"LinkedParameter","path":"\\/api\\/vike-plugin-typedoc\\/linked-parameter"},{"title":"LinkedProperty","path":"\\/api\\/vike-plugin-typedoc\\/linked-property"},{"title":"LinkedTypeParameter","path":"\\/api\\/vike-plugin-typedoc\\/linked-type-parameter"},{"title":"NavigationItem","path":"\\/api\\/vike-plugin-typedoc\\/navigation-item"},{"title":"RenderedExportMarkdown","path":"\\/api\\/vike-plugin-typedoc\\/rendered-export-markdown"},{"title":"renderExportMarkdown","path":"\\/api\\/vike-plugin-typedoc\\/render-export-markdown"},{"title":"renderSignatureToHtml","path":"\\/api\\/vike-plugin-typedoc\\/render-signature-to-html"},{"title":"renderTypeToHtml","path":"\\/api\\/vike-plugin-typedoc\\/render-type-to-html"},{"title":"slugify","path":"\\/api\\/vike-plugin-typedoc\\/slugify"},{"title":"tokenize","path":"\\/api\\/vike-plugin-typedoc\\/tokenize"},{"title":"TypedocContext","path":"\\/api\\/vike-plugin-typedoc\\/typedoc-context"},{"title":"TypedocContextOptions","path":"\\/api\\/vike-plugin-typedoc\\/typedoc-context-options"},{"title":"TypeRange","path":"\\/api\\/vike-plugin-typedoc\\/type-range"},{"title":"TypeStringResult","path":"\\/api\\/vike-plugin-typedoc\\/type-string-result"},{"title":"typeToStringWithRanges","path":"\\/api\\/vike-plugin-typedoc\\/type-to-string-with-ranges"}]}]}]}</script>
+        <script src="/functional-examples/assets/entries/entry-client-routing.BDfSRwg5.js" type="module" async></script>
+        <link rel="modulepreload" href="/functional-examples/assets/entries/pages_docs_-slug.Ch67rVbK.js" as="script" type="text/javascript">
+        <link rel="modulepreload" href="/functional-examples/assets/chunks/chunk-Dm8gyi7F.js" as="script" type="text/javascript">
+        <link rel="modulepreload" href="/functional-examples/assets/chunks/chunk-C5kJ3KQP.js" as="script" type="text/javascript">
+        <link rel="modulepreload" href="/functional-examples/assets/chunks/chunk-R9sx89ha.js" as="script" type="text/javascript">
+        <link rel="modulepreload" href="/functional-examples/assets/chunks/chunk-CFWUosRB.js" as="script" type="text/javascript">
+      </body>
+    </html>
