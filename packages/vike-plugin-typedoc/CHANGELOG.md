@@ -1,3 +1,17 @@
+## 0.3.0 (2026-04-09)
+
+### 🚀 Features
+
+- **vike-plugin-typedoc:** thread typeRefs through loadTypedocContextInternal to context ([cd5cb8f](https://github.com/AgentEnder/functional-examples/commit/cd5cb8f))
+
+### 🩹 Fixes
+
+- **vike-plugin-typedoc:** remove non-null assertions in context tests ([4d56eb4](https://github.com/AgentEnder/functional-examples/commit/4d56eb4))
+
+### ❤️ Thank You
+
+- Craigory Coppola @AgentEnder
+
 ## 0.2.0 (2026-03-25)
 
 ### 🚀 Features

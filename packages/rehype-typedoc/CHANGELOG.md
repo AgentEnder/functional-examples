@@ -1,3 +1,14 @@
+## 0.3.0 (2026-04-09)
+
+### 🩹 Fixes
+
+- **rehype-typedoc:** disambiguate colliding slugs within a package ([#70](https://github.com/AgentEnder/functional-examples/issues/70))
+
+### ❤️ Thank You
+
+- Claude
+- Craigory Coppola @AgentEnder
+
 ## 0.2.0 (2026-03-25)
 
 ### 🚀 Features
