@@ -36,9 +36,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return urlPathname === href || urlPathname.startsWith(href + '/');
   };
 
+  const previewPath = import.meta.env.PREVIEW_PATH as string;
+
   return (
     <div className="min-h-screen flex flex-col text-bp-line bp-grid">
       <BlueprintBackground />
+
+      {previewPath && (
+        <div className="bg-amber-900/80 text-amber-200 text-center text-xs py-1.5 px-4 border-b border-amber-700/50">
+          Preview deployment for <strong>{previewPath}</strong>{' '}
+          &mdash;{' '}
+          <a
+            href="/functional-examples"
+            className="underline hover:text-amber-100"
+          >
+            Go to production docs
+          </a>
+        </div>
+      )}
 
       {/* Header — sticky so it participates in flow but stays visible */}
       <header className="sticky top-0 z-50 h-16 shrink-0 bp-glass border-b border-bp-line-dim/20">
