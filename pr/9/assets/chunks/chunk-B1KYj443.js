@@ -1,4 +1,4 @@
-import{j as e}from"./chunk-DVoWkvXL.js";function o({children:t,label:d="SPEC",revision:i,footer:n,className:l="",style:p,onClick:r}){const a=!!r;return e.jsxs("div",{className:`
+import{j as e}from"./chunk-CYVrZpTC.js";function o({children:t,label:d="SPEC",revision:i,footer:n,className:l="",style:p,onClick:r}){const a=!!r;return e.jsxs("div",{className:`
         bg-bp-paper-light border border-bp-line-dim/30 rounded-sm
         transition-all duration-200
         hover:border-bp-line-dim/60 hover:-translate-y-0.5
