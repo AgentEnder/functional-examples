@@ -76,6 +76,34 @@ describe('createGuideRenderer', () => {
       expect(result).toBe('```typescript title="main.ts#config-setup"\nconst cfg = {};\n```');
     });
 
+    it('should expose example metadata fields via proxy', () => {
+      const examples = [
+        makeExample({
+          metadata: {
+            id: 'basic-usage',
+            title: 'Basic Usage',
+            category: 'getting-started',
+          },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '<%= example("basic-usage").metadata.category %>'
+      );
+
+      expect(result).toBe('getting-started');
+    });
+
+    it('should throw for undefined metadata properties in guide context', () => {
+      const examples = [makeExample()];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render('<%= example("basic-usage").metadata.nonexistent %>')
+      ).toThrow("example('basic-usage').metadata.nonexistent is not defined");
+    });
+
     it('should expose example metadata', () => {
       const examples = [makeExample()];
       const renderer = createGuideRenderer(examples);

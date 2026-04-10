@@ -6,6 +6,7 @@ import {
   createFileAccessor,
   templateHelpers,
 } from './helpers.js';
+import { createMetadataProxy } from './metadata-proxy.js';
 
 /** Helpers injected into prose Eta templates as top-level variables. */
 export interface ProseHelpers {
@@ -15,6 +16,11 @@ export interface ProseHelpers {
   region: (regionId: string) => string;
   /** All example files (read-only). */
   files: ExampleFile[];
+  /**
+   * Strict-access metadata proxy.
+   * Accessing an undefined property throws a descriptive error.
+   */
+  metadata: Record<string, unknown>;
   /** Standard template helpers (langFromPath, slugify, etc.). */
   helpers: typeof templateHelpers;
 }
@@ -27,7 +33,8 @@ export interface ProseHelpers {
  */
 export function createProseHelpers(
   files: ExampleFile[],
-  tracker: ConsumptionTracker
+  tracker: ConsumptionTracker,
+  metadata: Record<string, unknown> = {}
 ): ProseHelpers {
   return {
     file(relativePath: string): FileAccessor {
@@ -55,6 +62,7 @@ export function createProseHelpers(
     },
 
     files,
+    metadata: createMetadataProxy(metadata),
     helpers: templateHelpers,
   };
 }

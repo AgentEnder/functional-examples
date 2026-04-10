@@ -191,6 +191,37 @@ describe('createProseHelpers', () => {
     });
   });
 
+  describe('metadata', () => {
+    it('should expose metadata values', () => {
+      const tracker = new ConsumptionTracker();
+      const helpers = createProseHelpers([], tracker, {
+        category: 'guides',
+        difficulty: 'beginner',
+      });
+
+      expect(helpers.metadata.category).toBe('guides');
+      expect(helpers.metadata.difficulty).toBe('beginner');
+    });
+
+    it('should throw for access to undefined metadata properties', () => {
+      const tracker = new ConsumptionTracker();
+      const helpers = createProseHelpers([], tracker, { category: 'guides' });
+
+      expect(() => helpers.metadata.nonexistent).toThrow(
+        'metadata.nonexistent is not defined'
+      );
+    });
+
+    it('should default to empty metadata when not provided', () => {
+      const tracker = new ConsumptionTracker();
+      const helpers = createProseHelpers([], tracker);
+
+      expect(() => helpers.metadata.anything).toThrow(
+        'metadata.anything is not defined'
+      );
+    });
+  });
+
   describe('passthrough properties', () => {
     it('should expose the files array', () => {
       const files = [makeFile('a.ts', 'code')];

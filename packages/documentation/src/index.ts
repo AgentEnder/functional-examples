@@ -86,5 +86,6 @@ export type {
 } from './templates/guide-renderer.js';
 export { createFileAccessor, templateHelpers } from './templates/helpers.js';
 export type { FileAccessor, TemplateHelpers } from './templates/helpers.js';
+export { createMetadataProxy } from './templates/metadata-proxy.js';
 export { createProseHelpers } from './templates/prose-helpers.js';
 export type { ProseHelpers } from './templates/prose-helpers.js';

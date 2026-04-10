@@ -11,6 +11,7 @@ import {
   loadTemplates,
   renderItemTemplate,
   renderIndexTemplate,
+  renderProseFiles,
   getBuiltinTemplatesDir,
 } from './engine.js';
 
@@ -473,5 +474,92 @@ describe('renderIndexTemplate', () => {
     expect(result.content).toContain('# Examples');
     expect(result.content).toContain('[Example A](./example-a.mdoc)');
     expect(result.content).toContain('{% #examples %}');
+  });
+});
+
+describe('renderProseFiles — metadata tokens', () => {
+  it('should expand <%= metadata.field %> in prose', () => {
+    const files = [
+      new ExampleFile({
+        absolutePath: '/tmp/test/README.md',
+        relativePath: 'README.md',
+        raw: 'Category: <%= metadata.category %>',
+        parsed: 'Category: <%= metadata.category %>',
+      }),
+    ];
+    const metadata = { category: 'guides', id: 'test' };
+
+    const result = renderProseFiles(files, metadata);
+
+    expect(result.renderedProse[0]).toBe('Category: guides');
+  });
+
+  it('should expand nested metadata properties', () => {
+    const files = [
+      new ExampleFile({
+        absolutePath: '/tmp/test/README.md',
+        relativePath: 'README.md',
+        raw: 'Desc: <%= metadata.docs.description %>',
+        parsed: 'Desc: <%= metadata.docs.description %>',
+      }),
+    ];
+    const metadata = { docs: { description: 'A detailed guide' } };
+
+    const result = renderProseFiles(files, metadata);
+
+    expect(result.renderedProse[0]).toBe('Desc: A detailed guide');
+  });
+
+  it('should throw when accessing undefined metadata in prose', () => {
+    const files = [
+      new ExampleFile({
+        absolutePath: '/tmp/test/README.md',
+        relativePath: 'README.md',
+        raw: '<%= metadata.nonexistent %>',
+        parsed: '<%= metadata.nonexistent %>',
+      }),
+    ];
+
+    expect(() => renderProseFiles(files, { id: 'test' })).toThrow(
+      'metadata.nonexistent is not defined'
+    );
+  });
+
+  it('should throw for undefined nested metadata properties', () => {
+    const files = [
+      new ExampleFile({
+        absolutePath: '/tmp/test/README.md',
+        relativePath: 'README.md',
+        raw: '<%= metadata.docs.typo %>',
+        parsed: '<%= metadata.docs.typo %>',
+      }),
+    ];
+
+    expect(() =>
+      renderProseFiles(files, { docs: { description: 'valid' } })
+    ).toThrow('metadata.docs.typo is not defined');
+  });
+
+  it('should allow mixing metadata with file/region helpers', () => {
+    const files = [
+      new ExampleFile({
+        absolutePath: '/tmp/test/README.md',
+        relativePath: 'README.md',
+        raw: '# <%= metadata.title %>\n\n<%= file("index.ts") %>',
+        parsed: '# <%= metadata.title %>\n\n<%= file("index.ts") %>',
+      }),
+      new ExampleFile({
+        absolutePath: '/tmp/test/index.ts',
+        relativePath: 'index.ts',
+        raw: 'console.log("hi");',
+        parsed: 'console.log("hi");',
+      }),
+    ];
+    const metadata = { title: 'My Example' };
+
+    const result = renderProseFiles(files, metadata);
+
+    expect(result.renderedProse[0]).toContain('# My Example');
+    expect(result.renderedProse[0]).toContain('```typescript');
   });
 });
