@@ -267,7 +267,7 @@ export function buildDocsNavigation(
     } else {
       const parentPath = segments.slice(0, -1).join('/');
       const parent = getOrCreateNode(parentPath);
-      parent.children!.push(node);
+      (parent.children ??= []).push(node);
     }
 
     return node;
@@ -287,7 +287,7 @@ export function buildDocsNavigation(
     }
 
     const container = getOrCreateNode(dirKey);
-    container.children!.push({
+    (container.children ??= []).push({
       title: doc.title,
       path: `/docs/${doc.slug}`,
       order: doc.order,
