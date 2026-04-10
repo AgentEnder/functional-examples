@@ -76,6 +76,117 @@ describe('createGuideRenderer', () => {
       expect(result).toBe('```typescript title="main.ts#config-setup"\nconst cfg = {};\n```');
     });
 
+    it('should expose example metadata fields via proxy', () => {
+      const examples = [
+        makeExample({
+          metadata: {
+            id: 'basic-usage',
+            title: 'Basic Usage',
+            category: 'getting-started',
+          },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '<%= example("basic-usage").metadata.category %>'
+      );
+
+      expect(result).toBe('getting-started');
+    });
+
+    it('should throw for undefined metadata properties in guide context', () => {
+      const examples = [makeExample()];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render('<%= example("basic-usage").metadata.nonexistent %>')
+      ).toThrow("example('basic-usage').metadata.nonexistent is not defined");
+    });
+
+    it('should include available keys in metadata error message', () => {
+      const examples = [
+        makeExample({
+          metadata: { id: 'basic-usage', title: 'Basic Usage', category: 'guides' },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render('<%= example("basic-usage").metadata.typo %>')
+      ).toThrow('Available properties: id, title, category');
+    });
+
+    it('should access nested metadata via proxy in guide context', () => {
+      const examples = [
+        makeExample({
+          metadata: {
+            id: 'basic-usage',
+            title: 'Basic Usage',
+            docs: { hunks: { setup: 'Initialize config' } },
+          },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '<%= example("basic-usage").metadata.docs.hunks.setup %>'
+      );
+
+      expect(result).toBe('Initialize config');
+    });
+
+    it('should throw for undefined nested metadata in guide context', () => {
+      const examples = [
+        makeExample({
+          metadata: { id: 'basic-usage', title: 'Basic Usage', docs: { skip: false } },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      expect(() =>
+        renderer.render('<%= example("basic-usage").metadata.docs.typo %>')
+      ).toThrow("example('basic-usage').metadata.docs.typo is not defined");
+    });
+
+    it('should access metadata from different examples independently', () => {
+      const examples = [
+        makeExample({
+          metadata: { id: 'basic-usage', title: 'Basic Usage', level: 'beginner' },
+        }),
+        makeExample({
+          id: 'advanced',
+          title: 'Advanced',
+          metadata: { id: 'advanced', title: 'Advanced', level: 'expert' },
+          files: [makeFile('plugin.ts', 'export default {};')],
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '<%= example("basic-usage").metadata.level %> / <%= example("advanced").metadata.level %>'
+      );
+
+      expect(result).toBe('beginner / expert');
+    });
+
+    it('should mix metadata access with file helpers in the same template', () => {
+      const examples = [
+        makeExample({
+          metadata: { id: 'basic-usage', title: 'Basic Usage', language: 'TypeScript' },
+        }),
+      ];
+      const renderer = createGuideRenderer(examples);
+
+      const result = renderer.render(
+        '## <%= example("basic-usage").metadata.language %>\n\n<%= example("basic-usage").file("scan.ts") %>'
+      );
+
+      expect(result).toContain('## TypeScript');
+      expect(result).toContain('```typescript');
+      expect(result).toContain('const config = loadConfig();');
+    });
+
     it('should expose example metadata', () => {
       const examples = [makeExample()];
       const renderer = createGuideRenderer(examples);

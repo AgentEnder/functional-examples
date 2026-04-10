@@ -231,38 +231,77 @@ export async function hydrateGuides(
   return hydrated;
 }
 
-/** Build sidebar navigation from scanned docs and category metadata */
+/**
+ * Build sidebar navigation from scanned docs and category metadata.
+ *
+ * Supports arbitrarily nested directories: files in `docs/plugins/documentation/`
+ * appear as a sub-group within the "Plugins" section.  Each level can provide a
+ * `category.yml` for its title and order.
+ */
 export function buildDocsNavigation(
   docs: DocPage[],
   categories: Map<string, CategoryMeta>
 ): NavigationItem[] {
-  const sections = new Map<string, NavigationItem>();
+  // Map from directory path (relative to docs/) to its NavigationItem node.
+  const nodesByPath = new Map<string, NavigationItem>();
+  const topLevel: NavigationItem[] = [];
+
+  /** Lazily create a NavigationItem for a directory, attaching it to its parent. */
+  function getOrCreateNode(dirPath: string): NavigationItem {
+    const existing = nodesByPath.get(dirPath);
+    if (existing) return existing;
+
+    const category = categories.get(dirPath);
+    const segments = dirPath.split('/');
+    const leaf = segments[segments.length - 1];
+
+    const node: NavigationItem = {
+      title: category?.title ?? titleCase(leaf),
+      order: category?.order ?? 999,
+      children: [],
+    };
+    nodesByPath.set(dirPath, node);
+
+    if (segments.length === 1) {
+      topLevel.push(node);
+    } else {
+      const parentPath = segments.slice(0, -1).join('/');
+      const parent = getOrCreateNode(parentPath);
+      (parent.children ??= []).push(node);
+    }
+
+    return node;
+  }
 
   for (const doc of docs) {
     const dirKey = dirname(doc.slug).replace(/\\/g, '/');
 
-    if (!sections.has(doc.section)) {
-      const category = categories.get(dirKey);
-      sections.set(doc.section, {
-        title: doc.section,
-        order: category?.order ?? 999,
-        children: [],
+    if (dirKey === '.') {
+      // Root-level docs become top-level leaf items
+      topLevel.push({
+        title: doc.title,
+        path: `/docs/${doc.slug}`,
+        order: doc.order,
       });
+      continue;
     }
-    const section = sections.get(doc.section);
-    section?.children?.push({
+
+    const container = getOrCreateNode(dirKey);
+    (container.children ??= []).push({
       title: doc.title,
       path: `/docs/${doc.slug}`,
       order: doc.order,
     });
   }
 
-  // Sort children within each section
-  for (const section of sections.values()) {
-    section.children?.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+  // Recursively sort every level
+  function sortItems(items: NavigationItem[]) {
+    items.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    for (const item of items) {
+      if (item.children) sortItems(item.children);
+    }
   }
 
-  return Array.from(sections.values()).sort(
-    (a, b) => (a.order ?? 999) - (b.order ?? 999)
-  );
+  sortItems(topLevel);
+  return topLevel;
 }

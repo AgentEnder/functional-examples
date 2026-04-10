@@ -5,7 +5,7 @@ nav:
   order: 1
 ---
 
-# JavaScript Plugin
+# JavaScript plugin
 
 The JavaScript plugin (`@functional-examples/javascript`) extracts examples from TypeScript and JavaScript source files. It supports YAML frontmatter in comment blocks for metadata and region markers for referencing specific code sections.
 
@@ -15,11 +15,11 @@ The JavaScript plugin (`@functional-examples/javascript`) extracts examples from
 npm install @functional-examples/javascript
 ```
 
-## Supported Extensions
+## Supported extensions
 
 `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, `.cts`
 
-## Frontmatter Extraction
+## Frontmatter extraction
 
 Embed YAML metadata in a comment block at the top of any supported file:
 
@@ -27,7 +27,7 @@ Embed YAML metadata in a comment block at the top of any supported file:
 
 The frontmatter block is delimited by `// ---` markers. All fields are extracted as metadata — `id` and `title` are required, everything else is optional.
 
-### Frontmatter Fields
+### Frontmatter fields
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -37,7 +37,7 @@ The frontmatter block is delimited by `// ---` markers. All fields are extracted
 | `tags` | No | Array of category tags |
 | Any custom field | No | Extracted as-is into metadata |
 
-## Region Markers
+## Region markers
 
 Mark code sections with `#region` / `#endregion` (or custom tags) for selective extraction:
 
@@ -50,7 +50,7 @@ console.log(result);
 
 Regions become **hunks** on the example's files. Documentation can reference specific regions via `<\%= example('javascript-plugin').region('usage') \%>` to include only that section.
 
-### Custom Region Tags
+### Custom region tags
 
 Override the default markers via plugin options:
 
@@ -62,7 +62,7 @@ createJavaScriptPlugin({
 
 This is useful when standard `#region` comments should remain visible in output while custom markers are stripped by the parser.
 
-## Package.json Metadata Mode
+## Package.json metadata mode
 
 For multi-file examples, the plugin reads metadata from `package.json`:
 
@@ -78,7 +78,7 @@ The plugin traces entry points (`main`, `module`, `exports`) to discover which f
 
 <%= example('javascript-plugin').file('functional-examples.config.ts') %>
 
-### Plugin Options
+### Plugin options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -87,7 +87,7 @@ The plugin traces entry points (`main`, `module`, `exports`) to discover which f
 | `skipExtraction` | `boolean` | `false` | Disable example extraction (parser-only mode) |
 | `regionTag` | `{ start, end }` | `{ start: '#region', end: '#endregion' }` | Custom region tag names |
 
-### Parser-Only Mode
+### Parser-only mode
 
 Set `skipExtraction: true` to use the JavaScript plugin only for its parsers (frontmatter + regions) without extracting examples. This is useful when another plugin handles extraction:
 
@@ -98,7 +98,7 @@ createJavaScriptPlugin({
 })
 ```
 
-## When to Use
+## When to use
 
 - Your examples are TypeScript or JavaScript (single or multi-file)
 - You want metadata co-located with the code

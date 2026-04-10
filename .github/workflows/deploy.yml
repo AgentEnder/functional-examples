@@ -72,7 +72,7 @@ jobs:
           npm install -g npm@latest
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

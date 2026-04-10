@@ -20,6 +20,7 @@ import {
   createFileAccessor,
   templateHelpers,
 } from './helpers.js';
+import { createMetadataProxy } from './metadata-proxy.js';
 
 /**
  * A renderer that expands example references in guide markdown.
@@ -122,7 +123,10 @@ export function createGuideRenderer(
       },
 
       files: ex.files,
-      metadata: ex.metadata as Record<string, unknown>,
+      metadata: createMetadataProxy(
+        ex.metadata as Record<string, unknown>,
+        `example('${id}').metadata`
+      ),
       title: ex.title,
       description: ex.description,
     };

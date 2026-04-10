@@ -9,7 +9,7 @@ nav:
 
 Code examples rot. They drift out of sync with the APIs they document, break silently, and nobody notices until a user files a bug. functional-examples exists to fix this.
 
-## The Problem
+## The problem
 
 Most documentation workflows treat examples as second-class content:
 
@@ -19,7 +19,7 @@ Most documentation workflows treat examples as second-class content:
 
 The common thread: examples live *outside* the normal development workflow, so they don't benefit from the tools that keep production code healthy.
 
-## The Solution
+## The solution
 
 functional-examples treats code examples as **first-class project artifacts** — scannable, testable, and validatable, just like the rest of your codebase.
 
@@ -30,25 +30,25 @@ The core idea is simple:
 3. **A scanner extracts structure** — plugins walk your project tree and produce a uniform `Example` shape, regardless of the source format.
 4. **Tools operate on the uniform shape** — generate docs, run tests, validate metadata, build galleries — all from the same scan result.
 
-## Design Principles
+## Design principles
 
-### Language-Agnostic Core
+### Language-agnostic core
 
 The scanner and plugin system are format-neutral. The JavaScript plugin handles `.ts`/`.js` frontmatter, the YAML manifest plugin handles `meta.yml` directories, and you can write custom extractors for TOML, JSON, or any other format. The core never assumes a specific language.
 
-### Plugins Over Configuration
+### Plugins over configuration
 
 Rather than a single monolithic config, functionality is composed from plugins. Each plugin can provide extractors, validators, schemas, commands, and more. You only install what you need.
 
-### Examples Are Testable
+### Examples are testable
 
 Because examples are real files, you can run them. The `@functional-examples/test` plugin lets you declare assertions in `package.json` — expected exit codes, stdout patterns — and run them in CI alongside your unit tests.
 
-### Single Source of Truth
+### Single source of truth
 
 Instead of maintaining examples in both source code and documentation, you write them once. The documentation plugin can pull live code into guides using template references like `<\%= example('basic-usage').file('scan.ts') \%>`, so docs always reflect the actual code.
 
-## When to Use functional-examples
+## When to use functional-examples
 
 functional-examples is a good fit when:
 

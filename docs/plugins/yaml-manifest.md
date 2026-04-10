@@ -5,7 +5,7 @@ nav:
   order: 2
 ---
 
-# YAML Manifest Plugin
+# YAML manifest plugin
 
 The YAML manifest plugin (`@functional-examples/yaml-manifest`) discovers examples via `meta.yml` files in directories. Each directory containing a `meta.yml` becomes an example, with all sibling files automatically included.
 
@@ -15,14 +15,14 @@ The YAML manifest plugin (`@functional-examples/yaml-manifest`) discovers exampl
 npm install @functional-examples/yaml-manifest
 ```
 
-## How It Works
+## How it works
 
 1. The extractor scans for directories containing a `meta.yml` file
 2. It parses the YAML metadata (id, title, description, etc.)
 3. All files in the directory (and subdirectories) become part of the example
 4. Files can be filtered via the `include` field in `meta.yml`
 
-## meta.yml Field Reference
+## meta.yml field reference
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -38,7 +38,7 @@ npm install @functional-examples/yaml-manifest
 
 <%= example('yaml-manifest').file('examples/basic-usage/meta.yml') %>
 
-## Directory-Based Discovery
+## Directory-based discovery
 
 The plugin treats each directory with a `meta.yml` as a self-contained example:
 
@@ -53,7 +53,7 @@ examples/
 
 All files in the directory are collected unless filtered by `include` patterns. Common exclusions (node_modules, .git) are applied automatically.
 
-## Multi-File Example Patterns
+## Multi-file example patterns
 
 <%= example('yaml-manifest').file('examples/multi-file/main.ts') %>
 
@@ -85,7 +85,7 @@ export default {
 };
 ```
 
-## When to Choose YAML Manifest vs JavaScript Plugin
+## When to choose YAML manifest vs JavaScript plugin
 
 | Scenario | Recommended Plugin |
 |----------|-------------------|

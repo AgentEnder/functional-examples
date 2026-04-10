@@ -5,9 +5,9 @@ nav:
   order: 1
 ---
 
-# Getting Started
+# Getting started
 
-functional-examples helps you manage, scan, and validate code examples embedded in your projects. This guide walks you through installation, configuration, and running your first scan.
+functional-examples helps you manage, scan, and validate code examples embedded in your projects. The steps below cover installation, configuration, and running your first scan.
 
 ## Installation
 
@@ -23,7 +23,7 @@ Or with pnpm:
 pnpm add functional-examples @functional-examples/javascript
 ```
 
-## Project Configuration
+## Project configuration
 
 Create a `functional-examples.config.ts` at your project root. This tells the scanner which plugins to use and where to find examples.
 
@@ -31,11 +31,11 @@ Here's a minimal configuration that uses the JavaScript plugin to scan an `examp
 
 <%= example('getting-started').region('config') %>
 
-## Writing Your First Example
+## Writing your first example
 
 The JavaScript plugin supports two ways to define examples:
 
-### Single-File with Frontmatter
+### Single-file with frontmatter
 
 For standalone files, embed YAML frontmatter in a comment block. Create `examples/hello.ts`:
 
@@ -43,7 +43,7 @@ For standalone files, embed YAML frontmatter in a comment block. Create `example
 
 The frontmatter provides metadata — an `id`, `title`, and optional `description` — that the scanner extracts alongside the code.
 
-### Multi-File with package.json
+### Multi-file with package.json
 
 For examples that span multiple files, use a `package.json` as the metadata source. The JavaScript plugin reads the `name` field for the id, `description` and `keywords` from standard fields, and any custom metadata from a `functional-examples` key:
 
@@ -61,7 +61,7 @@ For examples that span multiple files, use a `package.json` as the metadata sour
 
 The plugin traces entry points (`main`, `module`, `exports`) to discover which files belong to the example, so you don't have to list them manually.
 
-## Running a Scan
+## Running a scan
 
 ### CLI
 
@@ -81,21 +81,21 @@ For tighter integration, use the `scan()` convenience function. Here's how the *
 
 `scan()` auto-discovers the nearest config file, resolves plugins, and returns a `ScanResult` with `examples`, `errors`, and `stats`.
 
-## What Comes Next
+## What comes next
 
 - **[Core Concepts](../core-concepts)** — understand examples, extractors, and the plugin model
 - **[Plugins](../plugins)** — explore built-in plugins and when to use each one
 - **[Configuration](../configuration)** — deep dive into config options, scan patterns, and metadata schemas
 - **[Testing Examples](../testing-examples)** — verify that your examples actually run
 
-### Deep Dives
+### Deep dives
 
 - **[JavaScript Plugin](../../plugins/javascript)** — frontmatter, regions, and package.json metadata
 - **[YAML Manifest Plugin](../../plugins/yaml-manifest)** — directory-based example discovery
 - **[Test Plugin](../../plugins/test)** — full assertion reference and reporter options
 - **[Documentation Plugin](../../plugins/documentation)** — template rendering and prose helpers
 
-### Advanced Topics
+### Advanced topics
 
 - **[Custom Extractors](../../advanced/custom-extractors)** — support alternative metadata formats
 - **[Plugin Authoring](../../advanced/plugin-authoring)** — build complete plugins from scratch

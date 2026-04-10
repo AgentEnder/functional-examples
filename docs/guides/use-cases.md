@@ -5,11 +5,11 @@ nav:
   order: 7
 ---
 
-# Use Cases
+# Use cases
 
 functional-examples is flexible enough for many different contexts. This guide walks through the most common scenarios and how to set them up.
 
-## Documentation Sites
+## Documentation sites
 
 The most common use case: you maintain a library and want your docs to show real, tested code.
 
@@ -21,7 +21,7 @@ The most common use case: you maintain a library and want your docs to show real
 
 **Why it works:** examples are real files that your editor type-checks and your CI can test. When you rename an API, your examples break at build time — not after a user reports stale docs.
 
-## Tutorials and Courses
+## Tutorials and courses
 
 For structured learning content where examples build on each other.
 
@@ -34,7 +34,7 @@ For structured learning content where examples build on each other.
 
 **Why it works:** each tutorial step is a complete, runnable example with its own metadata. The metadata schema ensures every lesson has the required fields (difficulty level, prerequisites, etc.).
 
-## API References
+## API references
 
 When you want to show usage examples alongside API documentation.
 
@@ -57,7 +57,7 @@ const response = await client.get('/users');
 
 Each region can be pulled independently into API reference pages, keeping examples DRY.
 
-## Monorepo Shared Examples
+## Monorepo shared examples
 
 For monorepos where multiple packages share a set of examples.
 
@@ -69,7 +69,7 @@ For monorepos where multiple packages share a set of examples.
 
 The mixed-plugins example demonstrates this pattern with path mappings routing `src/` files to the JavaScript extractor and `tutorials/` to the YAML manifest extractor.
 
-## Open Source Showcases
+## Open source showcases
 
 For OSS projects that want a gallery of community or first-party examples.
 
@@ -82,7 +82,7 @@ For OSS projects that want a gallery of community or first-party examples.
 
 **Why it works:** contributors can add examples by creating a new directory with a `package.json` — no need to edit a central registry. The scanner discovers them automatically.
 
-## Quick Reference
+## Quick reference
 
 | Scenario | Plugins | Key Features |
 |----------|---------|-------------|

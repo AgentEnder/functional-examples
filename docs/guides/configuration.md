@@ -9,7 +9,7 @@ nav:
 
 functional-examples is configured via a config file at your project root. This guide covers every config option, the two config formats, and how to use metadata schemas for validation.
 
-## Config Formats
+## Config formats
 
 ### TypeScript (recommended)
 
@@ -37,7 +37,7 @@ Create `functional-examples.config.json`:
 
 JSON configs are useful when you don't want a build step, work with non-JS tooling, or want machine-editable configuration. Plugins are auto-detected from your `package.json` dependencies.
 
-## Scan Options
+## Scan options
 
 ### `scan.root`
 
@@ -69,7 +69,7 @@ scan: {
 }
 ```
 
-## Path Mappings
+## Path mappings
 
 When using multiple plugins, **pathMappings** route specific file patterns to specific extractors. This prevents conflicts when two extractors might both try to claim the same file.
 
@@ -86,7 +86,7 @@ Each mapping has:
 
 Files matching a mapping are *only* sent to the specified extractor. Unmapped files are sent to all extractors.
 
-## Metadata Schema
+## Metadata schema
 
 You can enforce metadata standards using a JSON Schema in your config. Every scanned example's metadata is validated against it:
 
@@ -100,7 +100,7 @@ And one that fails because it's missing required fields:
 
 <%= example('metadata-validation').file('src/missing-fields.ts') %>
 
-## Region Config
+## Region config
 
 functional-examples can extract `#region` / `#endregion` hunks from source files without any plugin. The `region` config block controls the marker keywords and which file extensions are recognised.
 
@@ -123,7 +123,7 @@ User-supplied entries are merged over the defaults; the defaults cover these ext
 
 <%= sourceRegion('packages/functional-examples/src/regions/defaults.ts', 'default-extension-map') %>
 
-## Config Resolution
+## Config resolution
 
 When you call `scan()` or the CLI, functional-examples:
 

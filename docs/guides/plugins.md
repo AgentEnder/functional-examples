@@ -9,7 +9,7 @@ nav:
 
 Plugins are the primary extension mechanism in functional-examples. Each plugin provides extractors, validators, commands, or schemas. This guide covers the built-in plugins, when to reach for each one, and how to compose them.
 
-## JavaScript Plugin
+## JavaScript plugin
 
 **Package:** `@functional-examples/javascript`
 
@@ -32,7 +32,7 @@ Here's a single-file example:
 
 > **Full guide →** [JavaScript Plugin](../../plugins/javascript) — frontmatter syntax, region markers, package.json mode, and all configuration options.
 
-## YAML Manifest Plugin
+## YAML manifest plugin
 
 **Package:** `@functional-examples/yaml-manifest`
 
@@ -47,7 +47,7 @@ The YAML manifest plugin discovers examples via `meta.yml` files in directories.
 
 > **Full guide →** [YAML Manifest Plugin](../../plugins/yaml-manifest) — meta.yml field reference, directory discovery, and when to choose YAML vs JavaScript.
 
-## Test Plugin
+## Test plugin
 
 **Package:** `@functional-examples/test`
 
@@ -73,7 +73,7 @@ npx functional-examples test
 
 > **Full guide →** [Test Plugin](../../plugins/test) — full assertion reference, multi-step tests, snapshots, and reporter options.
 
-## Documentation Plugin
+## Documentation plugin
 
 **Package:** `@functional-examples/documentation`
 
@@ -91,7 +91,7 @@ The documentation plugin generates markdown documentation from scanned examples.
 
 > **Full guide →** [Documentation Plugin](../../plugins/documentation) — template system, prose helpers, and guide rendering.
 
-## Multi-Plugin Setup
+## Multi-plugin setup
 
 You can combine multiple plugins. When doing so, use **pathMappings** to route files to the right extractor and avoid conflicts:
 
@@ -99,7 +99,7 @@ You can combine multiple plugins. When doing so, use **pathMappings** to route f
 
 Path mappings use glob patterns to assign files to specific extractors by name. Files that match a mapping are only sent to the specified extractor. Unmapped files are sent to all extractors.
 
-## Custom Extractors
+## Custom extractors
 
 When the built-in plugins don't fit your metadata format, write a custom extractor. An extractor is a function that receives file candidates and returns examples.
 

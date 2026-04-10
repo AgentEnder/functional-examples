@@ -79,7 +79,7 @@ const proseEta = new Eta({
   autoEscape: false,
   autoTrim: false,
   functionHeader:
-    'var file = it.file, region = it.region, files = it.files, helpers = it.helpers;',
+    'var file = it.file, region = it.region, files = it.files, metadata = it.metadata, helpers = it.helpers;',
 });
 
 /**
@@ -91,7 +91,7 @@ export function renderProseFiles(
   metadata: Record<string, unknown>
 ): ProseRenderResult {
   const tracker = new ConsumptionTracker();
-  const helpers = createProseHelpers(files, tracker);
+  const helpers = createProseHelpers(files, tracker, metadata);
 
   const proseFiles = files.filter(isProseFile);
   const renderedProse: string[] = [];
@@ -103,10 +103,7 @@ export function renderProseFiles(
 
   for (const pf of proseFiles) {
     const content = pf.parsed ?? pf.raw ?? '';
-    const rendered = proseEta.renderString(content, {
-      ...helpers,
-      metadata,
-    });
+    const rendered = proseEta.renderString(content, helpers);
     renderedProse.push(rendered);
   }
 

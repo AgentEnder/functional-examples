@@ -36,9 +36,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return urlPathname === href || urlPathname.startsWith(href + '/');
   };
 
+  const previewPath = import.meta.env.PUBLIC_ENV__PREVIEW_PATH as string;
+
   return (
     <div className="min-h-screen flex flex-col text-bp-line bp-grid">
       <BlueprintBackground />
+
+      {previewPath && (
+        <div className="bg-amber-900/80 text-amber-200 text-center text-xs py-1.5 px-4 border-b border-amber-700/50">
+          Preview deployment for <strong>{previewPath}</strong>{' '}
+          &mdash;{' '}
+          <a
+            href="/functional-examples"
+            className="underline hover:text-amber-100"
+          >
+            Go to production docs
+          </a>
+        </div>
+      )}
 
       {/* Header — sticky so it participates in flow but stays visible */}
       <header className="sticky top-0 z-50 h-16 shrink-0 bp-glass border-b border-bp-line-dim/20">
@@ -181,6 +196,127 @@ function HeaderLink({
   );
 }
 
+/** Recursively render a list of nav items (leaf links + sub-groups). */
+function NavItems({
+  items,
+  activeCheck,
+  onItemClick,
+  collapsed,
+  toggle,
+  depth,
+}: {
+  items: NavigationItem[];
+  activeCheck: (href: string) => boolean;
+  onItemClick?: () => void;
+  collapsed: Set<string>;
+  toggle: (key: string) => void;
+  depth: number;
+}) {
+  return (
+    <ul className={`space-y-0.5 ${depth > 0 ? 'ml-0.5' : ''}`}>
+      {items.map((item) => {
+        // Sub-group: has children, may or may not have its own path
+        if (item.children && item.children.length > 0) {
+          const key = `${'  '.repeat(depth)}${item.title}`;
+          const isCollapsed = collapsed.has(key);
+
+          return (
+            <li key={key} className="mt-3">
+              {/* ── Sub-group: blueprint-framed panel ── */}
+              <div className="relative border border-bp-line-dim/25 rounded-sm bg-bp-surface/10">
+                {/* Title bar */}
+                <button
+                  onClick={() => toggle(key)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 border-b border-bp-line-dim/20 hover:bg-bp-surface/20 transition-colors"
+                >
+                  <span className="bp-annotation text-[10px] text-bp-line-dim">
+                    {item.title}
+                  </span>
+                  <ChevronDown
+                    className={`w-3 h-3 text-bp-line-dim transition-transform duration-200 ${
+                      isCollapsed ? '-rotate-90' : ''
+                    }`}
+                    strokeWidth={2}
+                  />
+                </button>
+
+                {/* Collapsed: show child count hint */}
+                {isCollapsed && (
+                  <div className="px-2.5 py-1 text-[10px] text-bp-line-dim/50 font-code">
+                    {item.children.length} page{item.children.length !== 1 ? 's' : ''}
+                  </div>
+                )}
+
+                {/* Expanded: children inside the frame */}
+                {!isCollapsed && (
+                  <div className="px-1.5 py-1.5">
+                    <NavItems
+                      items={item.children}
+                      activeCheck={activeCheck}
+                      onItemClick={onItemClick}
+                      collapsed={collapsed}
+                      toggle={toggle}
+                      depth={depth + 1}
+                    />
+                  </div>
+                )}
+
+                {/* Blueprint corner ticks */}
+                <span className="absolute -top-px -left-px w-1.5 h-1.5 border-t border-l border-bp-line-dim/40" />
+                <span className="absolute -top-px -right-px w-1.5 h-1.5 border-t border-r border-bp-line-dim/40" />
+                <span className="absolute -bottom-px -left-px w-1.5 h-1.5 border-b border-l border-bp-line-dim/40" />
+                <span className="absolute -bottom-px -right-px w-1.5 h-1.5 border-b border-r border-bp-line-dim/40" />
+              </div>
+            </li>
+          );
+        }
+
+        // Leaf item: link
+        if (!item.path) return null;
+        return (
+          <li key={item.path}>
+            <Link
+              href={item.path}
+              onClick={onItemClick}
+              className={`
+                block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                ${
+                  activeCheck(item.path)
+                    ? 'border-bp-accent text-bp-line bg-bp-accent/5'
+                    : 'border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20'
+                }
+              `}
+            >
+              {item.title}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/**
+ * Collect collapse keys for all sub-groups within NavItems so they
+ * start collapsed.  Top-level sections are rendered by NavContent and
+ * start expanded — only sub-groups (the blueprint-framed panels) are
+ * collected here.
+ */
+function collectSubGroupKeys(
+  items: NavigationItem[],
+  depth: number,
+): string[] {
+  const keys: string[] = [];
+  for (const item of items) {
+    if (item.children && item.children.length > 0) {
+      const key = `${'  '.repeat(depth)}${item.title}`;
+      keys.push(key);
+      keys.push(...collectSubGroupKeys(item.children, depth + 1));
+    }
+  }
+  return keys;
+}
+
 function NavContent({
   navigation,
   activeCheck,
@@ -190,13 +326,22 @@ function NavContent({
   activeCheck: (href: string) => boolean;
   onItemClick?: () => void;
 }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // Sub-groups (depth > 0) start collapsed; top-level sections start expanded.
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    const keys: string[] = [];
+    for (const section of navigation) {
+      if (section.children) {
+        keys.push(...collectSubGroupKeys(section.children, 0));
+      }
+    }
+    return new Set(keys);
+  });
 
-  const toggle = (title: string) => {
+  const toggle = (key: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev);
-      if (next.has(title)) next.delete(title);
-      else next.add(title);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -237,29 +382,14 @@ function NavContent({
             </div>
 
             {!isCollapsed && section.children && (
-              <ul className="space-y-0.5 ml-1">
-                {section.children.map(
-                  (item) =>
-                    item.path && (
-                      <li key={item.path}>
-                        <Link
-                          href={item.path}
-                          onClick={onItemClick}
-                          className={`
-                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
-                            ${
-                              activeCheck(item.path)
-                                ? 'border-bp-accent text-bp-line bg-bp-accent/5'
-                                : 'border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20'
-                            }
-                          `}
-                        >
-                          {item.title}
-                        </Link>
-                      </li>
-                    )
-                )}
-              </ul>
+              <NavItems
+                items={section.children}
+                activeCheck={activeCheck}
+                onItemClick={onItemClick}
+                collapsed={collapsed}
+                toggle={toggle}
+                depth={0}
+              />
             )}
           </div>
         );
