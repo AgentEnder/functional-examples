@@ -5,7 +5,7 @@ nav:
   order: 6
 ---
 
-# Testing Examples
+# Testing examples
 
 Examples that don't run aren't examples — they're aspirational pseudocode. The `@functional-examples/test` plugin lets you define executable assertions for your examples and run them in CI.
 
@@ -21,7 +21,7 @@ Add it to your config:
 
 <%= example('multi-plugin-config').region('test-only-config') %>
 
-## Defining Tests
+## Defining tests
 
 Test definitions live in the `test` field of an example's metadata. The test plugin reads `metadata.test` from whatever extractor produced the example — it doesn't care about the source format.
 
@@ -41,7 +41,7 @@ Here's the script being tested:
 
 <%= example('test-plugin-example').region('hello-script') %>
 
-## Available Assertions
+## Available assertions
 
 | Assertion | Description |
 |-----------|-------------|
@@ -55,7 +55,7 @@ Here's the script being tested:
 
 Tests also support **multi-step** definitions with a `steps` array instead of a single `command`, for examples that require setup before assertions.
 
-## Running Tests
+## Running tests
 
 Run all example tests:
 
@@ -71,7 +71,7 @@ npx functional-examples test examples/test-plugin-example
 
 The test runner executes each command, captures output, and checks assertions. Results are reported with pass/fail status.
 
-## CI Integration
+## CI integration
 
 Add example tests to your CI pipeline alongside unit tests:
 
@@ -92,14 +92,14 @@ jobs:
 
 The test command exits with a non-zero code if any assertion fails, so CI will catch regressions automatically.
 
-## Best Practices
+## Best practices
 
 - **Test the happy path first** — verify exit code 0 and expected output
 - **Test error cases** — confirm examples fail gracefully with meaningful errors
 - **Keep commands fast** — example tests run in CI, so avoid long-running operations
 - **Use `stdout.contains`** over exact matching — partial matches are more resilient to formatting changes
 
-## Going Further
+## Going further
 
 - **[Test Plugin Reference](../../plugins/test)** — full assertion table including file, directory, and snapshot assertions
 - **[Snapshot Testing](../../advanced/snapshot-testing)** — when to use snapshots, first-run behavior, and update workflow

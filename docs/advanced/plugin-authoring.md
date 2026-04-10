@@ -5,11 +5,11 @@ nav:
   order: 2
 ---
 
-# Plugin Authoring
+# Plugin authoring
 
-A plugin bundles an extractor, file-contents parsers, validators, schemas, and CLI commands into a single package. This guide walks through building a complete plugin using the INI format as an example.
+A plugin bundles an extractor, file-contents parsers, validators, schemas, and CLI commands into a single package. The following walkthrough builds a complete plugin using the INI format as an example.
 
-## Plugin Interface
+## Plugin interface
 
 ::typedoc{symbol="Plugin" pkg="functional-examples"}
 
@@ -23,11 +23,11 @@ A plugin bundles an extractor, file-contents parsers, validators, schemas, and C
 | `validators` | Validation functions for options and metadata |
 | `commands` | CLI commands contributed by the plugin |
 
-## Example: INI Plugin
+## Example: INI plugin
 
 Here's a complete plugin that supports INI-based metadata:
 
-### Metadata Type
+### Metadata type
 
 <%= example('plugin-authoring').file('src/ini-plugin.ts') %>
 
@@ -35,7 +35,7 @@ Here's a complete plugin that supports INI-based metadata:
 
 <%= example('plugin-authoring').file('functional-examples.config.ts') %>
 
-## Building Each Component
+## Building each component
 
 ### 1. Extractor
 
@@ -48,7 +48,7 @@ Key responsibilities:
 - Add files to `claimedFiles` to prevent conflicts
 - Return errors for recoverable issues
 
-### 2. File Contents Parser
+### 2. File contents parser
 
 Parsers transform file content in a pipeline. Each parser receives a `FileParseContext` and returns a modified context:
 
@@ -61,31 +61,31 @@ The context includes:
 - `metadata` — example metadata
 - `filePath` — absolute path to the file
 
-### 3. Schemas (Optional)
+### 3. Schemas (optional)
 
 Contribute JSON Schema definitions for plugin options and metadata validation:
 
 <%= example('plugin-authoring').region('schemas') %>
 
-### 4. Validators (Optional)
+### 4. Validators (optional)
 
 Provide custom validation functions beyond what JSON Schema can express:
 
 <%= example('plugin-authoring').region('validators') %>
 
-### 5. Commands (Optional)
+### 5. Commands (optional)
 
 Add CLI commands that are loaded when your plugin is registered:
 
 <%= example('plugin-authoring').region('commands') %>
 
-## Plugin Lifecycle
+## Plugin lifecycle
 
 1. **Loading** — Config resolution imports and instantiates plugins
 2. **Registration** — Plugins register extractors, parsers, schemas, and commands
 3. **Composition** — Multiple plugins compose: extractors run in parallel, parsers run in sequence, schemas merge
 
-## Best Practices
+## Best practices
 
 - Keep plugins focused — one extractor per metadata format
 - Use `extensions` to declare which file types you handle

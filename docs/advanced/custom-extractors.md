@@ -5,11 +5,11 @@ nav:
   order: 1
 ---
 
-# Custom Extractors
+# Custom extractors
 
 When the built-in plugins don't support your metadata format, you can write a custom extractor. An extractor receives file candidates and returns discovered examples.
 
-## Extractor Interface
+## Extractor interface
 
 ::typedoc{symbol="Extractor" pkg="devkit"}
 
@@ -20,13 +20,13 @@ When the built-in plugins don't support your metadata format, you can write a cu
 **Output:**
 ::typedoc{symbol="ExtractorResult" pkg="devkit"}
 
-## Step-by-Step Walkthrough
+## Step-by-step walkthrough
 
 Here's a complete custom extractor that reads TOML metadata files:
 
 <%= example('custom-extractor').file('toml-extractor.ts') %>
 
-### Key Concepts
+### Key concepts
 
 1. **Scan candidates** — The extractor receives pre-filtered file entries. Iterate them to find your metadata files (e.g., `meta.toml`).
 
@@ -36,25 +36,25 @@ Here's a complete custom extractor that reads TOML metadata files:
 
 4. **Set `extractorName`** — Each example includes its `extractorName` so results show which extractor produced it.
 
-## Registering a Custom Extractor
+## Registering a custom extractor
 
-### Via Programmatic Scan
+### Via programmatic scan
 
 <%= example('custom-extractor').file('scan.ts') %>
 
-### Via Config Plugin
+### Via config plugin
 
 Wrap your extractor in a plugin object to register it via config:
 
 <%= example('custom-extractor').region('plugin-config') %>
 
-## Error Handling
+## Error handling
 
 - **Recoverable errors** → push to `errors[]` array (scanner aggregates them)
 - **Unrecoverable failures** → throw an error (scanner catches and reports it)
 - Always validate required fields (`id`, `title`) before creating an `Example`
 
-## Testing Custom Extractors
+## Testing custom extractors
 
 Write tests that verify your extractor:
 1. Finds examples from valid metadata files

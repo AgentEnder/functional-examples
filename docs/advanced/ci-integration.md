@@ -5,21 +5,21 @@ nav:
   order: 4
 ---
 
-# CI Integration
+# CI integration
 
 functional-examples tests integrate into any CI system. The test command exits with a non-zero code on failure, making it compatible with all CI runners.
 
-## GitHub Actions Workflow
+## GitHub Actions workflow
 
 <%= example('ci-integration').file('.github/workflows/examples.yml') %>
 
-### Key Steps
+### Key steps
 
 1. **Install dependencies** — Standard npm/pnpm install
 2. **Scan for examples** — Verify examples are discovered correctly
 3. **Run example tests** — Execute all test definitions
 
-## Exit Code Semantics
+## Exit code semantics
 
 | Exit Code | Meaning |
 |-----------|---------|
@@ -28,7 +28,7 @@ functional-examples tests integrate into any CI system. The test command exits w
 
 CI systems interpret non-zero exit codes as failures, so no special configuration is needed.
 
-## TAP Reporter for CI
+## TAP reporter for CI
 
 Use the TAP reporter for machine-parseable output:
 
@@ -46,7 +46,7 @@ export default {
 
 Most CI systems can parse TAP output natively and display structured test results.
 
-## Snapshot Management in CI
+## Snapshot management in CI
 
 **Always run snapshot tests without `-u` in CI.** The CI pipeline should _detect_ snapshot drift, not silently update snapshots:
 
@@ -60,7 +60,7 @@ Most CI systems can parse TAP output natively and display structured test result
 
 When snapshots drift, the CI will fail with a diff showing what changed. Developers should update snapshots locally and commit the changes.
 
-## Testing CI Workflows Locally
+## Testing CI workflows locally
 
 Use the workflow runner script to test GitHub Actions workflows without pushing to GitHub:
 
@@ -74,13 +74,13 @@ The workflow runner:
 - Executes `run:` steps locally
 - Reports pass/fail per step
 
-### Selective Job Execution
+### Selective job execution
 
 ```bash
 npx tsx scripts/run-workflow.mts workflow.yml --job test-examples
 ```
 
-## Best Practices
+## Best practices
 
 - **Run example tests alongside unit tests** — they catch different classes of regressions
 - **Use `stdout.contains`** over exact matching — more resilient to formatting changes

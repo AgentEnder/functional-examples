@@ -1,0 +1,59 @@
+extends: capitalization
+message: "Use sentence case for headings. '%s' should be '%s'."
+level: error
+scope: heading
+match: $sentence
+indicators:
+  - ':'
+exceptions:
+  # Project-specific
+  - CLI
+  - API
+  - APIs
+  - TypeScript
+  - JavaScript
+  - Node.js
+  - JSON
+  - YAML
+  - TOML
+  - CSS
+  - HTML
+  - Eta
+  - EJS
+  # Tools and frameworks
+  - GitHub
+  - GitHub Actions
+  - ESLint
+  - Prettier
+  - Zod
+  - Vitest
+  - Jest
+  - Vike
+  - React
+  - npm
+  - pnpm
+  - Yarn
+  - Nx
+  - Markdoc
+  # Abbreviations
+  - AI
+  - CI
+  - CD
+  - URL
+  - URLs
+  - PR
+  - PRs
+  - IDE
+  - IDEs
+  - SSR
+  - SSG
+  - E2E
+  - TAP
+  - INI
+  # Filenames and identifiers that must keep their casing
+  - parseArgs
+  - FileAccessor
+  - ExampleAccessor
+  - ProseHelpers
+  - meta.yml
+  - package.json

@@ -5,9 +5,9 @@ nav:
   order: 3
 ---
 
-# Core Concepts
+# Core concepts
 
-This guide explains the building blocks of functional-examples: what an example *is*, how extractors discover them, how plugins compose behavior, and how the scanner ties it all together.
+The building blocks of functional-examples: what an example *is*, how extractors discover them, how plugins compose behavior, and how the scanner ties it all together.
 
 ## Examples
 
@@ -76,7 +76,7 @@ Regions let you reference specific parts of a file in documentation. Instead of 
 
 The JavaScript plugin automatically detects `#region` / `#endregion` markers and records their line ranges as hunks on the file.
 
-## The Scanner Pipeline
+## The scanner pipeline
 
 When you call `scan()` or `scanExamples()`, here's what happens:
 

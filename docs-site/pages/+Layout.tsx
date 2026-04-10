@@ -181,6 +181,96 @@ function HeaderLink({
   );
 }
 
+/** Recursively render a list of nav items (leaf links + sub-groups). */
+function NavItems({
+  items,
+  activeCheck,
+  onItemClick,
+  collapsed,
+  toggle,
+  depth,
+}: {
+  items: NavigationItem[];
+  activeCheck: (href: string) => boolean;
+  onItemClick?: () => void;
+  collapsed: Set<string>;
+  toggle: (key: string) => void;
+  depth: number;
+}) {
+  return (
+    <ul className={`space-y-0.5 ${depth > 0 ? 'ml-1' : ''}`}>
+      {items.map((item) => {
+        // Sub-group: has children, may or may not have its own path
+        if (item.children && item.children.length > 0) {
+          const key = `${'  '.repeat(depth)}${item.title}`;
+          const isCollapsed = collapsed.has(key);
+          return (
+            <li key={key} className={depth > 0 ? 'mt-2' : ''}>
+              <div className="flex items-center justify-between mb-0.5">
+                {item.path ? (
+                  <Link
+                    href={item.path}
+                    onClick={onItemClick}
+                    className="bp-annotation text-[10px] text-bp-accent hover:text-bp-line transition-colors"
+                  >
+                    {item.title}
+                  </Link>
+                ) : (
+                  <span className="bp-annotation text-[10px] text-bp-line-dim">
+                    {item.title}
+                  </span>
+                )}
+                <button
+                  onClick={() => toggle(key)}
+                  className="text-bp-line-dim hover:text-bp-line transition-colors p-0.5"
+                >
+                  <ChevronDown
+                    className={`w-3 h-3 transition-transform duration-200 ${
+                      isCollapsed ? '-rotate-90' : ''
+                    }`}
+                    strokeWidth={2}
+                  />
+                </button>
+              </div>
+              {!isCollapsed && (
+                <NavItems
+                  items={item.children}
+                  activeCheck={activeCheck}
+                  onItemClick={onItemClick}
+                  collapsed={collapsed}
+                  toggle={toggle}
+                  depth={depth + 1}
+                />
+              )}
+            </li>
+          );
+        }
+
+        // Leaf item: link
+        if (!item.path) return null;
+        return (
+          <li key={item.path}>
+            <Link
+              href={item.path}
+              onClick={onItemClick}
+              className={`
+                block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
+                ${
+                  activeCheck(item.path)
+                    ? 'border-bp-accent text-bp-line bg-bp-accent/5'
+                    : 'border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20'
+                }
+              `}
+            >
+              {item.title}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function NavContent({
   navigation,
   activeCheck,
@@ -192,11 +282,11 @@ function NavContent({
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  const toggle = (title: string) => {
+  const toggle = (key: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev);
-      if (next.has(title)) next.delete(title);
-      else next.add(title);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -237,29 +327,14 @@ function NavContent({
             </div>
 
             {!isCollapsed && section.children && (
-              <ul className="space-y-0.5 ml-1">
-                {section.children.map(
-                  (item) =>
-                    item.path && (
-                      <li key={item.path}>
-                        <Link
-                          href={item.path}
-                          onClick={onItemClick}
-                          className={`
-                            block px-3 py-1.5 rounded text-sm transition-all duration-200 border-l-2
-                            ${
-                              activeCheck(item.path)
-                                ? 'border-bp-accent text-bp-line bg-bp-accent/5'
-                                : 'border-transparent text-bp-line-dim hover:text-bp-line hover:border-bp-line-dim/40 hover:bg-bp-surface/20'
-                            }
-                          `}
-                        >
-                          {item.title}
-                        </Link>
-                      </li>
-                    )
-                )}
-              </ul>
+              <NavItems
+                items={section.children}
+                activeCheck={activeCheck}
+                onItemClick={onItemClick}
+                collapsed={collapsed}
+                toggle={toggle}
+                depth={0}
+              />
             )}
           </div>
         );

@@ -5,7 +5,7 @@ nav:
   order: 3
 ---
 
-# Test Plugin
+# Test plugin
 
 The test plugin (`@functional-examples/test`) adds testing capabilities to functional-examples. It reads test definitions from `metadata.test` on any scanned example and provides the `test` CLI command.
 
@@ -30,7 +30,7 @@ export default {
 };
 ```
 
-### Plugin Options
+### Plugin options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -39,17 +39,17 @@ export default {
 | `defaultReporter` | `ReporterConfig` | Pretty reporter | Reporter for local runs |
 | `ciReporter` | `ReporterConfig` | TAP reporter | Reporter for CI environments |
 
-## Defining Tests
+## Defining tests
 
 Tests live in the `test` field of an example's metadata. The test plugin doesn't care which extractor produced the example — it works with any metadata source.
 
-### Single Command Tests
+### Single command tests
 
 The simplest form — run a command and check assertions:
 
 <%= example('test-plugin-example').region('hello-test') %>
 
-### Multi-Step Tests
+### Multi-step tests
 
 For examples that require setup or multiple phases, use `steps`:
 
@@ -57,29 +57,29 @@ For examples that require setup or multiple phases, use `steps`:
 
 Each step runs sequentially. If a step fails, subsequent steps in the same test are skipped.
 
-## Assertion Reference
+## Assertion reference
 
-### Exit Code
+### Exit code
 
 <%= example('test-assertions').region('exit-code') %>
 
-### Standard Output
+### Standard output
 
 <%= example('test-assertions').region('stdout') %>
 
-### Standard Error
+### Standard error
 
 <%= example('test-assertions').region('stderr') %>
 
-### File Assertions
+### File assertions
 
 <%= example('test-assertions').region('file') %>
 
-### Directory Assertions
+### Directory assertions
 
 <%= example('test-assertions').region('dir') %>
 
-### Snapshot Assertions
+### Snapshot assertions
 
 <%= example('test-assertions').region('snapshot') %>
 
@@ -91,7 +91,7 @@ Wrap any assertion in `not` to invert it:
 
 <%= example('test-assertions').region('negation') %>
 
-## Running Tests
+## Running tests
 
 ```bash
 # Run all example tests
