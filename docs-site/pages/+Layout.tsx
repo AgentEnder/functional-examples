@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return urlPathname === href || urlPathname.startsWith(href + '/');
   };
 
-  const previewPath = import.meta.env.PREVIEW_PATH as string;
+  const previewPath = import.meta.env.PUBLIC_ENV__PREVIEW_PATH as string;
 
   return (
     <div className="min-h-screen flex flex-col text-bp-line bp-grid">

@@ -39,6 +39,6 @@ export default defineConfig({
   },
   base: process.env.BASE_URL || '/functional-examples',
   define: {
-    'import.meta.env.PREVIEW_PATH': JSON.stringify(process.env.PREVIEW_PATH || ''),
+    'import.meta.env.PUBLIC_ENV__PREVIEW_PATH': JSON.stringify(process.env.PREVIEW_PATH || ''),
   },
 });
